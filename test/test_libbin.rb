@@ -59,7 +59,26 @@ class LibBinTest < Minitest::Test
       assert_equal(0, s.b)
       assert_equal(3, s.d)
     end
-
   end
 
+  def test_datatypes
+    b = Class::new(LibBin::DataConverter) do
+      int8 :a
+      int8 :b
+    end
+
+    c = Class::new(LibBin::DataConverter) do
+      register_field :bs, b, count: 5
+    end
+
+    File::open("binary/simple_array.bin") do |f|
+      s = c::load(f)
+      assert_equal(15,  s.bs[0].a)
+      assert_equal(0,  s.bs[0].b)
+      (1..4).each { |i|
+        assert_equal(2*i - 1, s.bs[i].a)
+        assert_equal(2*i    , s.bs[i].b)
+      }
+    end
+  end
 end

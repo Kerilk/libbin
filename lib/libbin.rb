@@ -176,49 +176,24 @@ module LibBin
       vs
     end
 
-    def load_scalar_field(field, type, count, offset, sequence, condition)
-      unless sequence
-        off = decode_seek_offset(offset)
-        return nil if off == false
-        cond = decode_condition(condition)
-        return nil unless cond
-      end
-
-      c = decode_count(count)
-      rl, _ = DATA_ENDIAN[@input_big][type]
-      vs = c.times.collect { |it|
-        @__iterator = it
-        if sequence
-          off = decode_seek_offset(offset)
-          cond = decode_condition(condition)
-          if off == false || !cond
-            nil
-          else
-            sz = DATA_SIZES[type]
-            s = (sz < 0 ? @input.readline("\x00") : @input.read(sz) )
-            rl[s]
-          end
-        else
-          sz = DATA_SIZES[type]
-          s = (sz < 0 ? @input.readline("\x00") : @input.read(sz) )
-          rl[s]
-        end
-      }
-      @__iterator = nil
-      vs = vs.first unless count
-      vs
-    end
-
-    def load_data_field(field, type, count, offset, sequence, condition)
+    def load_field(field, type, count, offset, sequence, condition)
       unless sequence
         off = decode_seek_offset(offset)
         return nil if off == false
         cond = decode_condition(condition)
         return nil unless cond
         typ = decode_type(type)
+        unless typ.kind_of?(Class)
+          rl, _ = DATA_ENDIAN[@input_big][typ]
+          sz = DATA_SIZES[typ]
+        else
+          rl = nil
+          sz = nil
+        end
       end
       c = decode_count(count)
-      vs = c.times.collect { |it|
+
+      vs = c.times.collect do |it|
         @__iterator = it
         if sequence
           off = decode_seek_offset(offset)
@@ -227,15 +202,25 @@ module LibBin
             nil
           else
             typ = decode_type(type)
-            typ::load(@input, @input_big, self, it)
+            if typ.kind_of?(Class)
+              typ::load(@input, @input_big, self, it)
+            else
+              rl, _ = DATA_ENDIAN[@input_big][typ]
+              sz = DATA_SIZES[typ]
+              s = (sz < 0 ? @input.readline("\x00") : @input.read(sz) )
+              rl[s]
+            end
           end
+        elsif rl
+          s = (sz < 0 ? @input.readline("\x00") : @input.read(sz) )
+          rl[s]
         else
           typ::load(@input, @input_big, self, it)
         end
-      }
+      end
       @__iterator = nil
       vs = vs.first unless count
-      vs
+      send("#{field}=", vs)
     end
 
     def dump_data_field(vs, field, type, count, offset, sequence, condition)
@@ -426,19 +411,6 @@ module LibBin
         vs = convert_data_field(*args)
       elsif type.kind_of?(Symbol)
         vs = convert_scalar_field(*args)
-      else
-        raise "Unsupported type: #{type.inspect}!"
-      end
-      send("#{field}=", vs)
-    end
-
-    def load_field(*args)
-      field = args[0]
-      type = args[1]
-      if ( type.kind_of?(Class) && type < DataConverter ) || type.kind_of?(String)
-        vs = load_data_field(*args)
-      elsif type.kind_of?(Symbol)
-        vs = load_scalar_field(*args)
       else
         raise "Unsupported type: #{type.inspect}!"
       end
