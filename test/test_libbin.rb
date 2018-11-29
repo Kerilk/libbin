@@ -3,6 +3,7 @@ require 'minitest/autorun'
 require 'libbin'
 
 class LibBinTest < Minitest::Test
+  SUFFIX = { true => "be", false => "le" }
 
   def test_simple_layout
     c = Class::new(LibBin::DataConverter) do
@@ -13,23 +14,16 @@ class LibBinTest < Minitest::Test
       float :e
     end
 
-    File::open("binary/simple_layout_le.bin") do |f|
-      s = c::load(f, false)
-      assert_equal(1, s.a)
-      assert_equal(0, s.b)
-      assert_equal(2, s.c)
-      assert_equal(3, s.d)
-      assert_equal(4.0, s.e)
-    end
-
-    File::open("binary/simple_layout_be.bin") do |f|
-      s = c::load(f, true)
-      assert_equal(1, s.a)
-      assert_equal(0, s.b)
-      assert_equal(2, s.c)
-      assert_equal(3, s.d)
-      assert_equal(4.0, s.e)
-    end
+    [true, false].each { |big|
+      File::open("binary/simple_layout_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal(1, s.a)
+        assert_equal(0, s.b)
+        assert_equal(2, s.c)
+        assert_equal(3, s.d)
+        assert_equal(4.0, s.e)
+      end
+    }
   end
 
   def test_array
@@ -54,11 +48,13 @@ class LibBinTest < Minitest::Test
       int32 :d, offset: 4
     end
 
-    File::open("binary/simple_layout_le.bin") do |f|
-      s = c::load(f, false)
-      assert_equal(0, s.b)
-      assert_equal(3, s.d)
-    end
+    [true, false].each { |big|
+      File::open("binary/simple_layout_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal(0, s.b)
+        assert_equal(3, s.d)
+      end
+    }
   end
 
   def test_datatypes
@@ -91,14 +87,17 @@ class LibBinTest < Minitest::Test
       register_field :header, h
       int32 :data, count: 'header.count', offset: 'header.offset'
     end
-    File::open("binary/offset_le.bin") do |f|
-      s = b::load(f, false)
-      assert_equal(32, s.header.offset)
-      assert_equal(4, s.header.count)
-      (0..3).each { |i|
-        assert_equal(i+1, s.data[i])
-      }
-    end
+
+    [true, false].each { |big|
+      File::open("binary/offset_#{SUFFIX[big]}.bin") do |f|
+        s = b::load(f, big)
+        assert_equal(32, s.header.offset)
+        assert_equal(4, s.header.count)
+        (0..3).each { |i|
+          assert_equal(i+1, s.data[i])
+        }
+      end
+    }
   end
 
   def test_remote_reference
@@ -113,14 +112,16 @@ class LibBinTest < Minitest::Test
       register_field :header, h
       register_field :body, d
     end
-    File::open("binary/offset_le.bin") do |f|
-      s = b::load(f, false)
-      assert_equal(32, s.header.offset)
-      assert_equal(4, s.header.count)
-      (0..3).each { |i|
-        assert_equal(i+1, s.body.data[i])
-      }
-    end
+    [true, false].each { |big|
+      File::open("binary/offset_#{SUFFIX[big]}.bin") do |f|
+        s = b::load(f, big)
+        assert_equal(32, s.header.offset)
+        assert_equal(4, s.header.count)
+        (0..3).each { |i|
+          assert_equal(i+1, s.body.data[i])
+        }
+      end
+    }
   end
 
 end
