@@ -100,4 +100,27 @@ class LibBinTest < Minitest::Test
       }
     end
   end
+
+  def test_remote_reference
+    h = Class::new(LibBin::DataConverter) do
+      int32 :offset
+      int32 :count
+    end
+    d = Class::new(LibBin::DataConverter) do
+      int32 :data, count: '..\header.count', offset: '..\header.offset'
+    end
+    b = Class::new(LibBin::DataConverter) do
+      register_field :header, h
+      register_field :body, d
+    end
+    File::open("binary/offset_le.bin") do |f|
+      s = b::load(f, false)
+      assert_equal(32, s.header.offset)
+      assert_equal(4, s.header.count)
+      (0..3).each { |i|
+        assert_equal(i+1, s.body.data[i])
+      }
+    end
+  end
+
 end
