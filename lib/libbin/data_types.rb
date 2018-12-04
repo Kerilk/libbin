@@ -14,6 +14,21 @@ module LibBin
       [rl.curry[type], sl.curry[type]]
     }
 
+    SCALAR_TYPES = {
+      :c => :Int8,
+      :C => :UInt8,
+      :s => :Int16,
+      :S => :UInt16,
+      :l => :Int32,
+      :L => :UInt32,
+      :q => :Int64,
+      :Q => :UInt64,
+      :F => :Float,
+      :D => :Double,
+      :half => :Half,
+      :pghalf => :PGHalf
+     }
+
     DATA_SIZES = Hash::new { |h,k|
       if k.kind_of?(Symbol) && m = k.match(/a(\d+)/)
         m[1].to_i
@@ -122,45 +137,57 @@ module LibBin
 
     end
 
+    class Str < Scalar
+    end
+
     def self.register_field(field, type, count: nil, offset: nil, sequence: false, condition: nil)
-      @fields.push([field, type, count, offset, sequence, condition])
+      if type.kind_of?(Symbol)
+        if type[0] == 'a'
+          c = Class::new(Str) do init(sym) end
+          @fields.push([field, c, count, offset, sequence, condition])
+        else
+          @fields.push([field, const_get(SCALAR_TYPES[type]), count, offset, sequence, condition])
+        end
+      else
+        @fields.push([field, type, count, offset, sequence, condition])
+      end
       attr_accessor field
     end
 
-    def self.create_scalar_type(name, symbol)
+    def self.create_scalar_type(symbol)
+      name = SCALAR_TYPES[symbol]
       eval <<EOF
     class #{name} < Scalar
       init(#{symbol.inspect})
     end
 
     def self.#{name.downcase}(field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, #{name}, count: count, offset: offset, sequence: sequence, condition: condition)
+      @fields.push([field, #{name}, count, offset, sequence, condition])
+      attr_accessor field
     end
 EOF
     end
 
-    create_scalar_type(:Int8, :c)
-    create_scalar_type(:UInt8, :C)
-    create_scalar_type(:Int16, :s)
-    create_scalar_type(:UInt16, :S)
-    create_scalar_type(:Int32, :l)
-    create_scalar_type(:UInt32, :L)
-    create_scalar_type(:Int64, :q)
-    create_scalar_type(:UInt64, :Q)
-    create_scalar_type(:Float, :F)
-    create_scalar_type(:Double, :D)
-    create_scalar_type(:Half, :half)
-    create_scalar_type(:PGHalf, :pghalf)
-
-    class Str < Scalar
-    end
+    create_scalar_type(:c)
+    create_scalar_type(:C)
+    create_scalar_type(:s)
+    create_scalar_type(:S)
+    create_scalar_type(:l)
+    create_scalar_type(:L)
+    create_scalar_type(:q)
+    create_scalar_type(:Q)
+    create_scalar_type(:F)
+    create_scalar_type(:D)
+    create_scalar_type(:half)
+    create_scalar_type(:pghalf)
 
     def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil)
       sym = (length ? :"a#{length}" : :"a*")
       c = Class::new(Str) do
         init(sym)
       end
-      register_field(field, c, count: count, offset: offset, sequence: sequence, condition: condition)
+      @fields.push([field, c, count, offset, sequence, condition])
+      attr_accessor field
     end
 
 

@@ -238,8 +238,7 @@ module LibBin
       vs.each_with_index { |v, it|
         @__iterator = it
         if sequence
-          @__offset = decode_seek_offset(offset)
-          @__condition = decode_condition(condition)
+          decode_dynamic_conditions(type, offset, sequence, condition)
           if @__offset == false || !@__condition
             next
           else

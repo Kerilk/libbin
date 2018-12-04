@@ -5,6 +5,27 @@ require 'libbin'
 class LibBinTest < Minitest::Test
   SUFFIX = { true => "be", false => "le" }
 
+  def test_register_field
+    c = Class::new(LibBin::DataConverter) do
+      register_field :a, :c
+      register_field :b, LibBin::DataConverter::Int8
+      register_field :c, :s
+      register_field :d, :l
+      register_field :e, :F
+    end
+
+    [true, false].each { |big|
+      File::open("binary/simple_layout_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal(1, s.a)
+        assert_equal(0, s.b)
+        assert_equal(2, s.c)
+        assert_equal(3, s.d)
+        assert_equal(4.0, s.e)
+      end
+    }
+  end
+
   def test_simple_layout
     c = Class::new(LibBin::DataConverter) do
       int8 :a
