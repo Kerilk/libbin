@@ -18,15 +18,39 @@ module LibBin
       :c => :Int8,
       :C => :UInt8,
       :s => :Int16,
+      :"s<" => :Int16_LE,
+      :"s>" => :Int16_BE,
       :S => :UInt16,
+      :"S<" => :UInt16_LE,
+      :"S>" => :UInt16_BE,
+      :v => :UInt16_LE,
+      :n => :UInt16_BE,
       :l => :Int32,
+      :"l<" => :Int32_LE,
+      :"l>" => :Int32_BE,
       :L => :UInt32,
+      :"L<" => :UInt32_LE,
+      :"L>" => :UInt32_BE,
+      :V => :UInt32_LE,
+      :N => :UInt32_BE,
       :q => :Int64,
+      :"q<" => :Int64_LE,
+      :"q>" => :Int64_BE,
       :Q => :UInt64,
+      :"Q<" => :UInt64_LE,
+      :"Q>" => :UInt64_BE,
       :F => :Float,
+      :e => :Float_LE,
+      :g => :Float_BE,
       :D => :Double,
+      :E => :Double_LE,
+      :G => :Double_BE,
       :half => :Half,
-      :pghalf => :PGHalf
+      :half_le => :Half_LE,
+      :half_be => :Half_BE,
+      :pghalf => :PGHalf,
+      :pghalf_le => :PGHalf_LE,
+      :pghalf_be => :PGHalf_BE
      }
 
     DATA_SIZES = Hash::new { |h,k|
@@ -40,16 +64,40 @@ module LibBin
       :c => 1,
       :C => 1,
       :s => 2,
+      :"s<" => 2,
+      :"s>" => 2,
       :S => 2,
+      :"S<" => 2,
+      :"S>" => 2,
+      :v => 2,
+      :n => 2,
       :l => 4,
+      :"l<" => 4,
+      :"l>" => 4,
       :L => 4,
+      :"L<" => 4,
+      :"L>" => 4,
+      :V => 4,
+      :N => 4,
       :q => 8,
+      :"q<" => 8,
+      :"q>" => 8,
       :Q => 8,
+      :"Q<" => 8,
+      :"Q>" => 8,
       :F => 4,
+      :e => 4,
+      :g => 4,
       :D => 8,
+      :E => 8,
+      :G => 8,
       :"a*" => -1,
       :half => 2,
-      :pghalf => 2
+      :half_le => 2,
+      :half_be => 2,
+      :pghalf => 2,
+      :pghalf_le => 2,
+      :pghalf_be => 2
     } )
     DATA_ENDIAN = {
       true => Hash::new { |h,k|
@@ -72,35 +120,91 @@ module LibBin
       :c => l["c"],
       :C => l["C"],
       :s => l["s>"],
+      :"s<" => l["s<"],
+      :"s>" => l["s>"],
       :S => l["S>"],
+      :"S<" => l["S<"],
+      :"S>" => l["S>"],
+      :v => l["v"],
+      :n => l["n"],
       :l => l["l>"],
+      :"l<" => l["l<"],
+      :"l>" => l["l>"],
       :L => l["L>"],
+      :"L<" => l["L<"],
+      :"L>" => l["L>"],
+      :V => l["V"],
+      :N => l["N"],
       :q => l["q>"],
+      :"q<" => l["q<"],
+      :"q>" => l["q>"],
       :Q => l["Q>"],
+      :"Q<" => l["Q<"],
+      :"Q>" => l["Q>"],
       :F => l["g"],
+      :e => l["e"],
+      :g => l["g"],
       :D => l["G"],
+      :E => l["E"],
+      :G => l["G"],
       :"a*" => l["a*"],
       :half => [ lambda { |str| Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
                  lambda { |v| Flt::IEEE_binary16_BE::new(v).to_bytes } ],
+      :half_le => [ lambda { |str| Flt::IEEE_binary16_LE::from_bytes(str).to(Float) },
+                    lambda { |v| Flt::IEEE_binary16_LE::new(v).to_bytes } ],
+      :half_be => [ lambda { |str| Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
+                    lambda { |v| Flt::IEEE_binary16_BE::new(v).to_bytes } ],
       :pghalf => [ lambda { |str| Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
-                   lambda { |v| Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ]
+                   lambda { |v| Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ],
+      :pghalf_le => [ lambda { |str| Flt::IEEE_binary16_pg_LE::from_bytes(str).to(Float) },
+                      lambda { |v| Flt::IEEE_binary16_pg_LE::new(v).to_bytes } ],
+      :pghalf_be => [ lambda { |str| Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
+                      lambda { |v| Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ]
     } )
     DATA_ENDIAN[false].merge!( {
       :c => l["c"],
       :C => l["C"],
       :s => l["s<"],
+      :"s<" => l["s<"],
+      :"s>" => l["s>"],
       :S => l["S<"],
+      :"S<" => l["S<"],
+      :"S>" => l["S>"],
+      :v => l["v"],
+      :n => l["n"],
       :l => l["l<"],
+      :"l<" => l["l<"],
+      :"l>" => l["l>"],
       :L => l["L<"],
+      :"L<" => l["L<"],
+      :"L>" => l["L>"],
+      :V => l["V"],
+      :N => l["N"],
       :q => l["q<"],
+      :"q<" => l["q<"],
+      :"q>" => l["q>"],
       :Q => l["Q<"],
+      :"Q<" => l["Q<"],
+      :"Q>" => l["Q>"],
       :F => l["e"],
+      :e => l["e"],
+      :g => l["g"],
       :D => l["E"],
+      :E => l["E"],
+      :G => l["G"],
       :"a*" => l["a*"],
       :half => [ lambda { |str| Flt::IEEE_binary16::from_bytes(str).to(Float) },
                  lambda { |v| Flt::IEEE_binary16::new(v).to_bytes } ],
+      :half_le => [ lambda { |str| Flt::IEEE_binary16_LE::from_bytes(str).to(Float) },
+                    lambda { |v| Flt::IEEE_binary16_LE::new(v).to_bytes } ],
+      :half_be => [ lambda { |str| Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
+                    lambda { |v| Flt::IEEE_binary16_BE::new(v).to_bytes } ],
       :pghalf => [ lambda { |str| Flt::IEEE_binary16_pg::from_bytes(str).to(Float) },
-                   lambda { |v| Flt::IEEE_binary16_pg::new(v).to_bytes } ]
+                   lambda { |v| Flt::IEEE_binary16_pg::new(v).to_bytes } ],
+      :pghalf_le => [ lambda { |str| Flt::IEEE_binary16_pg_LE::from_bytes(str).to(Float) },
+                      lambda { |v| Flt::IEEE_binary16_pg_LE::new(v).to_bytes } ],
+      :pghalf_be => [ lambda { |str| Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
+                      lambda { |v| Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ]
     } )
 
 
@@ -171,15 +275,35 @@ EOF
     create_scalar_type(:c)
     create_scalar_type(:C)
     create_scalar_type(:s)
+    create_scalar_type(:"s<")
+    create_scalar_type(:"s>")
     create_scalar_type(:S)
+    create_scalar_type(:"S<")
+    create_scalar_type(:"S>")
     create_scalar_type(:l)
+    create_scalar_type(:"l<")
+    create_scalar_type(:"l>")
     create_scalar_type(:L)
+    create_scalar_type(:"L<")
+    create_scalar_type(:"L>")
     create_scalar_type(:q)
+    create_scalar_type(:"q<")
+    create_scalar_type(:"q>")
     create_scalar_type(:Q)
+    create_scalar_type(:"Q<")
+    create_scalar_type(:"Q>")
     create_scalar_type(:F)
+    create_scalar_type(:e)
+    create_scalar_type(:g)
     create_scalar_type(:D)
+    create_scalar_type(:E)
+    create_scalar_type(:G)
     create_scalar_type(:half)
+    create_scalar_type(:half_le)
+    create_scalar_type(:half_be)
     create_scalar_type(:pghalf)
+    create_scalar_type(:pghalf_le)
+    create_scalar_type(:pghalf_be)
 
     def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil)
       sym = (length ? :"a#{length}" : :"a*")
