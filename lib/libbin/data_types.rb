@@ -88,65 +88,79 @@ module LibBin
                    lambda { |v| Flt::IEEE_binary16_pg::new(v).to_bytes } ]
     } )
 
+
+    class Scalar
+
+      def self.size(*args)
+        @size
+      end
+
+      def self.init(symbol)
+        @symbol = symbol
+        @size = DATA_SIZES[symbol]
+        @rl_be, @sl_be = DATA_ENDIAN[true][symbol]
+        @rl_le, @sl_be = DATA_ENDIAN[false][symbol]
+      end
+
+      def self.load(input,  input_big = LibBin::default_big?, _ = nil, _ = nil)
+        str = (@size < 0 ? input.readline("\x00") : input.read(@size))
+        input_big ? @rl_be[str] : @rl_le[str]
+      end
+
+      def self.dump(value, output, output_big = LibBin::default_big?, _ = nil, _ = nil)
+        str = (output_big ? @sl_be[value] : @sl_le[value])
+        output.write(str)
+      end
+
+      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big, _ = nil, _ = nil)
+        str = (@size < 0 ? input.readline("\x00") : input.read(@size))
+        value = (input_big ? @rl_be[str] : @rl_le[str])
+        str = (output_big ? @sl_be[value] : @sl_le[value])
+        output.write(str)
+        value
+      end
+
+    end
+
     def self.register_field(field, type, count: nil, offset: nil, sequence: false, condition: nil)
       @fields.push([field, type, count, offset, sequence, condition])
       attr_accessor field
     end
 
-    def self.int8( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :c, count: count, offset: offset, sequence: sequence, condition: condition)
+    def self.create_scalar_type(name, symbol)
+      eval <<EOF
+    class #{name} < Scalar
+      init(#{symbol.inspect})
     end
 
-    def self.uint8( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :C, count: count, offset: offset, sequence: sequence, condition: condition)
+    def self.#{name.downcase}(field, count: nil, offset: nil, sequence: false, condition: nil)
+      register_field(field, #{name}, count: count, offset: offset, sequence: sequence, condition: condition)
+    end
+EOF
     end
 
-    def self.int16( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :s, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
+    create_scalar_type(:Int8, :c)
+    create_scalar_type(:UInt8, :C)
+    create_scalar_type(:Int16, :s)
+    create_scalar_type(:UInt16, :S)
+    create_scalar_type(:Int32, :l)
+    create_scalar_type(:UInt32, :L)
+    create_scalar_type(:Int64, :q)
+    create_scalar_type(:UInt64, :Q)
+    create_scalar_type(:Float, :F)
+    create_scalar_type(:Double, :D)
+    create_scalar_type(:Half, :half)
+    create_scalar_type(:PGHalf, :pghalf)
 
-    def self.uint16( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :S, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
-
-    def self.int32( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :l, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
-
-    def self.uint32( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :L, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
-
-    def self.int64( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :q, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
-
-    def self.uint64( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :Q, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
-
-    def self.float( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :F, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
-
-    def self.double( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :D, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
-
-    def self.half( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :half, count: count, offset: offset, sequence: sequence, condition: condition)
-    end
-
-    def self.pghalf( field, count: nil, offset: nil, sequence: false, condition: nil)
-      register_field(field, :pghalf, count: count, offset: offset, sequence: sequence, condition: condition)
+    class Str < Scalar
     end
 
     def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil)
-      if length
-        register_field(field, :"a#{length}", count: count, offset: offset, sequence: sequence, condition: condition)
-      else
-        register_field(field, :"a*", count: count, offset: offset, sequence: sequence, condition: condition)
+      sym = (length ? :"a#{length}" : :"a*")
+      c = Class::new(Str) do
+        init(sym)
       end
+      register_field(field, c, count: count, offset: offset, sequence: sequence, condition: condition)
     end
 
 

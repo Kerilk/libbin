@@ -1,12 +1,7 @@
-def silence_warnings(&block)
-  warn_level = $VERBOSE
-  $VERBOSE = nil
-  result = block.call
-  $VERBOSE = warn_level
-  result
-end
-
-silence_warnings { require 'float-formats' }
+warn_level = $VERBOSE
+$VERBOSE = nil
+require 'float-formats'
+$VERBOSE = warn_level
 
 Flt::IEEE.binary :IEEE_binary16_pg, significand: 9, exponent: 6, bias: 47
 Flt::IEEE.binary :IEEE_binary16_pg_BE, significand: 9, exponent: 6, bias: 47, endianness: :big_endian
@@ -147,300 +142,123 @@ module LibBin
       return decode_expression(type)
     end
 
-    def convert_data_field(field, type, count, offset, sequence, condition)
+    def decode_static_conditions(type, count, offset, sequence, condition)
+      @__offset = nil
+      @__condition = nil
+      @__type = nil
+      @__count = nil
       unless sequence
-        off = decode_seek_offset(offset)
-        return nil if off == false
-        cond = decode_condition(condition)
-        return nil unless cond
-        typ = decode_type(type)
+        @__offset = decode_seek_offset(offset)
+        throw :ignored, nil if @__offset == false
+        @__condition = decode_condition(condition)
+        throw :ignored, nil unless @__condition
+        @__type = decode_type(type)
       end
-      c = decode_count(count)
-      vs = c.times.collect { |it|
-        @__iterator = it
-        if sequence
-          off = decode_seek_offset(offset)
-          cond = decode_condition(condition)
-          if off == false || !cond
-            nil
-          else
-            typ = decode_type(type)
-            typ::convert(@input, @output, @input_big, @output_big, self, it)
-          end
-        else
-          typ::convert(@input, @output, @input_big, @output_big, self, it)
-        end
-      }
+      @__count = decode_count(count)
+    end
+
+    def decode_dynamic_conditions(type, offset, sequence, condition)
+      return true unless sequence
+      @__offset = nil
+      @__condition = nil
+      @__type = nil
+      @__offset = decode_seek_offset(offset)
+      return false if @__offset == false
+      @__condition = decode_condition(condition)
+      return false unless @__condition
+      @__type = decode_type(type)
+      return true
+    end
+
+    def restore_context
       @__iterator = nil
+      @__type = nil
+      @__count = nil
+      @__offset = nil
+      @__condition = nil
+    end
+
+    def convert_field(field, type, count, offset, sequence, condition)
+      decode_static_conditions(type, count, offset, sequence, condition)
+      vs = @__count.times.collect do |it|
+        @__iterator = it
+        if decode_dynamic_conditions(type, offset, sequence, condition)
+          @__type::convert(@input, @output, @input_big, @output_big, self, it)
+        else
+          nil
+        end
+      end
+      restore_context
       vs = vs.first unless count
       vs
     end
 
     def load_field(field, type, count, offset, sequence, condition)
-      unless sequence
-        off = decode_seek_offset(offset)
-        return nil if off == false
-        cond = decode_condition(condition)
-        return nil unless cond
-        typ = decode_type(type)
-        unless typ.kind_of?(Class)
-          rl, _ = DATA_ENDIAN[@input_big][typ]
-          sz = DATA_SIZES[typ]
-        else
-          rl = nil
-          sz = nil
-        end
-      end
-      c = decode_count(count)
-
-      vs = c.times.collect do |it|
+      decode_static_conditions(type, count, offset, sequence, condition)
+      vs = @__count.times.collect do |it|
         @__iterator = it
-        if sequence
-          off = decode_seek_offset(offset)
-          cond = decode_condition(condition)
-          if off == false || !cond
-            nil
-          else
-            typ = decode_type(type)
-            if typ.kind_of?(Class)
-              typ::load(@input, @input_big, self, it)
-            else
-              rl, _ = DATA_ENDIAN[@input_big][typ]
-              sz = DATA_SIZES[typ]
-              s = (sz < 0 ? @input.readline("\x00") : @input.read(sz) )
-              rl[s]
-            end
-          end
-        elsif rl
-          s = (sz < 0 ? @input.readline("\x00") : @input.read(sz) )
-          rl[s]
+        if decode_dynamic_conditions(type, offset, sequence, condition)
+          @__type::load(@input, @input_big, self, it)
         else
-          typ::load(@input, @input_big, self, it)
+          nil
         end
       end
-      @__iterator = nil
-      vs = vs.first unless count
-      send("#{field}=", vs)
-    end
-
-    def dump_data_field(vs, field, type, count, offset, sequence, condition)
-      unless sequence
-        off = decode_seek_offset(offset)
-        return nil if off == false
-        cond = decode_condition(condition)
-      end
-      c = decode_count(count)
-      vs = [vs] unless count
-      vs.each_with_index { |v, it|
-        @__iterator = it
-        if sequence
-          off = decode_seek_offset(offset)
-          cond = decode_condition(condition)
-          if off == false || !cond
-            nil
-          else
-            v.dump(@output, @output_big, self, it)
-          end
-        else
-          v.dump(@output, @output_big, self, it)
-        end
-      }
-      @__iterator = nil
-    end
-
-    def convert_scalar_field(field, type, count, offset, sequence, condition)
-      unless sequence
-        off = decode_seek_offset(offset)
-        return nil if off == false
-        cond = decode_condition(condition)
-        return nil unless cond
-      end
-
-      c = decode_count(count)
-      rl, sl = DATA_ENDIAN[@input_big][type]
-      vs = c.times.collect { |it|
-        @__iterator = it
-        if sequence
-          off = decode_seek_offset(offset)
-          cond = decode_condition(condition)
-          if off == false || !cond
-            nil
-          else
-            sz = DATA_SIZES[type]
-            s = (sz < 0 ? @input.readline("\x00") : @input.read(sz) )
-            v = rl[s]
-            s.reverse! if @input_big != @output_big && type[0] != 'a'
-            @output.write(s)
-            v
-          end
-        else
-          sz = DATA_SIZES[type]
-          s = (sz < 0 ? @input.readline("\x00") : @input.read(sz) )
-          v = rl[s]
-          s.reverse! if @input_big != @output_big && type[0] != 'a'
-          @output.write(s)
-          v
-        end
-      }
-      @__iterator = nil
+      restore_context
       vs = vs.first unless count
       vs
     end
 
-    def dump_scalar_field(vs, field, type, count, offset, sequence, condition)
-      unless sequence
-        off = decode_seek_offset(offset)
-        return nil if off == false
-        cond = decode_condition(condition)
-        return nil unless cond
-      end
-
-      c = decode_count(count)
-      rl, sl = DATA_ENDIAN[@output_big][type]
+    def dump_field(vs, field, type, count, offset, sequence, condition)
+      decode_static_conditions(type, count, offset, sequence, condition)
       vs = [vs] unless count
-      vs.each_with_index { |v, it|
+      vs.each_with_index do |v, it|
         @__iterator = it
-        if sequence
-          off = decode_seek_offset(offset)
-          cond = decode_condition(condition)
-          if off == false || !cond
-            nil
-          else
-            @output.write(sl[v])
-          end
-        else
-          @output.write(sl[v])
+        if decode_dynamic_conditions(type, offset, sequence, condition)
+          @__type::dump(v, @output, @output_big, self, it)
         end
-      }
-      @__iterator = nil
+      end
+      restore_context
     end
 
-    def range_scalar_field(previous_offset, field, type, count, offset, sequence, condition)
-      off = nil
-      unless sequence
-        off = decode_seek_offset(offset)
-        return [nil, nil] if off == false
-        cond = decode_condition(condition)
-        return [nil, nil] unless cond
-      end
-      if off
-        start_offset = off
-        end_offset = off
+    def range_field(previous_offset, field, type, count, offset, sequence, condition)
+      decode_static_conditions(type, count, offset, sequence, condition)
+      vs = send("#{field}")
+
+      if @__offset
+        start_offset = @__offset
+        end_offset = @__offset
       else previous_offset
         start_offset = previous_offset
         end_offset = previous_offset
       end
 
-      c = decode_count(count)
-      s_offset = start_offset
-      e_offset = end_offset
-      c.times { |it|
-        @__iterator = it
-        if sequence
-          off = decode_seek_offset(offset)
-          cond = decode_condition(condition)
-          if off == false || !cond
-            next
-          else
-            if off
-              s_offset = off
-            else
-              s_offset = e_offset
-            end
-            e_offset = s_offset + DATA_SIZES[type]
-            start_offset = s_offset if s_offset < start_offset
-            end_offset = e_offset if e_offset > end_offset
-          end
-        else
-          end_offset += DATA_SIZES[type]
-        end
-      }
-      @__iterator = nil
-      return [start_offset, end_offset]
-    end
-
-    def range_data_field(previous_offset, vs, field, type, count, offset, sequence, condition)
-      off = nil
-      unless sequence
-        off = decode_seek_offset(offset)
-        return [nil, nil] if off == false
-        cond = decode_condition(condition)
-        return [nil, nil] unless cond
-      end
-      if off
-        start_offset = off
-        end_offset = off
-      else previous_offset
-        start_offset = previous_offset
-        end_offset = previous_offset
-      end
-
-      c = decode_count(count)
       s_offset = start_offset
       e_offset = end_offset
       vs = [vs] unless count
       vs.each_with_index { |v, it|
         @__iterator = it
         if sequence
-          off = decode_seek_offset(offset)
-          cond = decode_condition(condition)
-          if off == false || !cond
+          @__offset = decode_seek_offset(offset)
+          @__condition = decode_condition(condition)
+          if @__offset == false || !@__condition
             next
           else
-            if off
-              s_offset = off
+            @__type = decode_type(type)
+            if @__offset
+              s_offset = @__offset
             else
               s_offset = e_offset
             end
-            e_offset = s_offset + v.size(s_offset, self, it)
+            e_offset = s_offset + @__type::size(v, s_offset, self, it)
             start_offset = s_offset if s_offset < start_offset
             end_offset = e_offset if e_offset > end_offset
           end
         else
-          end_offset += v.size(end_offset, self, it)
+          end_offset += @__type::size(v, end_offset, self, it)
         end
       }
-      @__iterator = nil
+      restore_context
       return [start_offset, end_offset]
-    end
-
-    def convert_field(*args)
-      field = args[0]
-      type = args[1]
-      if ( type.kind_of?(Class) && type < DataConverter ) || type.kind_of?(String)
-        vs = convert_data_field(*args)
-      elsif type.kind_of?(Symbol)
-        vs = convert_scalar_field(*args)
-      else
-        raise "Unsupported type: #{type.inspect}!"
-      end
-      send("#{field}=", vs)
-    end
-
-    def dump_field(*args)
-      field = args[0]
-      type = args[1]
-      vs = send("#{field}")
-      if ( type.kind_of?(Class) && type < DataConverter ) || type.kind_of?(String)
-        s = dump_data_field(vs, *args)
-      elsif type.kind_of?(Symbol)
-        s = dump_scalar_field(vs, *args)
-      else
-        raise "Unsupported type: #{type.inspect}!"
-      end
-    end
-
-    def range_field(previous_offset, *args)
-      field = args[0]
-      type = args[1]
-      vs = send("#{field}")
-      if ( type.kind_of?(Class) && type < DataConverter ) || type.kind_of?(String)
-        range_data_field(previous_offset, vs, *args)
-      elsif type.kind_of?(Symbol)
-        range_scalar_field(previous_offset, *args)
-      else
-        raise "Unsupported type: #{type.inspect}!"
-      end
     end
 
     def size(previous_offset = 0, parent = nil, index = nil)
@@ -449,7 +267,11 @@ module LibBin
       last_offset = -1
       size = 0
       self.class.instance_variable_get(:@fields).each { |args|
-        start_offset, end_offset = range_field(previous_offset, *args)
+        res = catch(:ignored) do
+          range_field(previous_offset, *args)
+        end
+        next unless res
+        start_offset, end_offset = res
         first_offset = start_offset if start_offset && start_offset < first_offset
         last_offset = end_offset if end_offset && end_offset > last_offset
         previous_offset = end_offset if end_offset
@@ -461,7 +283,10 @@ module LibBin
     def convert_fields
       self.class.instance_variable_get(:@fields).each { |args|
         begin
-          convert_field(*args)
+          vs = catch(:ignored) do
+            convert_field(*args)
+          end
+          send("#{args[0]}=", vs)
         rescue
           STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
           raise
@@ -473,7 +298,10 @@ module LibBin
     def load_fields
       self.class.instance_variable_get(:@fields).each { |args|
         begin
-          load_field(*args)
+          vs = catch(:ignored) do
+            load_field(*args)
+          end
+          send("#{args[0]}=", vs)
         rescue
           STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
           raise
@@ -485,7 +313,10 @@ module LibBin
     def dump_fields
       self.class.instance_variable_get(:@fields).each { |args|
         begin
-          dump_field(*args)
+          vs = send("#{args[0]}")
+          catch(:ignored) do
+            dump_field(vs, *args)
+          end
         rescue
           STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
           raise
@@ -525,6 +356,14 @@ module LibBin
       h = self::new
       h.load(input, input_big, parent, index)
       h
+    end
+
+    def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil)
+      value.dump(output, output_big, parent, index)
+    end
+
+    def self.size(value, previous_offset = 0, parent = nil, index = nil)
+      value.size(previous_offset, parent, index)
     end
 
   end
