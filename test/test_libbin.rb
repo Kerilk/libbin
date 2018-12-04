@@ -26,6 +26,46 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def test_forced_byte_order
+    c = Class::new(LibBin::DataConverter) do
+      int8 :a
+      int8 :b
+      int16_le :c
+      int32_le :d
+      float_le :e
+    end
+
+    [true, false].each { |big|
+      File::open("binary/simple_layout_le.bin") do |f|
+        s = c::load(f, big)
+        assert_equal(1, s.a)
+        assert_equal(0, s.b)
+        assert_equal(2, s.c)
+        assert_equal(3, s.d)
+        assert_equal(4.0, s.e)
+      end
+    }
+
+    c = Class::new(LibBin::DataConverter) do
+      int8 :a
+      int8 :b
+      int16_be :c
+      int32_be :d
+      float_be :e
+    end
+
+    [true, false].each { |big|
+      File::open("binary/simple_layout_be.bin") do |f|
+        s = c::load(f, big)
+        assert_equal(1, s.a)
+        assert_equal(0, s.b)
+        assert_equal(2, s.c)
+        assert_equal(3, s.d)
+        assert_equal(4.0, s.e)
+      end
+    }
+  end
+
   def test_simple_layout
     c = Class::new(LibBin::DataConverter) do
       int8 :a
