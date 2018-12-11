@@ -235,10 +235,6 @@ module LibBin
         @size
       end
 
-      def self.range(value, previous_offset = 0, _ = nil, _ = nil)
-        [previous_offset, previous_offset + @size]
-      end
-
       def self.shape(value, previous_offset = 0, _ = nil, _ = nil)
         DataShape::new(previous_offset, previous_offset + @size)
       end

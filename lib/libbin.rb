@@ -229,27 +229,6 @@ module LibBin
       restore_context
     end
 
-    def range_field(previous_offset, field, type, count, offset, sequence, condition)
-      decode_static_conditions(type, count, offset, sequence, condition)
-      vs = send("#{field}")
-
-      first_offset = Float::INFINITY
-      last_offset = -1
-
-      vs = [vs] unless count
-      vs.each_with_index do |v, it|
-        @__iterator = it
-        if decode_dynamic_conditions(type, offset, sequence, condition)
-          start_offset, end_offset = @__type::range(v, @__cur_position, self, it)
-          first_offset = start_offset if start_offset && start_offset < first_offset
-          last_offset = end_offset if end_offset && end_offset > last_offset
-          @__cur_position = end_offset if end_offset && end_offset > 0
-        end
-      end
-      restore_context
-      return [first_offset, last_offset]
-    end
-
     def shape_field(previous_offset, field, type, count, offset, sequence, condition)
       decode_static_conditions(type, count, offset, sequence, condition)
       vs = send("#{field}")
@@ -271,27 +250,8 @@ module LibBin
       vs
     end
 
-    def range(previous_offset = 0, parent = nil, index = nil)
-      set_size_type(previous_offset, parent, index)
-      first_offset = Float::INFINITY
-      last_offset = -1
-      self.class.instance_variable_get(:@fields).each { |args|
-        res = catch(:ignored) do
-          range_field(previous_offset, *args)
-        end
-        next unless res
-        start_offset, end_offset = res
-        first_offset = start_offset if start_offset && start_offset < first_offset
-        last_offset = end_offset if end_offset && end_offset > last_offset
-        previous_offset = end_offset if end_offset
-      }
-      unset_size_type
-      [first_offset, last_offset]
-    end
-
     def size(previous_offset = 0, parent = nil, index = nil)
-      first_offset, last_offset = range(previous_offset, parent, index)
-      return last_offset - first_offset
+      shape(previous_offset, parent, index).size
     end
 
     def shape(previous_offset = 0, parent = nil, index = nil)
@@ -398,11 +358,7 @@ module LibBin
     end
 
     def self.size(value, previous_offset = 0, parent = nil, index = nil)
-      value.size(previous_offset, parent, index)
-    end
-
-    def self.range(value, previous_offset = 0, parent = nil, index = nil)
-      value.range(previous_offset, parent, index)
+      value.shape(previous_offset, parent, index).size
     end
 
     def self.shape(value, previous_offset = 0, parent = nil, index = nil)
