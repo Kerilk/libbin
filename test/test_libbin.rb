@@ -247,8 +247,8 @@ class LibBinTest < Minitest::Test
         str = s::load(f, big)
         assert_equal(1, str.body.datum1)
         assert_equal(2, str.body.datum2)
-        assert_equal(0x22, str.size)
-        shape = str.shape
+        assert_equal(0x22, str.__size)
+        shape = str.__shape
         assert_equal(0x22, shape.size)
         assert_equal(0x06, shape.header.size)
         assert_equal(0x00, shape.header.first)
@@ -266,8 +266,8 @@ class LibBinTest < Minitest::Test
 
     File::open("binary/simple_array.bin") do |f|
       s = c::load(f)
-      assert_equal(0x10, s.size)
-      shape = s.shape
+      assert_equal(0x10, s.__size)
+      shape = s.__shape
       assert_equal(0x10, shape.size)
       assert_equal(0x0f, shape.a.size)
     end
@@ -284,10 +284,10 @@ class LibBinTest < Minitest::Test
       s = b::load(f)
       assert_equal("Hello", s.h)
       assert_equal("World!\x00", s.w)
-      shape = s.shape
-      assert_equal(0x17, s.size)
-      assert_equal(0x05, s.h.size)
-      assert_equal(0x07, s.w.size)
+      shape = s.__shape
+      assert_equal(0x17, shape.size)
+      assert_equal(0x05, shape.h.size)
+      assert_equal(0x07, shape.w.size)
     end
   end
 

@@ -33,72 +33,72 @@ module LibBin
     attr_reader :__index
     attr_reader :__iterator
     attr_reader :__position
-    def set_convert_type(input, output, input_big, output_big, parent, index)
-      @input_big = input_big
-      @output_big = output_big
-      @input = input
-      @output = output
+    def __set_convert_type(input, output, input_big, output_big, parent, index)
+      @__input_big = input_big
+      @__output_big = output_big
+      @__input = input
+      @__output = output
       @__parent = parent
       @__index = index
       @__position = input.tell
       @__cur_position = @__position
     end
 
-    def set_size_type(position, parent, index)
+    def __set_size_type(position, parent, index)
       @__parent = parent
       @__index = index
       @__position = position
       @__cur_position = @__position
     end
 
-    def set_load_type(input, input_big, parent, index)
-      @input_big = input_big
-      @input = input
+    def __set_load_type(input, input_big, parent, index)
+      @__input_big = input_big
+      @__input = input
       @__parent = parent
       @__index = index
       @__position = input.tell
       @__cur_position = @__position
     end
 
-    def set_dump_type(output, output_big, parent, index)
-      @output_big = output_big
-      @output = output
+    def __set_dump_type(output, output_big, parent, index)
+      @__output_big = output_big
+      @__output = output
       @__parent = parent
       @__index = index
       @__position = output.tell
       @__cur_position = @__position
     end
 
-    def unset_convert_type
-      @input_big = nil
-      @output_big = nil
-      @input = nil
-      @output = nil
+    def __unset_convert_type
+      @__input_big = nil
+      @__output_big = nil
+      @__input = nil
+      @__output = nil
       @__parent = nil
       @__index = nil
       @__position = nil
       @__cur_position = nil
     end
 
-    def unset_size_type
+    def __unset_size_type
       @__parent = nil
       @__index = nil
       @__position = nil
       @__cur_position = nil
     end
 
-    def unset_load_type
-      @input_big = nil
-      @input = nil
+    def __unset_load_type
+      @__input_big = nil
+      @__input = nil
       @__parent = nil
       @__index = nil
       @__position = nil
       @__cur_position = nil
     end
 
-    def unset_dump_type
-      @output_big = nil
-      @output = nil
+    def __unset_dump_type
+      @__output_big = nil
+      @__output = nil
       @__parent = nil
       @__index = nil
       @__position = nil
@@ -109,7 +109,7 @@ module LibBin
       subclass.instance_variable_set(:@fields, [])
     end
 
-    def decode_expression(sym)
+    def __decode_expression(sym)
       case sym
       when Proc
         return sym.call
@@ -121,65 +121,65 @@ module LibBin
       end
     end
 
-    def decode_seek_offset(offset)
+    def __decode_seek_offset(offset)
       if offset
-        offset = decode_expression(offset)
+        offset = __decode_expression(offset)
         return false if offset == 0x0
         @__cur_position = offset
-        @input.seek(offset) if @input
-        @output.seek(offset) if @output
+        @__input.seek(offset) if @__input
+        @__output.seek(offset) if @__output
         return offset
       else
         return nil
       end
     end
 
-    def decode_condition(condition)
+    def __decode_condition(condition)
       return true unless condition
-      return decode_expression(condition)
+      return __decode_expression(condition)
     end
 
-    def decode_count(count)
+    def __decode_count(count)
       if count
-        return decode_expression(count)
+        return __decode_expression(count)
       else
         return 1
       end
     end
 
-    def decode_type(type)
-      return decode_expression(type)
+    def __decode_type(type)
+      return __decode_expression(type)
     end
 
-    def decode_static_conditions(type, count, offset, sequence, condition)
+    def __decode_static_conditions(type, count, offset, sequence, condition)
       @__offset = nil
       @__condition = nil
       @__type = nil
       @__count = nil
       unless sequence
-        @__offset = decode_seek_offset(offset)
+        @__offset = __decode_seek_offset(offset)
         throw :ignored, nil if @__offset == false
-        @__condition = decode_condition(condition)
+        @__condition = __decode_condition(condition)
         throw :ignored, nil unless @__condition
-        @__type = decode_type(type)
+        @__type = __decode_type(type)
       end
-      @__count = decode_count(count)
+      @__count = __decode_count(count)
     end
 
-    def decode_dynamic_conditions(type, offset, sequence, condition)
+    def __decode_dynamic_conditions(type, offset, sequence, condition)
       return true unless sequence
       @__offset = nil
       @__condition = nil
       @__type = nil
-      @__offset = decode_seek_offset(offset)
+      @__offset = __decode_seek_offset(offset)
       return false if @__offset == false
-      @__condition = decode_condition(condition)
+      @__condition = __decode_condition(condition)
       return false unless @__condition
-      @__type = decode_type(type)
+      @__type = __decode_type(type)
       return true
     end
 
-    def restore_context
+    def __restore_context
       @__iterator = nil
       @__type = nil
       @__count = nil
@@ -187,76 +187,76 @@ module LibBin
       @__condition = nil
     end
 
-    def convert_field(field, type, count, offset, sequence, condition)
-      decode_static_conditions(type, count, offset, sequence, condition)
+    def __convert_field(field, type, count, offset, sequence, condition)
+      __decode_static_conditions(type, count, offset, sequence, condition)
       vs = @__count.times.collect do |it|
         @__iterator = it
-        if decode_dynamic_conditions(type, offset, sequence, condition)
-          @__type::convert(@input, @output, @input_big, @output_big, self, it)
+        if __decode_dynamic_conditions(type, offset, sequence, condition)
+          @__type::convert(@__input, @__output, @__input_big, @__output_big, self, it)
         else
           nil
         end
       end
-      restore_context
+      __restore_context
       vs = vs.first unless count
       vs
     end
 
-    def load_field(field, type, count, offset, sequence, condition)
-      decode_static_conditions(type, count, offset, sequence, condition)
+    def __load_field(field, type, count, offset, sequence, condition)
+      __decode_static_conditions(type, count, offset, sequence, condition)
       vs = @__count.times.collect do |it|
         @__iterator = it
-        if decode_dynamic_conditions(type, offset, sequence, condition)
-          @__type::load(@input, @input_big, self, it)
+        if __decode_dynamic_conditions(type, offset, sequence, condition)
+          @__type::load(@__input, @__input_big, self, it)
         else
           nil
         end
       end
-      restore_context
+      __restore_context
       vs = vs.first unless count
       vs
     end
 
-    def dump_field(vs, field, type, count, offset, sequence, condition)
-      decode_static_conditions(type, count, offset, sequence, condition)
+    def __dump_field(vs, field, type, count, offset, sequence, condition)
+      __decode_static_conditions(type, count, offset, sequence, condition)
       vs = [vs] unless count
       vs.each_with_index do |v, it|
         @__iterator = it
-        if decode_dynamic_conditions(type, offset, sequence, condition)
-          @__type::dump(v, @output, @output_big, self, it)
+        if __decode_dynamic_conditions(type, offset, sequence, condition)
+          @__type::dump(v, @__output, @__output_big, self, it)
         end
       end
-      restore_context
+      __restore_context
     end
 
-    def shape_field(vs, previous_offset, kind, field, type, count, offset, sequence, condition)
-      decode_static_conditions(type, count, offset, sequence, condition)
+    def __shape_field(vs, previous_offset, kind, field, type, count, offset, sequence, condition)
+      __decode_static_conditions(type, count, offset, sequence, condition)
       vs = [vs] unless count
       vs = vs.each_with_index.collect do |v, it|
         @__iterator = it
-        if decode_dynamic_conditions(type, offset, sequence, condition)
+        if __decode_dynamic_conditions(type, offset, sequence, condition)
           sh = @__type::shape(v, @__cur_position, self, it, kind)
           @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
           sh
         end
       end
-      restore_context
+      __restore_context
       vs = vs.first unless count
       vs
     end
 
-    def size(previous_offset = 0, parent = nil, index = nil)
-      shape(previous_offset, parent, index, DataRange).size
+    def __size(previous_offset = 0, parent = nil, index = nil)
+      __shape(previous_offset, parent, index, DataRange).size
     end
 
-    def shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
-      set_size_type(previous_offset, parent, index)
+    def __shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
+      __set_size_type(previous_offset, parent, index)
       members = {}
       self.class.instance_variable_get(:@fields).each { |args|
         begin
           vs = send("#{args[0]}")
           member = catch(:ignored) do
-            shape_field(vs, previous_offset, kind, *args)
+            __shape_field(vs, previous_offset, kind, *args)
           end
           members[args[0]] = member
         rescue
@@ -264,16 +264,16 @@ module LibBin
           raise
         end
       }
-      unset_size_type
+      __unset_size_type
       return nil if members.values.flatten.compact.size <= 0
       kind::new(members)
     end
 
-    def convert_fields
+    def __convert_fields
       self.class.instance_variable_get(:@fields).each { |args|
         begin
           vs = catch(:ignored) do
-            convert_field(*args)
+            __convert_field(*args)
           end
           send("#{args[0]}=", vs)
         rescue
@@ -284,11 +284,11 @@ module LibBin
       self
     end
 
-    def load_fields
+    def __load_fields
       self.class.instance_variable_get(:@fields).each { |args|
         begin
           vs = catch(:ignored) do
-            load_field(*args)
+            __load_field(*args)
           end
           send("#{args[0]}=", vs)
         rescue
@@ -299,12 +299,12 @@ module LibBin
       self
     end
 
-    def dump_fields
+    def __dump_fields
       self.class.instance_variable_get(:@fields).each { |args|
         begin
           vs = send("#{args[0]}")
           catch(:ignored) do
-            dump_field(vs, *args)
+            __dump_field(vs, *args)
           end
         rescue
           STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
@@ -314,49 +314,49 @@ module LibBin
       self
     end
 
-    def convert(input, output, input_big, output_big, parent = nil, index = nil)
-      set_convert_type(input, output, input_big, output_big, parent, index)
-      convert_fields
-      unset_convert_type
+    def __convert(input, output, input_big, output_big, parent = nil, index = nil)
+      __set_convert_type(input, output, input_big, output_big, parent, index)
+      __convert_fields
+      __unset_convert_type
       self
     end
 
-    def load(input, input_big, parent = nil, index = nil)
-      set_load_type(input, input_big, parent, index)
-      load_fields
-      unset_load_type
+    def __load(input, input_big, parent = nil, index = nil)
+      __set_load_type(input, input_big, parent, index)
+      __load_fields
+      __unset_load_type
       self
     end
 
-    def dump(output, output_big, parent = nil, index = nil)
-      set_dump_type(output, output_big, parent, index)
-      dump_fields
-      unset_dump_type
+    def __dump(output, output_big, parent = nil, index = nil)
+      __set_dump_type(output, output_big, parent, index)
+      __dump_fields
+      __unset_dump_type
       self
     end
       
     def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big?, parent = nil, index = nil)
       h = self::new
-      h.convert(input, output, input_big, output_big, parent, index)
+      h.__convert(input, output, input_big, output_big, parent, index)
       h
     end
 
     def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil)
       h = self::new
-      h.load(input, input_big, parent, index)
+      h.__load(input, input_big, parent, index)
       h
     end
 
     def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil)
-      value.dump(output, output_big, parent, index)
+      value.__dump(output, output_big, parent, index)
     end
 
     def self.size(value, previous_offset = 0, parent = nil, index = nil)
-      value.shape(previous_offset, parent, index).size
+      value.__shape(previous_offset, parent, index).size
     end
 
     def self.shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape)
-      value.shape(previous_offset, parent, index, kind = DataShape)
+      value.__shape(previous_offset, parent, index, kind = DataShape)
     end
 
   end
