@@ -274,4 +274,21 @@ class LibBinTest < Minitest::Test
 
   end
 
+  def test_strings
+    b = Class::new(LibBin::DataConverter) do
+      string :h, 5
+      string :w, offset: 0x10
+    end
+
+    File::open("binary/test_string.bin") do |f|
+      s = b::load(f)
+      assert_equal("Hello", s.h)
+      assert_equal("World!\x00", s.w)
+      shape = s.shape
+      assert_equal(0x17, s.size)
+      assert_equal(0x05, s.h.size)
+      assert_equal(0x07, s.w.size)
+    end
+  end
+
 end

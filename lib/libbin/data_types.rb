@@ -332,7 +332,7 @@ module LibBin
 
       def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape)
         if @size < 0
-          kind::new(previous_offset, previous_offset + value.size)
+          kind::new(previous_offset, previous_offset + value.size - 1)
         else
           kind::new(previous_offset, previous_offset + @size - 1)
         end
