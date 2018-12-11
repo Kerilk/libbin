@@ -122,29 +122,23 @@ module LibBin
     end
 
     def __decode_seek_offset(offset)
-      if offset
-        offset = __decode_expression(offset)
-        return false if offset == 0x0
-        @__cur_position = offset
-        @__input.seek(offset) if @__input
-        @__output.seek(offset) if @__output
-        return offset
-      else
-        return nil
-      end
+      return nil unless offset
+      offset = __decode_expression(offset)
+      return false if offset == 0x0
+      @__cur_position = offset
+      @__input.seek(offset) if @__input
+      @__output.seek(offset) if @__output
+      offset
     end
 
     def __decode_condition(condition)
       return true unless condition
-      return __decode_expression(condition)
+      __decode_expression(condition)
     end
 
     def __decode_count(count)
-      if count
-        return __decode_expression(count)
-      else
-        return 1
-      end
+      return 1 unless count
+      __decode_expression(count)
     end
 
     def __decode_type(type)
@@ -252,15 +246,15 @@ module LibBin
     def __shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
       __set_size_type(previous_offset, parent, index)
       members = {}
-      self.class.instance_variable_get(:@fields).each { |args|
+      self.class.instance_variable_get(:@fields).each { |name, type, *args|
         begin
-          vs = send("#{args[0]}")
+          vs = send(name)
           member = catch(:ignored) do
-            __shape_field(vs, previous_offset, kind, *args)
+            __shape_field(vs, previous_offset, kind, name, type, *args)
           end
-          members[args[0]] = member
+          members[name] = member
         rescue
-          STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
+          STDERR.puts "#{self.class}: #{name}(#{type})"
           raise
         end
       }
@@ -270,14 +264,14 @@ module LibBin
     end
 
     def __convert_fields
-      self.class.instance_variable_get(:@fields).each { |args|
+      self.class.instance_variable_get(:@fields).each { |name, type, *args|
         begin
           vs = catch(:ignored) do
-            __convert_field(*args)
+            __convert_field(name, type, *args)
           end
-          send("#{args[0]}=", vs)
+          send("#{name}=", vs)
         rescue
-          STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
+          STDERR.puts "#{self.class}: #{name}(#{type})"
           raise
         end
       }
@@ -285,14 +279,14 @@ module LibBin
     end
 
     def __load_fields
-      self.class.instance_variable_get(:@fields).each { |args|
+      self.class.instance_variable_get(:@fields).each { |name, type, *args|
         begin
           vs = catch(:ignored) do
-            __load_field(*args)
+            __load_field(name, type, *args)
           end
-          send("#{args[0]}=", vs)
+          send("#{name}=", vs)
         rescue
-          STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
+          STDERR.puts "#{self.class}: #{name}(#{type})"
           raise
         end
       }
@@ -300,14 +294,14 @@ module LibBin
     end
 
     def __dump_fields
-      self.class.instance_variable_get(:@fields).each { |args|
+      self.class.instance_variable_get(:@fields).each { |name, type, *args|
         begin
-          vs = send("#{args[0]}")
+          vs = send(name)
           catch(:ignored) do
-            __dump_field(vs, *args)
+            __dump_field(vs, name, type, *args)
           end
         rescue
-          STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
+          STDERR.puts "#{self.class}: #{name}(#{type})"
           raise
         end
       }
