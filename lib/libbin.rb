@@ -233,15 +233,12 @@ module LibBin
       decode_static_conditions(type, count, offset, sequence, condition)
       vs = send("#{field}")
 
-      first_offset = Float::INFINITY
-      last_offset = -1
-
       vs = [vs] unless count
       vs = vs.each_with_index.collect do |v, it|
         @__iterator = it
         if decode_dynamic_conditions(type, offset, sequence, condition)
           sh = @__type::shape(v, @__cur_position, self, it)
-          @__cur_position = sh.last if sh.last && sh.last > 0
+          @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
           sh
         end
       end
@@ -256,8 +253,6 @@ module LibBin
 
     def shape(previous_offset = 0, parent = nil, index = nil)
       set_size_type(previous_offset, parent, index)
-      first_offset = Float::INFINITY
-      last_offset = -1
       members = {}
       self.class.instance_variable_get(:@fields).each { |args|
         member = catch(:ignored) do
@@ -267,12 +262,8 @@ module LibBin
         members[args[0]] = member
       }
       unset_size_type
-      start_offset = members.values.flatten.compact.collect(&:first).min
-      end_offset = members.values.flatten.compact.collect(&:last).max
-      first_offset = start_offset if start_offset && start_offset < first_offset
-      last_offset = end_offset if end_offset && end_offset > last_offset
-      return nil if last_offset - first_offset < 0
-      DataShape::new(first_offset, last_offset, members)
+      return nil if members.values.flatten.compact.size <= 0
+      DataShape::new(members)
     end
 
     def convert_fields

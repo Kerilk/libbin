@@ -242,7 +242,7 @@ class LibBinTest < Minitest::Test
       register_field :header, h
       register_field :body, b
     end
-    [false].each { |big|
+    [false, true].each { |big|
       File::open("binary/test_size_#{SUFFIX[big]}.bin") do |f|
         str = s::load(f, big)
         assert_equal(1, str.body.datum1)
@@ -251,9 +251,26 @@ class LibBinTest < Minitest::Test
         shape = str.shape
         assert_equal(0x22, shape.size)
         assert_equal(0x06, shape.header.size)
+        assert_equal(0x00, shape.header.first)
+        assert_equal(0x05, shape.header.last)
         assert_equal(0x12, shape.body.size)
+        assert_equal(0x10, shape.body.first)
+        assert_equal(0x21, shape.body.last)
       end
     }
+
+    c = Class::new(LibBin::DataConverter) do
+      int8 :num
+      int8 :a, count: 'num'
+    end
+
+    File::open("binary/simple_array.bin") do |f|
+      s = c::load(f)
+      shape = s.shape
+      assert_equal(0x10, shape.size)
+      assert_equal(0x0f, shape.a.size)
+    end
+
   end
 
 end

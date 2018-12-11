@@ -1,22 +1,45 @@
 module LibBin
 
+  module RangeRefinement
+    refine Range do
+      def +(other)
+        Range::new(first <= other.first ? first : other.first,
+                   last >= other.last ? last : other.last,
+                   exclude_end?)
+      end
+    end
+  end
+
   class DataShape
-    attr_reader :first, :last
+    using RangeRefinement
+    attr_reader :range
     attr_reader :members
 
     def method_missing(m, *arg, &block)
-      return @members[m] if @members[m]
+      return @members[m] if @members && @members[m]
       super
     end
 
-    def initialize(first, last, members = {})
-      @first = first
-      @last = last
-      @members = members
+    def initialize(*args)
+      if args.length == 2
+        @range = Range::new(args[0], args[1])
+        @members = nil
+      else
+        @members = args[0]
+        @range = @members.values.flatten.compact.collect(&:range).reduce { |memo, obj| memo + obj }
+      end
+    end
+
+    def first
+      @range.first
+    end
+
+    def last
+      @range.last
     end
 
     def size
-      @last - @first
+      @range.size
     end
 
   end
@@ -236,7 +259,7 @@ module LibBin
       end
 
       def self.shape(value, previous_offset = 0, _ = nil, _ = nil)
-        DataShape::new(previous_offset, previous_offset + @size)
+        DataShape::new(previous_offset, previous_offset + @size - 1)
       end
 
       def self.init(symbol)
