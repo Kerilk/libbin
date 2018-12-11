@@ -229,15 +229,13 @@ module LibBin
       restore_context
     end
 
-    def shape_field(previous_offset, field, type, count, offset, sequence, condition)
+    def shape_field(vs, previous_offset, kind, field, type, count, offset, sequence, condition)
       decode_static_conditions(type, count, offset, sequence, condition)
-      vs = send("#{field}")
-
       vs = [vs] unless count
       vs = vs.each_with_index.collect do |v, it|
         @__iterator = it
         if decode_dynamic_conditions(type, offset, sequence, condition)
-          sh = @__type::shape(v, @__cur_position, self, it)
+          sh = @__type::shape(v, @__cur_position, self, it, kind)
           @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
           sh
         end
@@ -248,22 +246,27 @@ module LibBin
     end
 
     def size(previous_offset = 0, parent = nil, index = nil)
-      shape(previous_offset, parent, index).size
+      shape(previous_offset, parent, index, DataRange).size
     end
 
-    def shape(previous_offset = 0, parent = nil, index = nil)
+    def shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
       set_size_type(previous_offset, parent, index)
       members = {}
       self.class.instance_variable_get(:@fields).each { |args|
-        member = catch(:ignored) do
-          shape_field(previous_offset, *args)
+        begin
+          vs = send("#{args[0]}")
+          member = catch(:ignored) do
+            shape_field(vs, previous_offset, kind, *args)
+          end
+          members[args[0]] = member
+        rescue
+          STDERR.puts "#{self.class}: #{args[0]}(#{args[1]})"
+          raise
         end
-        next unless member
-        members[args[0]] = member
       }
       unset_size_type
       return nil if members.values.flatten.compact.size <= 0
-      DataShape::new(members)
+      kind::new(members)
     end
 
     def convert_fields
@@ -352,8 +355,8 @@ module LibBin
       value.shape(previous_offset, parent, index).size
     end
 
-    def self.shape(value, previous_offset = 0, parent = nil, index = nil)
-      value.shape(previous_offset, parent, index)
+    def self.shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape)
+      value.shape(previous_offset, parent, index, kind = DataShape)
     end
 
   end

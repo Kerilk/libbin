@@ -44,6 +44,32 @@ module LibBin
 
   end
 
+  class DataRange
+    using RangeRefinement
+    attr_reader :range
+
+    def initialize(*args)
+      if args.length == 2
+        @range = Range::new(args[0], args[1])
+      else
+        @range = args[0].values.flatten.compact.collect(&:range).reduce { |memo, obj| memo + obj }
+      end
+    end
+
+    def first
+      @range.first
+    end
+
+    def last
+      @range.last
+    end
+
+    def size
+      @range.size
+    end
+
+  end
+
   class DataConverter
 
     rl = lambda { |type, str|
@@ -258,8 +284,8 @@ module LibBin
         @size
       end
 
-      def self.shape(value, previous_offset = 0, _ = nil, _ = nil)
-        DataShape::new(previous_offset, previous_offset + @size - 1)
+      def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape)
+        kind::new(previous_offset, previous_offset + @size - 1)
       end
 
       def self.init(symbol)
@@ -302,6 +328,14 @@ module LibBin
         str = (output_big ? @sl_be[value] : @sl_le[value])
         output.write(str)
         value
+      end
+
+      def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape)
+        if @size < 0
+          kind::new(previous_offset, previous_offset + value.size)
+        else
+          kind::new(previous_offset, previous_offset + @size - 1)
+        end
       end
 
     end

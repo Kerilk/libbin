@@ -266,6 +266,7 @@ class LibBinTest < Minitest::Test
 
     File::open("binary/simple_array.bin") do |f|
       s = c::load(f)
+      assert_equal(0x10, s.size)
       shape = s.shape
       assert_equal(0x10, shape.size)
       assert_equal(0x0f, shape.a.size)
