@@ -41,12 +41,14 @@ module LibBin
       @__parent = parent
       @__index = index
       @__position = input.tell
+      @__cur_position = @__position
     end
 
     def set_size_type(position, parent, index)
       @__parent = parent
       @__index = index
       @__position = position
+      @__cur_position = @__position
     end
 
     def set_load_type(input, input_big, parent, index)
@@ -55,6 +57,7 @@ module LibBin
       @__parent = parent
       @__index = index
       @__position = input.tell
+      @__cur_position = @__position
     end
 
     def set_dump_type(output, output_big, parent, index)
@@ -63,6 +66,7 @@ module LibBin
       @__parent = parent
       @__index = index
       @__position = output.tell
+      @__cur_position = @__position
     end
 
     def unset_convert_type
@@ -73,12 +77,14 @@ module LibBin
       @__parent = nil
       @__index = nil
       @__position = nil
+      @__cur_position = nil
     end
 
     def unset_size_type
       @__parent = nil
       @__index = nil
       @__position = nil
+      @__cur_position = nil
     end
 
     def unset_load_type
@@ -87,6 +93,7 @@ module LibBin
       @__parent = nil
       @__index = nil
       @__position = nil
+      @__cur_position = nil
     end
 
     def unset_dump_type
@@ -95,6 +102,7 @@ module LibBin
       @__parent = nil
       @__index = nil
       @__position = nil
+      @__cur_position = nil
     end
 
     def self.inherited(subclass)
@@ -117,6 +125,7 @@ module LibBin
       if offset
         offset = decode_expression(offset)
         return false if offset == 0x0
+        @__cur_position = offset
         @input.seek(offset) if @input
         @output.seek(offset) if @output
         return offset
@@ -224,47 +233,48 @@ module LibBin
       decode_static_conditions(type, count, offset, sequence, condition)
       vs = send("#{field}")
 
-      if @__offset
-        start_offset = @__offset
-        end_offset = @__offset
-      else previous_offset
-        start_offset = previous_offset
-        end_offset = previous_offset
-      end
+      first_offset = Float::INFINITY
+      last_offset = -1
 
-      s_offset = start_offset
-      e_offset = end_offset
       vs = [vs] unless count
-      vs.each_with_index { |v, it|
+      vs.each_with_index do |v, it|
         @__iterator = it
-        if sequence
-          decode_dynamic_conditions(type, offset, sequence, condition)
-          if @__offset == false || !@__condition
-            next
-          else
-            @__type = decode_type(type)
-            if @__offset
-              s_offset = @__offset
-            else
-              s_offset = e_offset
-            end
-            e_offset = s_offset + @__type::size(v, s_offset, self, it)
-            start_offset = s_offset if s_offset < start_offset
-            end_offset = e_offset if e_offset > end_offset
-          end
-        else
-          end_offset += @__type::size(v, end_offset, self, it)
+        if decode_dynamic_conditions(type, offset, sequence, condition)
+          start_offset, end_offset = @__type::range(v, @__cur_position, self, it)
+          first_offset = start_offset if start_offset && start_offset < first_offset
+          last_offset = end_offset if end_offset && end_offset > last_offset
+          @__cur_position = end_offset if end_offset && end_offset > 0
         end
-      }
+      end
       restore_context
-      return [start_offset, end_offset]
+      return [first_offset, last_offset]
     end
 
-    def size(previous_offset = 0, parent = nil, index = nil)
+    def shape_field(previous_offset, field, type, count, offset, sequence, condition)
+      decode_static_conditions(type, count, offset, sequence, condition)
+      vs = send("#{field}")
+
+      first_offset = Float::INFINITY
+      last_offset = -1
+
+      vs = [vs] unless count
+      vs = vs.each_with_index.collect do |v, it|
+        @__iterator = it
+        if decode_dynamic_conditions(type, offset, sequence, condition)
+          sh = @__type::shape(v, @__cur_position, self, it)
+          @__cur_position = sh.last if sh.last && sh.last > 0
+          sh
+        end
+      end
+      restore_context
+      vs = vs.first unless count
+      vs
+    end
+
+    def range(previous_offset = 0, parent = nil, index = nil)
       set_size_type(previous_offset, parent, index)
       first_offset = Float::INFINITY
       last_offset = -1
-      size = 0
       self.class.instance_variable_get(:@fields).each { |args|
         res = catch(:ignored) do
           range_field(previous_offset, *args)
@@ -276,7 +286,33 @@ module LibBin
         previous_offset = end_offset if end_offset
       }
       unset_size_type
+      [first_offset, last_offset]
+    end
+
+    def size(previous_offset = 0, parent = nil, index = nil)
+      first_offset, last_offset = range(previous_offset, parent, index)
       return last_offset - first_offset
+    end
+
+    def shape(previous_offset = 0, parent = nil, index = nil)
+      set_size_type(previous_offset, parent, index)
+      first_offset = Float::INFINITY
+      last_offset = -1
+      members = {}
+      self.class.instance_variable_get(:@fields).each { |args|
+        member = catch(:ignored) do
+          shape_field(previous_offset, *args)
+        end
+        next unless member
+        members[args[0]] = member
+      }
+      unset_size_type
+      start_offset = members.values.flatten.compact.collect(&:first).min
+      end_offset = members.values.flatten.compact.collect(&:last).max
+      first_offset = start_offset if start_offset && start_offset < first_offset
+      last_offset = end_offset if end_offset && end_offset > last_offset
+      return nil if last_offset - first_offset < 0
+      DataShape::new(first_offset, last_offset, members)
     end
 
     def convert_fields
@@ -363,6 +399,14 @@ module LibBin
 
     def self.size(value, previous_offset = 0, parent = nil, index = nil)
       value.size(previous_offset, parent, index)
+    end
+
+    def self.range(value, previous_offset = 0, parent = nil, index = nil)
+      value.range(previous_offset, parent, index)
+    end
+
+    def self.shape(value, previous_offset = 0, parent = nil, index = nil)
+      value.shape(previous_offset, parent, index)
     end
 
   end

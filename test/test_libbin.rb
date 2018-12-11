@@ -229,4 +229,31 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def test_size
+    h = Class::new(LibBin::DataConverter) do
+      int32 :offset1
+      int16 :offset2
+    end
+    b = Class::new(LibBin::DataConverter) do
+      int32 :datum1, offset: '..\header.offset1'
+      int16 :datum2, offset: '..\header.offset2'
+    end
+    s = Class::new(LibBin::DataConverter) do
+      register_field :header, h
+      register_field :body, b
+    end
+    [false].each { |big|
+      File::open("binary/test_size_#{SUFFIX[big]}.bin") do |f|
+        str = s::load(f, big)
+        assert_equal(1, str.body.datum1)
+        assert_equal(2, str.body.datum2)
+        assert_equal(0x22, str.size)
+        shape = str.shape
+        assert_equal(0x22, shape.size)
+        assert_equal(0x06, shape.header.size)
+        assert_equal(0x12, shape.body.size)
+      end
+    }
+  end
+
 end

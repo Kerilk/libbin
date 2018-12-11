@@ -1,5 +1,26 @@
 module LibBin
 
+  class DataShape
+    attr_reader :first, :last
+    attr_reader :members
+
+    def method_missing(m, *arg, &block)
+      return @members[m] if @members[m]
+      super
+    end
+
+    def initialize(first, last, members = {})
+      @first = first
+      @last = last
+      @members = members
+    end
+
+    def size
+      @last - @first
+    end
+
+  end
+
   class DataConverter
 
     rl = lambda { |type, str|
@@ -15,42 +36,42 @@ module LibBin
     }
 
     SCALAR_TYPES = {
-      :c => :Int8,
-      :C => :UInt8,
-      :s => :Int16,
-      :"s<" => :Int16_LE,
-      :"s>" => :Int16_BE,
-      :S => :UInt16,
-      :"S<" => :UInt16_LE,
-      :"S>" => :UInt16_BE,
-      :v => :UInt16_LE,
-      :n => :UInt16_BE,
-      :l => :Int32,
-      :"l<" => :Int32_LE,
-      :"l>" => :Int32_BE,
-      :L => :UInt32,
-      :"L<" => :UInt32_LE,
-      :"L>" => :UInt32_BE,
-      :V => :UInt32_LE,
-      :N => :UInt32_BE,
-      :q => :Int64,
-      :"q<" => :Int64_LE,
-      :"q>" => :Int64_BE,
-      :Q => :UInt64,
-      :"Q<" => :UInt64_LE,
-      :"Q>" => :UInt64_BE,
-      :F => :Float,
-      :e => :Float_LE,
-      :g => :Float_BE,
-      :D => :Double,
-      :E => :Double_LE,
-      :G => :Double_BE,
-      :half => :Half,
-      :half_le => :Half_LE,
-      :half_be => :Half_BE,
-      :pghalf => :PGHalf,
-      :pghalf_le => :PGHalf_LE,
-      :pghalf_be => :PGHalf_BE
+      :c => [:Int8, :int8],
+      :C => [:UInt8, :uint8],
+      :s => [:Int16, :int16],
+      :"s<" => [:Int16_LE, :int16_le],
+      :"s>" => [:Int16_BE, :int16_be],
+      :S => [:UInt16, :uint16],
+      :"S<" => [:UInt16_LE, :uint16_le],
+      :"S>" => [:UInt16_BE, :uint16_be],
+      :v => [:UInt16_LE, :uint16_le],
+      :n => [:UInt16_BE, :uint16_be],
+      :l => [:Int32, :int32],
+      :"l<" => [:Int32_LE, :int32_le],
+      :"l>" => [:Int32_BE, :int32_be],
+      :L => [:UInt32, :uint32],
+      :"L<" => [:UInt32_LE, :uint32_le],
+      :"L>" => [:UInt32_BE, :uint32_be],
+      :V => [:UInt32_LE, :uint32_le],
+      :N => [:UInt32_BE, :uint32_be],
+      :q => [:Int64, :int64],
+      :"q<" => [:Int64_LE, :int64_le],
+      :"q>" => [:Int64_BE, :int64_be],
+      :Q => [:UInt64, :uint64],
+      :"Q<" => [:UInt64_LE, :uint64_le],
+      :"Q>" => [:UInt64_BE, :uint64_be],
+      :F => [:Flt, :float],
+      :e => [:Flt_LE, :float_le],
+      :g => [:Flt_BE, :float_be],
+      :D => [:Double, :double],
+      :E => [:Double_LE, :double_le],
+      :G => [:Double_BE, :double_be],
+      :half => [:Half, :half],
+      :half_le => [:Half_LE, :half_le],
+      :half_be => [:Half_BE, :half_be],
+      :pghalf => [:PGHalf, :pghalf],
+      :pghalf_le => [:PGHalf_LE, :pghalf_le],
+      :pghalf_be => [:PGHalf_BE, :pghalf_be]
      }
 
     DATA_SIZES = Hash::new { |h,k|
@@ -214,6 +235,14 @@ module LibBin
         @size
       end
 
+      def self.range(value, previous_offset = 0, _ = nil, _ = nil)
+        [previous_offset, previous_offset + @size]
+      end
+
+      def self.shape(value, previous_offset = 0, _ = nil, _ = nil)
+        DataShape::new(previous_offset, previous_offset + @size)
+      end
+
       def self.init(symbol)
         @symbol = symbol
         @size = DATA_SIZES[symbol]
@@ -221,7 +250,7 @@ module LibBin
         @rl_le, @sl_be = DATA_ENDIAN[false][symbol]
       end
 
-      def self.load(input,  input_big = LibBin::default_big?, _ = nil, _ = nil)
+      def self.load(input, input_big = LibBin::default_big?, _ = nil, _ = nil)
         str = input.read(@size)
         input_big ? @rl_be[str] : @rl_le[str]
       end
@@ -264,7 +293,7 @@ module LibBin
           c = Class::new(Str) do init(sym) end
           @fields.push([field, c, count, offset, sequence, condition])
         else
-          @fields.push([field, const_get(SCALAR_TYPES[type]), count, offset, sequence, condition])
+          @fields.push([field, const_get(SCALAR_TYPES[type][0]), count, offset, sequence, condition])
         end
       else
         @fields.push([field, type, count, offset, sequence, condition])
@@ -273,14 +302,14 @@ module LibBin
     end
 
     def self.create_scalar_type(symbol)
-      name = SCALAR_TYPES[symbol]
+      klassname, name = SCALAR_TYPES[symbol]
       eval <<EOF
-    class #{name} < Scalar
+    class #{klassname} < Scalar
       init(#{symbol.inspect})
     end
 
-    def self.#{name.downcase}(field, count: nil, offset: nil, sequence: false, condition: nil)
-      @fields.push([field, #{name}, count, offset, sequence, condition])
+    def self.#{name}(field, count: nil, offset: nil, sequence: false, condition: nil)
+      @fields.push([field, #{klassname}, count, offset, sequence, condition])
       attr_accessor field
     end
 EOF
