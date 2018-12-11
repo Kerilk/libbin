@@ -222,13 +222,30 @@ module LibBin
       end
 
       def self.load(input,  input_big = LibBin::default_big?, _ = nil, _ = nil)
-        str = (@size < 0 ? input.readline("\x00") : input.read(@size))
+        str = input.read(@size)
         input_big ? @rl_be[str] : @rl_le[str]
       end
 
       def self.dump(value, output, output_big = LibBin::default_big?, _ = nil, _ = nil)
         str = (output_big ? @sl_be[value] : @sl_le[value])
         output.write(str)
+      end
+
+      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big, _ = nil, _ = nil)
+        str = input.read(@size)
+        value = (input_big ? @rl_be[str] : @rl_le[str])
+        str = (output_big ? @sl_be[value] : @sl_le[value])
+        output.write(str)
+        value
+      end
+
+    end
+
+    class Str < Scalar
+
+      def self.load(input,  input_big = LibBin::default_big?, _ = nil, _ = nil)
+        str = (@size < 0 ? input.readline("\x00") : input.read(@size))
+        input_big ? @rl_be[str] : @rl_le[str]
       end
 
       def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big, _ = nil, _ = nil)
@@ -239,9 +256,6 @@ module LibBin
         value
       end
 
-    end
-
-    class Str < Scalar
     end
 
     def self.register_field(field, type, count: nil, offset: nil, sequence: false, condition: nil)
