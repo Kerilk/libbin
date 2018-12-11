@@ -118,6 +118,50 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def test_sequence
+    c = Class::new(LibBin::DataConverter) do
+      int16 :offsets, count: 6
+      int16 :data, count: 6, sequence: true, offset: 'offsets[__iterator]'
+    end
+
+    [true, false].each { |big|
+      File::open("binary/sequence_layout_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal((1..6).to_a, s.data)
+      end
+    }
+  end
+
+  def test_sequence_condition
+    c = Class::new(LibBin::DataConverter) do
+      int16 :offsets, count: 6
+      int16 :data, count: 6, sequence: true,
+            offset: 'offsets[__iterator]',
+            condition: '__iterator % 2 == 0'
+    end
+
+    [true, false].each { |big|
+      File::open("binary/sequence_layout_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal([1, nil, 3, nil, 5, nil], s.data)
+      end
+    }
+  end
+
+  def test_sequence_null
+    c = Class::new(LibBin::DataConverter) do
+      int16 :offsets, count: 6
+      int16 :data, count: 6, sequence: true, offset: 'offsets[__iterator]'
+    end
+
+    [true, false].each { |big|
+      File::open("binary/sequence_null_layout_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal([1, 2, nil, 4, 5, 6], s.data)
+      end
+    }
+  end
+
   def test_datatypes
     b = Class::new(LibBin::DataConverter) do
       int8 :a
