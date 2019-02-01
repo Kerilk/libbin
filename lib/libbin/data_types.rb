@@ -218,18 +218,18 @@ module LibBin
       :E => l["E"],
       :G => l["G"],
       :"a*" => l["a*"],
-      :half => [ lambda { |str| Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
-                 lambda { |v| Flt::IEEE_binary16_BE::new(v).to_bytes } ],
-      :half_le => [ lambda { |str| Flt::IEEE_binary16_LE::from_bytes(str).to(Float) },
-                    lambda { |v| Flt::IEEE_binary16_LE::new(v).to_bytes } ],
-      :half_be => [ lambda { |str| Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
-                    lambda { |v| Flt::IEEE_binary16_BE::new(v).to_bytes } ],
-      :pghalf => [ lambda { |str| Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
-                   lambda { |v| Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ],
-      :pghalf_le => [ lambda { |str| Flt::IEEE_binary16_pg_LE::from_bytes(str).to(Float) },
-                      lambda { |v| Flt::IEEE_binary16_pg_LE::new(v).to_bytes } ],
-      :pghalf_be => [ lambda { |str| Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
-                      lambda { |v| Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ]
+      :half => [ lambda { |str| ::Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
+                 lambda { |v| ::Flt::IEEE_binary16_BE::new(v).to_bytes } ],
+      :half_le => [ lambda { |str| ::Flt::IEEE_binary16::from_bytes(str).to(Float) },
+                    lambda { |v| ::Flt::IEEE_binary16::new(v).to_bytes } ],
+      :half_be => [ lambda { |str| ::Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
+                    lambda { |v| ::Flt::IEEE_binary16_BE::new(v).to_bytes } ],
+      :pghalf => [ lambda { |str| ::Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
+                   lambda { |v| ::Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ],
+      :pghalf_le => [ lambda { |str| ::Flt::IEEE_binary16_pg::from_bytes(str).to(Float) },
+                      lambda { |v| ::Flt::IEEE_binary16_pg::new(v).to_bytes } ],
+      :pghalf_be => [ lambda { |str| ::Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
+                      lambda { |v| ::Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ]
     } )
     DATA_ENDIAN[false].merge!( {
       :c => l["c"],
@@ -263,18 +263,18 @@ module LibBin
       :E => l["E"],
       :G => l["G"],
       :"a*" => l["a*"],
-      :half => [ lambda { |str| Flt::IEEE_binary16::from_bytes(str).to(Float) },
-                 lambda { |v| Flt::IEEE_binary16::new(v).to_bytes } ],
-      :half_le => [ lambda { |str| Flt::IEEE_binary16_LE::from_bytes(str).to(Float) },
-                    lambda { |v| Flt::IEEE_binary16_LE::new(v).to_bytes } ],
-      :half_be => [ lambda { |str| Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
-                    lambda { |v| Flt::IEEE_binary16_BE::new(v).to_bytes } ],
-      :pghalf => [ lambda { |str| Flt::IEEE_binary16_pg::from_bytes(str).to(Float) },
-                   lambda { |v| Flt::IEEE_binary16_pg::new(v).to_bytes } ],
-      :pghalf_le => [ lambda { |str| Flt::IEEE_binary16_pg_LE::from_bytes(str).to(Float) },
-                      lambda { |v| Flt::IEEE_binary16_pg_LE::new(v).to_bytes } ],
-      :pghalf_be => [ lambda { |str| Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
-                      lambda { |v| Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ]
+      :half => [ lambda { |str| ::Flt::IEEE_binary16::from_bytes(str).to(Float) },
+                 lambda { |v| ::Flt::IEEE_binary16::new(v).to_bytes } ],
+      :half_le => [ lambda { |str| ::Flt::IEEE_binary16::from_bytes(str).to(Float) },
+                    lambda { |v| ::Flt::IEEE_binary16::new(v).to_bytes } ],
+      :half_be => [ lambda { |str| ::Flt::IEEE_binary16_BE::from_bytes(str).to(Float) },
+                    lambda { |v| ::Flt::IEEE_binary16_BE::new(v).to_bytes } ],
+      :pghalf => [ lambda { |str| ::Flt::IEEE_binary16_pg::from_bytes(str).to(Float) },
+                   lambda { |v| ::Flt::IEEE_binary16_pg::new(v).to_bytes } ],
+      :pghalf_le => [ lambda { |str| ::Flt::IEEE_binary16_pg::from_bytes(str).to(Float) },
+                      lambda { |v| ::Flt::IEEE_binary16_pg::new(v).to_bytes } ],
+      :pghalf_be => [ lambda { |str| ::Flt::IEEE_binary16_pg_BE::from_bytes(str).to(Float) },
+                      lambda { |v| ::Flt::IEEE_binary16_pg_BE::new(v).to_bytes } ]
     } )
 
 
@@ -292,7 +292,7 @@ module LibBin
         @symbol = symbol
         @size = DATA_SIZES[symbol]
         @rl_be, @sl_be = DATA_ENDIAN[true][symbol]
-        @rl_le, @sl_be = DATA_ENDIAN[false][symbol]
+        @rl_le, @sl_le = DATA_ENDIAN[false][symbol]
       end
 
       def self.load(input, input_big = LibBin::default_big?, _ = nil, _ = nil)
@@ -305,7 +305,7 @@ module LibBin
         output.write(str)
       end
 
-      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big, _ = nil, _ = nil)
+      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, _ = nil, _ = nil)
         str = input.read(@size)
         value = (input_big ? @rl_be[str] : @rl_le[str])
         str = (output_big ? @sl_be[value] : @sl_le[value])

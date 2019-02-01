@@ -3,8 +3,8 @@ $VERBOSE = nil
 require 'float-formats'
 $VERBOSE = warn_level
 
-Flt::IEEE.binary :IEEE_binary16_pg, significand: 9, exponent: 6, bias: 47
-Flt::IEEE.binary :IEEE_binary16_pg_BE, significand: 9, exponent: 6, bias: 47, endianness: :big_endian
+::Flt::IEEE.binary :IEEE_binary16_pg, significand: 9, exponent: 6, bias: 47
+::Flt::IEEE.binary :IEEE_binary16_pg_BE, significand: 9, exponent: 6, bias: 47, endianness: :big_endian
 
 require_relative 'libbin/alignment'
 require_relative 'libbin/data_types'

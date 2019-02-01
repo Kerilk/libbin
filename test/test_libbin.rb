@@ -1,9 +1,30 @@
 [ '../lib', 'lib' ].each { |d| $:.unshift(d) if File::directory?(d) }
 require 'minitest/autorun'
 require 'libbin'
+require 'stringio'
 
 class LibBinTest < Minitest::Test
   SUFFIX = { true => "be", false => "le" }
+
+  def test_half
+    c = Class::new(LibBin::DataConverter) do
+      register_field :a, :half, count: 4
+      register_field :b, :pghalf, count: 4
+    end
+
+    [true, false].each { |big|
+      File::open("binary/half_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal( (1..4).to_a, s.a )
+        assert_equal( (1..4).to_a, s.b )
+        str = StringIO::new
+        c::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
+      end
+    }
+  end
 
   def test_register_field
     c = Class::new(LibBin::DataConverter) do
@@ -22,6 +43,11 @@ class LibBinTest < Minitest::Test
         assert_equal(2, s.c)
         assert_equal(3, s.d)
         assert_equal(4.0, s.e)
+        str = StringIO::new
+        c::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
       end
     }
   end
@@ -43,6 +69,11 @@ class LibBinTest < Minitest::Test
         assert_equal(2, s.c)
         assert_equal(3, s.d)
         assert_equal(4.0, s.e)
+        str = StringIO::new
+        c::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
       end
     }
 
@@ -62,6 +93,11 @@ class LibBinTest < Minitest::Test
         assert_equal(2, s.c)
         assert_equal(3, s.d)
         assert_equal(4.0, s.e)
+        str = StringIO::new
+        c::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
       end
     }
   end
@@ -83,6 +119,11 @@ class LibBinTest < Minitest::Test
         assert_equal(2, s.c)
         assert_equal(3, s.d)
         assert_equal(4.0, s.e)
+        str = StringIO::new
+        c::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
       end
     }
   end
@@ -100,6 +141,11 @@ class LibBinTest < Minitest::Test
       s.a.each_with_index { |e, i|
          assert_equal(i, e)
       }
+      str = StringIO::new
+      c::dump(s, str)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
     end
   end
 
@@ -128,6 +174,11 @@ class LibBinTest < Minitest::Test
       File::open("binary/sequence_layout_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal((1..6).to_a, s.data)
+        str = StringIO::new
+        c::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
       end
     }
   end
@@ -201,6 +252,11 @@ class LibBinTest < Minitest::Test
         (0..3).each { |i|
           assert_equal(i+1, s.data[i])
         }
+        str = StringIO::new
+        b::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
       end
     }
   end
@@ -225,6 +281,11 @@ class LibBinTest < Minitest::Test
         (0..3).each { |i|
           assert_equal(i+1, s.body.data[i])
         }
+        str = StringIO::new
+        b::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
       end
     }
   end
