@@ -339,22 +339,22 @@ uint16_t
 pghalf_from_float( uint32_t f )
 {
   const uint32_t one                        = _uint32_li( 0x00000001 );
-  const uint32_t f_s_mask                   = _uint32_li( 0x80000000 );
-  const uint32_t f_e_mask                   = _uint32_li( 0x7f800000 );
-  const uint32_t f_m_mask                   = _uint32_li( 0x007fffff );
-  const uint32_t f_m_hidden_bit             = _uint32_li( 0x00800000 );
-  const uint32_t f_m_round_bit              = _uint32_li( 0x00001000 );
-  const uint32_t f_snan_mask                = _uint32_li( 0x7fc00000 );
-  const uint32_t f_e_pos                    = _uint32_li( 0x00000017 );
-  const uint32_t h_e_pos                    = _uint32_li( 0x00000009 );
-  const uint32_t h_e_mask                   = _uint32_li( 0x00007e00 );
-  const uint32_t h_snan_mask                = _uint32_li( 0x00007f00 );
-  const uint32_t h_e_mask_value             = _uint32_li( 0x0000003f );
-  const uint32_t f_h_s_pos_offset           = _uint32_li( 0x00000010 );
-  const uint32_t f_h_bias_offset            = _uint32_li( 0x00000050 );
-  const uint32_t f_h_m_pos_offset           = _uint32_li( 0x0000000e );
-  const uint32_t h_nan_min                  = _uint32_li( 0x00007e01 );
-  const uint32_t f_h_e_biased_flag          = _uint32_li( 0x000000af );
+  const uint32_t f_s_mask                   = _uint32_li( 0x80000000 ); //bit 31
+  const uint32_t f_e_mask                   = _uint32_li( 0x7f800000 ); //bits 30-23
+  const uint32_t f_m_mask                   = _uint32_li( 0x007fffff ); //bits 22-0
+  const uint32_t f_m_hidden_bit             = _uint32_li( 0x00800000 ); //1<<f_e_pos
+  const uint32_t f_m_round_bit              = _uint32_li( 0x00002000 ); //1<<(f_e_pos - h_e_pos - 1)
+  const uint32_t f_snan_mask                = _uint32_li( 0x7fc00000 ); //f_e_mask + 1 << (f_e_pos - 1)
+  const uint32_t f_e_pos                    = _uint32_li( 0x00000017 ); //23
+  const uint32_t h_e_pos                    = _uint32_li( 0x00000009 ); //9
+  const uint32_t h_e_mask                   = _uint32_li( 0x00007e00 ); //bits 14-9
+  const uint32_t h_snan_mask                = _uint32_li( 0x00007f00 ); //h_e_mask + 1 << (h_e_pos - 1)
+  const uint32_t h_e_mask_value             = _uint32_li( 0x0000003f ); //h_e_mask >> 9
+  const uint32_t f_h_s_pos_offset           = _uint32_li( 0x00000010 ); //f_s_pos - h_s_pos
+  const uint32_t f_h_bias_offset            = _uint32_li( 0x00000050 ); //f_bias - h_bias
+  const uint32_t f_h_m_pos_offset           = _uint32_li( 0x0000000e ); //f_e_pos - h_e_pos
+  const uint32_t h_nan_min                  = _uint32_li( 0x00007e01 ); //h_e_mask + 1
+  const uint32_t f_h_e_biased_flag          = _uint32_li( 0x000000af ); //f_bias + h_bias + 1
   const uint32_t f_s                        = _uint32_and( f,               f_s_mask         );
   const uint32_t f_e                        = _uint32_and( f,               f_e_mask         );
   const uint16_t h_s                        = _uint32_srl( f_s,             f_h_s_pos_offset );
@@ -403,18 +403,18 @@ pghalf_from_float( uint32_t f )
 uint32_t 
 pghalf_to_float( uint16_t h )
 {
-  const uint32_t h_e_mask              = _uint32_li( 0x00007e00 );
-  const uint32_t h_m_mask              = _uint32_li( 0x000001ff );
-  const uint32_t h_s_mask              = _uint32_li( 0x00008000 );
-  const uint32_t h_f_s_pos_offset      = _uint32_li( 0x00000010 );
-  const uint32_t h_f_e_pos_offset      = _uint32_li( 0x0000000e );
-  const uint32_t h_f_bias_offset       = _uint32_li( 0x0000a000 );
-  const uint32_t f_e_mask              = _uint32_li( 0x7f800000 );
-  const uint32_t f_m_mask              = _uint32_li( 0x007fffff );
-  const uint32_t h_f_e_denorm_bias     = _uint32_li( 0x0000005f );
-  const uint32_t h_f_m_denorm_sa_bias  = _uint32_li( 0x00000008 );
-  const uint32_t f_e_pos               = _uint32_li( 0x00000017 );
-  const uint32_t h_e_mask_minus_one    = _uint32_li( 0x00007dff );
+  const uint32_t h_e_mask              = _uint32_li( 0x00007e00 ); //bits 14-9
+  const uint32_t h_m_mask              = _uint32_li( 0x000001ff ); //bits 8-0
+  const uint32_t h_s_mask              = _uint32_li( 0x00008000 ); //bit 15
+  const uint32_t h_f_s_pos_offset      = _uint32_li( 0x00000010 ); //f_s_pos - h_s_pos
+  const uint32_t h_f_e_pos_offset      = _uint32_li( 0x0000000e ); //f_m_bitcount - h_m_bitcount
+  const uint32_t h_f_bias_offset       = _uint32_li( 0x0000a000 ); //(f_bias - h_bias) << 9
+  const uint32_t f_e_mask              = _uint32_li( 0x7f800000 ); //bits 30-23
+  const uint32_t f_m_mask              = _uint32_li( 0x007fffff ); //bits 22-0
+  const uint32_t h_f_e_denorm_bias     = _uint32_li( 0x0000005f ); //h_f_e_pos_offset + 1 + (f_bias - h_bias)
+  const uint32_t h_f_m_denorm_sa_bias  = _uint32_li( 0x00000008 ); //float exp bit count
+  const uint32_t f_e_pos               = _uint32_li( 0x00000017 ); //23
+  const uint32_t h_e_mask_minus_one    = _uint32_li( 0x00007dff ); //h_e_mask + h_m_mask - 1<<h_e_pos
   const uint32_t h_e                   = _uint32_and( h, h_e_mask );
   const uint32_t h_m                   = _uint32_and( h, h_m_mask );
   const uint32_t h_s                   = _uint32_and( h, h_s_mask );
