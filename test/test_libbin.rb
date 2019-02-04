@@ -26,6 +26,42 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def test_half_le
+    c = Class::new(LibBin::DataConverter) do
+      register_field :a, :half_le, count: 4
+      register_field :b, :pghalf_le, count: 4
+    end
+
+    File::open("binary/half_le.bin") do |f|
+      s = c::load(f, true)
+      assert_equal( (1..4).to_a, s.a )
+      assert_equal( (1..4).to_a, s.b )
+      str = StringIO::new
+      c::dump(s, str, true)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
+    end
+  end
+
+  def test_half_be
+    c = Class::new(LibBin::DataConverter) do
+      register_field :a, :half_be, count: 4
+      register_field :b, :pghalf_be, count: 4
+    end
+
+    File::open("binary/half_be.bin") do |f|
+      s = c::load(f, false)
+      assert_equal( (1..4).to_a, s.a )
+      assert_equal( (1..4).to_a, s.b )
+      str = StringIO::new
+      c::dump(s, str, false)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
+    end
+  end
+
   def test_register_field
     c = Class::new(LibBin::DataConverter) do
       register_field :a, :c

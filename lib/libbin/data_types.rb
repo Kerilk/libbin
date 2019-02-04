@@ -271,9 +271,9 @@ module LibBin
                     lambda { |v| LibBin::half_to_string(v, "S>") } ],
       :pghalf => [ lambda { |str| LibBin::pghalf_from_string(str, "S<") },
                    lambda { |v| LibBin::pghalf_to_string(v, "S<") } ],
-      :pghalf_le => [ lambda { |str| LibBin::pghalf_to_string(v, "S<") },
+      :pghalf_le => [ lambda { |str| LibBin::pghalf_from_string(str, "S<") },
                       lambda { |v| LibBin::pghalf_to_string(v, "S<") } ],
-      :pghalf_be => [ lambda { |str| LibBin::pghalf_to_string(v, "S>") },
+      :pghalf_be => [ lambda { |str| LibBin::pghalf_from_string(str, "S>") },
                       lambda { |v| LibBin::pghalf_to_string(v, "S>") } ]
     } )
 
