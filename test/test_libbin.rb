@@ -22,6 +22,13 @@ class LibBinTest < Minitest::Test
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
+        File::open("binary/half_#{SUFFIX[!big]}.bin") do |g|
+          str = StringIO::new
+          f.rewind
+          s = c::convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
       end
     }
   end
@@ -41,7 +48,13 @@ class LibBinTest < Minitest::Test
       f.rewind
       str.rewind
       assert_equal(f.read, str.read)
-    end
+      f.rewind
+      str = StringIO::new
+      c::convert(f, str, true, true)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
+     end
   end
 
   def test_half_be
@@ -56,6 +69,12 @@ class LibBinTest < Minitest::Test
       assert_equal( (1..4).to_a, s.b )
       str = StringIO::new
       c::dump(s, str, false)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
+      f.rewind
+      str = StringIO::new
+      c::convert(f, str, false, false)
       f.rewind
       str.rewind
       assert_equal(f.read, str.read)
@@ -84,6 +103,13 @@ class LibBinTest < Minitest::Test
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
+        File::open("binary/simple_layout_#{SUFFIX[!big]}.bin") do |g|
+          str = StringIO::new
+          f.rewind
+          s = c::convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
       end
     }
   end
@@ -160,6 +186,13 @@ class LibBinTest < Minitest::Test
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
+        File::open("binary/simple_layout_#{SUFFIX[!big]}.bin") do |g|
+          str = StringIO::new
+          f.rewind
+          s = c::convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
       end
     }
   end
@@ -215,6 +248,13 @@ class LibBinTest < Minitest::Test
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
+        File::open("binary/sequence_layout_#{SUFFIX[!big]}.bin") do |g|
+          str = StringIO::new
+          f.rewind
+          s = c::convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
       end
     }
   end
@@ -293,6 +333,13 @@ class LibBinTest < Minitest::Test
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
+        File::open("binary/offset_#{SUFFIX[!big]}.bin") do |g|
+          str = StringIO::new
+          f.rewind
+          s = b::convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
       end
     }
   end
@@ -322,6 +369,13 @@ class LibBinTest < Minitest::Test
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
+        File::open("binary/offset_#{SUFFIX[!big]}.bin") do |g|
+          str = StringIO::new
+          f.rewind
+          s = b::convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
       end
     }
   end
