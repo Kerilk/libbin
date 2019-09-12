@@ -233,6 +233,21 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def test_offset_relative
+    c = Class::new(LibBin::DataConverter) do
+      int8 :b, offset: 1, relative_offset: true
+      int32 :d, offset: 4, relative_offset: true
+    end
+
+    [true, false].each { |big|
+      File::open("binary/simple_layout_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal(0, s.b)
+        assert_equal(3, s.d)
+      end
+    }
+  end
+
   def test_sequence
     c = Class::new(LibBin::DataConverter) do
       int16 :offsets, count: 6

@@ -117,10 +117,11 @@ module LibBin
       end
     end
 
-    def __decode_seek_offset(offset)
+    def __decode_seek_offset(offset, relative_offset)
       return nil unless offset
       offset = __decode_expression(offset)
       return false if offset == 0x0
+      offset += @__position if relative_offset
       @__cur_position = offset
       @__input.seek(offset) if @__input
       @__output.seek(offset) if @__output
@@ -141,13 +142,13 @@ module LibBin
       return __decode_expression(type)
     end
 
-    def __decode_static_conditions(type, count, offset, sequence, condition)
+    def __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
       @__offset = nil
       @__condition = nil
       @__type = nil
       @__count = nil
       unless sequence
-        @__offset = __decode_seek_offset(offset)
+        @__offset = __decode_seek_offset(offset, relative_offset)
         throw :ignored, nil if @__offset == false
         @__condition = __decode_condition(condition)
         throw :ignored, nil unless @__condition
@@ -156,12 +157,12 @@ module LibBin
       @__count = __decode_count(count)
     end
 
-    def __decode_dynamic_conditions(type, offset, sequence, condition)
+    def __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
       return true unless sequence
       @__offset = nil
       @__condition = nil
       @__type = nil
-      @__offset = __decode_seek_offset(offset)
+      @__offset = __decode_seek_offset(offset, relative_offset)
       return false if @__offset == false
       @__condition = __decode_condition(condition)
       return false unless @__condition
@@ -177,11 +178,11 @@ module LibBin
       @__condition = nil
     end
 
-    def __convert_field(field, type, count, offset, sequence, condition)
-      __decode_static_conditions(type, count, offset, sequence, condition)
+    def __convert_field(field, type, count, offset, sequence, condition, relative_offset)
+      __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
       vs = @__count.times.collect do |it|
         @__iterator = it
-        if __decode_dynamic_conditions(type, offset, sequence, condition)
+        if __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
           @__type::convert(@__input, @__output, @__input_big, @__output_big, self, it)
         else
           nil
@@ -192,11 +193,11 @@ module LibBin
       vs
     end
 
-    def __load_field(field, type, count, offset, sequence, condition)
-      __decode_static_conditions(type, count, offset, sequence, condition)
+    def __load_field(field, type, count, offset, sequence, condition, relative_offset)
+      __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
       vs = @__count.times.collect do |it|
         @__iterator = it
-        if __decode_dynamic_conditions(type, offset, sequence, condition)
+        if __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
           @__type::load(@__input, @__input_big, self, it)
         else
           nil
@@ -207,24 +208,24 @@ module LibBin
       vs
     end
 
-    def __dump_field(vs, field, type, count, offset, sequence, condition)
-      __decode_static_conditions(type, count, offset, sequence, condition)
+    def __dump_field(vs, field, type, count, offset, sequence, condition, relative_offset)
+      __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
       vs = [vs] unless count
       vs.each_with_index do |v, it|
         @__iterator = it
-        if __decode_dynamic_conditions(type, offset, sequence, condition)
+        if __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
           @__type::dump(v, @__output, @__output_big, self, it)
         end
       end
       __restore_context
     end
 
-    def __shape_field(vs, previous_offset, kind, field, type, count, offset, sequence, condition)
-      __decode_static_conditions(type, count, offset, sequence, condition)
+    def __shape_field(vs, previous_offset, kind, field, type, count, offset, sequence, condition, relative_offset)
+      __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
       vs = [vs] unless count
       vs = vs.each_with_index.collect do |v, it|
         @__iterator = it
-        if __decode_dynamic_conditions(type, offset, sequence, condition)
+        if __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
           sh = @__type::shape(v, @__cur_position, self, it, kind)
           @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
           sh

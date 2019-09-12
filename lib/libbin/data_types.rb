@@ -340,16 +340,16 @@ module LibBin
 
     end
 
-    def self.register_field(field, type, count: nil, offset: nil, sequence: false, condition: nil)
+    def self.register_field(field, type, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       if type.kind_of?(Symbol)
         if type[0] == 'a'
           c = Class::new(Str) do init(sym) end
-          @fields.push([field, c, count, offset, sequence, condition])
+          @fields.push([field, c, count, offset, sequence, condition, relative_offset])
         else
-          @fields.push([field, const_get(SCALAR_TYPES[type][0]), count, offset, sequence, condition])
+          @fields.push([field, const_get(SCALAR_TYPES[type][0]), count, offset, sequence, condition, relative_offset])
         end
       else
-        @fields.push([field, type, count, offset, sequence, condition])
+        @fields.push([field, type, count, offset, sequence, condition, relative_offset])
       end
       attr_accessor field
     end
@@ -361,8 +361,8 @@ module LibBin
       init(#{symbol.inspect})
     end
 
-    def self.#{name}(field, count: nil, offset: nil, sequence: false, condition: nil)
-      @fields.push([field, #{klassname}, count, offset, sequence, condition])
+    def self.#{name}(field, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+      @fields.push([field, #{klassname}, count, offset, sequence, condition, relative_offset])
       attr_accessor field
     end
 EOF
@@ -401,12 +401,12 @@ EOF
     create_scalar_type(:pghalf_le)
     create_scalar_type(:pghalf_be)
 
-    def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil)
+    def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       sym = (length ? :"a#{length}" : :"a*")
       c = Class::new(Str) do
         init(sym)
       end
-      @fields.push([field, c, count, offset, sequence, condition])
+      @fields.push([field, c, count, offset, sequence, condition, relative_offset])
       attr_accessor field
     end
 
