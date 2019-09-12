@@ -142,31 +142,31 @@ module LibBin
       return __decode_expression(type)
     end
 
-    def __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
+    def __decode_static_conditions(field)
       @__offset = nil
       @__condition = nil
       @__type = nil
       @__count = nil
-      unless sequence
-        @__offset = __decode_seek_offset(offset, relative_offset)
+      unless field.sequence?
+        @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
         throw :ignored, nil if @__offset == false
-        @__condition = __decode_condition(condition)
+        @__condition = __decode_condition(field.condition)
         throw :ignored, nil unless @__condition
-        @__type = __decode_type(type)
+        @__type = __decode_type(field.type)
       end
-      @__count = __decode_count(count)
+      @__count = __decode_count(field.count)
     end
 
-    def __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
-      return true unless sequence
+    def __decode_dynamic_conditions(field)
+      return true unless field.sequence?
       @__offset = nil
       @__condition = nil
       @__type = nil
-      @__offset = __decode_seek_offset(offset, relative_offset)
+      @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
       return false if @__offset == false
-      @__condition = __decode_condition(condition)
+      @__condition = __decode_condition(field.condition)
       return false unless @__condition
-      @__type = __decode_type(type)
+      @__type = __decode_type(field.type)
       return true
     end
 
@@ -178,61 +178,61 @@ module LibBin
       @__condition = nil
     end
 
-    def __convert_field(field, type, count, offset, sequence, condition, relative_offset)
-      __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
+    def __convert_field(field)
+      __decode_static_conditions(field)
       vs = @__count.times.collect do |it|
         @__iterator = it
-        if __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
+        if __decode_dynamic_conditions(field)
           @__type::convert(@__input, @__output, @__input_big, @__output_big, self, it)
         else
           nil
         end
       end
       __restore_context
-      vs = vs.first unless count
+      vs = vs.first unless field.count
       vs
     end
 
-    def __load_field(field, type, count, offset, sequence, condition, relative_offset)
-      __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
+    def __load_field(field)
+      __decode_static_conditions(field)
       vs = @__count.times.collect do |it|
         @__iterator = it
-        if __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
+        if __decode_dynamic_conditions(field)
           @__type::load(@__input, @__input_big, self, it)
         else
           nil
         end
       end
       __restore_context
-      vs = vs.first unless count
+      vs = vs.first unless field.count
       vs
     end
 
-    def __dump_field(vs, field, type, count, offset, sequence, condition, relative_offset)
-      __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
-      vs = [vs] unless count
+    def __dump_field(vs, field)
+      __decode_static_conditions(field)
+      vs = [vs] unless field.count
       vs.each_with_index do |v, it|
         @__iterator = it
-        if __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
+        if __decode_dynamic_conditions(field)
           @__type::dump(v, @__output, @__output_big, self, it)
         end
       end
       __restore_context
     end
 
-    def __shape_field(vs, previous_offset, kind, field, type, count, offset, sequence, condition, relative_offset)
-      __decode_static_conditions(type, count, offset, sequence, condition, relative_offset)
-      vs = [vs] unless count
+    def __shape_field(vs, previous_offset, kind, field)
+      __decode_static_conditions(field)
+      vs = [vs] unless field.count
       vs = vs.each_with_index.collect do |v, it|
         @__iterator = it
-        if __decode_dynamic_conditions(type, offset, sequence, condition, relative_offset)
+        if __decode_dynamic_conditions(field)
           sh = @__type::shape(v, @__cur_position, self, it, kind)
           @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
           sh
         end
       end
       __restore_context
-      vs = vs.first unless count
+      vs = vs.first unless field.count
       vs
     end
 
@@ -243,15 +243,15 @@ module LibBin
     def __shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
       __set_size_type(previous_offset, parent, index)
       members = {}
-      self.class.instance_variable_get(:@fields).each { |name, type, *args|
+      self.class.instance_variable_get(:@fields).each { |field|
         begin
-          vs = send(name)
+          vs = send(field.name)
           member = catch(:ignored) do
-            __shape_field(vs, previous_offset, kind, name, type, *args)
+            __shape_field(vs, previous_offset, kind, field)
           end
-          members[name] = member
+          members[field.name] = member
         rescue
-          STDERR.puts "#{self.class}: #{name}(#{type})"
+          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise
         end
       }
@@ -261,14 +261,14 @@ module LibBin
     end
 
     def __convert_fields
-      self.class.instance_variable_get(:@fields).each { |name, type, *args|
+      self.class.instance_variable_get(:@fields).each { |field|
         begin
           vs = catch(:ignored) do
-            __convert_field(name, type, *args)
+            __convert_field(field)
           end
-          send("#{name}=", vs)
+          send("#{field.name}=", vs)
         rescue
-          STDERR.puts "#{self.class}: #{name}(#{type})"
+          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise
         end
       }
@@ -276,14 +276,14 @@ module LibBin
     end
 
     def __load_fields
-      self.class.instance_variable_get(:@fields).each { |name, type, *args|
+      self.class.instance_variable_get(:@fields).each { |field|
         begin
           vs = catch(:ignored) do
-            __load_field(name, type, *args)
+            __load_field(field)
           end
-          send("#{name}=", vs)
+          send("#{field.name}=", vs)
         rescue
-          STDERR.puts "#{self.class}: #{name}(#{type})"
+          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise
         end
       }
@@ -291,14 +291,14 @@ module LibBin
     end
 
     def __dump_fields
-      self.class.instance_variable_get(:@fields).each { |name, type, *args|
+      self.class.instance_variable_get(:@fields).each { |field|
         begin
-          vs = send(name)
+          vs = send(field.name)
           catch(:ignored) do
-            __dump_field(vs, name, type, *args)
+            __dump_field(vs, field)
           end
         rescue
-          STDERR.puts "#{self.class}: #{name}(#{type})"
+          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise
         end
       }

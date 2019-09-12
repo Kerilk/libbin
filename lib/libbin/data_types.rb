@@ -70,6 +70,34 @@ module LibBin
 
   end
 
+  class Field
+    attr_reader :name,
+                :type,
+                :count,
+                :offset,
+                :sequence,
+                :condition
+
+    def sequence?
+      @sequence
+    end
+
+    def relative_offset?
+      @relative_offset
+    end
+
+    def initialize(name, type, count, offset, sequence, condition, relative_offset)
+      @name = name
+      @type = type
+      @count = count
+      @offset = offset
+      @sequence = sequence
+      @condition = condition
+      @relative_offset = relative_offset
+    end
+
+  end
+
   class DataConverter
 
     rl = lambda { |type, str|
@@ -344,12 +372,12 @@ module LibBin
       if type.kind_of?(Symbol)
         if type[0] == 'a'
           c = Class::new(Str) do init(sym) end
-          @fields.push([field, c, count, offset, sequence, condition, relative_offset])
+          @fields.push(Field::new(field, c, count, offset, sequence, condition, relative_offset))
         else
-          @fields.push([field, const_get(SCALAR_TYPES[type][0]), count, offset, sequence, condition, relative_offset])
+          @fields.push(Field::new(field, const_get(SCALAR_TYPES[type][0]), count, offset, sequence, condition, relative_offset))
         end
       else
-        @fields.push([field, type, count, offset, sequence, condition, relative_offset])
+        @fields.push(Field::new(field, type, count, offset, sequence, condition, relative_offset))
       end
       attr_accessor field
     end
@@ -362,7 +390,7 @@ module LibBin
     end
 
     def self.#{name}(field, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
-      @fields.push([field, #{klassname}, count, offset, sequence, condition, relative_offset])
+      @fields.push(Field::new(field, #{klassname}, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
 EOF
@@ -406,7 +434,7 @@ EOF
       c = Class::new(Str) do
         init(sym)
       end
-      @fields.push([field, c, count, offset, sequence, condition, relative_offset])
+      @fields.push(Field::new(field, c, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
 
