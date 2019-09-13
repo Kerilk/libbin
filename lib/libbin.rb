@@ -347,7 +347,7 @@ module LibBin
     end
 
     def self.shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape)
-      value.__shape(previous_offset, parent, index, kind = DataShape)
+      value.__shape(previous_offset, parent, index, kind)
     end
 
   end
