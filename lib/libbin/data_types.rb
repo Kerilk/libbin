@@ -371,14 +371,14 @@ module LibBin
     def self.register_field(field, type, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       if type.kind_of?(Symbol)
         if type[0] == 'a'
-          c = Class::new(Str) do init(sym) end
-          @fields.push(Field::new(field, c, count, offset, sequence, condition, relative_offset))
+          real_type = Class::new(Str) do init(sym) end
         else
-          @fields.push(Field::new(field, const_get(SCALAR_TYPES[type][0]), count, offset, sequence, condition, relative_offset))
+          real_type = const_get(SCALAR_TYPES[type][0])
         end
       else
-        @fields.push(Field::new(field, type, count, offset, sequence, condition, relative_offset))
+        real_type = type
       end
+      @fields.push(Field::new(field, real_type, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
 
