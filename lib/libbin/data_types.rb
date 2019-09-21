@@ -73,6 +73,7 @@ module LibBin
   class Field
     attr_reader :name,
                 :type,
+                :length,
                 :count,
                 :offset,
                 :sequence,
@@ -86,9 +87,10 @@ module LibBin
       @relative_offset
     end
 
-    def initialize(name, type, count, offset, sequence, condition, relative_offset)
+    def initialize(name, type, length, count, offset, sequence, condition, relative_offset)
       @name = name
       @type = type
+      @length = length
       @count = count
       @offset = offset
       @sequence = sequence
@@ -100,12 +102,20 @@ module LibBin
 
   class DataConverter
 
-    rl = lambda { |type, str|
-      str.unpack(type.to_s).first
+    rl = lambda { |type, str, number = nil|
+      if number
+        str.unpack(type.to_s+number.to_s)
+      else
+        str.unpack(type.to_s).first
+      end
     }
 
-    sl = lambda { |type, value|
-      [value].pack(type.to_s)
+    sl = lambda { |type, value, number = nil|
+      if number
+        value.pack(type.to_s+number.to_s)
+      else
+        [value].pack(type.to_s)
+      end
     }
 
     l = lambda { |type|
@@ -189,6 +199,7 @@ module LibBin
       :D => 8,
       :E => 8,
       :G => 8,
+      :a => 1,
       :"a*" => -1,
       :half => 2,
       :half_le => 2,
@@ -212,6 +223,50 @@ module LibBin
           nil
         end
       }
+    }
+
+    rhl = lambda { |type, str, number = nil|
+      if number
+        number.times.collect { |i| LibBin::half_from_string(str[i*2,2], type) }
+      else
+        LibBin::half_from_string(str, type)
+      end
+    }
+
+    shl = lambda { |type, value, number = nil|
+      if number
+        str = ""
+        number.times { |i| str << LibBin::half_to_string(value[i], type) }
+        str
+      else
+        LibBin::half_to_string(value, type)
+      end
+    }
+
+    hl = lambda { |type|
+      [rhl.curry[type], shl.curry[type]]
+    }
+
+    rpghl = lambda { |type, str, number = nil|
+      if number
+        number.times.collect { |i| LibBin::pghalf_from_string(str[i*2,2], type) }
+      else
+        LibBin::pghalf_from_string(str, type)
+      end
+    }
+
+    spghl = lambda { |type, value, number = nil|
+      if number
+        str = ""
+        number.times { |i| str << LibBin::pghalf_to_string(value[i], type) }
+        str
+      else
+        LibBin::pghalf_to_string(value, type)
+      end
+    }
+
+    pghl = lambda { |type|
+      [rpghl.curry[type], spghl.curry[type]]
     }
 
     DATA_ENDIAN[true].merge!( {
@@ -245,19 +300,12 @@ module LibBin
       :D => l["G"],
       :E => l["E"],
       :G => l["G"],
-      :"a*" => l["a*"],
-      :half => [ lambda { |str| LibBin::half_from_string(str, "S>") },
-                 lambda { |v| LibBin::half_to_string(v, "S>") } ],
-      :half_le => [ lambda { |str| LibBin::half_from_string(str, "S<") },
-                    lambda { |v| LibBin::half_to_string(v, "S<") } ],
-      :half_be => [ lambda { |str| LibBin::half_from_string(str, "S>") },
-                    lambda { |v| LibBin::half_to_string(v, "S>") } ],
-      :pghalf => [ lambda { |str| LibBin::pghalf_from_string(str, "S>") },
-                   lambda { |v| LibBin::pghalf_to_string(v, "S>") } ],
-      :pghalf_le => [ lambda { |str| LibBin::pghalf_from_string(str, "S<") },
-                      lambda { |v| LibBin::pghalf_to_string(v, "S<") } ],
-      :pghalf_be => [ lambda { |str| LibBin::pghalf_from_string(str, "S>") },
-                      lambda { |v| LibBin::pghalf_to_string(v, "S>") } ]
+      :half => hl["S>"],
+      :half_le => hl["S<"],
+      :half_be => hl["S>"],
+      :pghalf => pghl["S>"],
+      :pghalf_le => pghl["S<"],
+      :pghalf_be => pghl["S>"]
     } )
     DATA_ENDIAN[false].merge!( {
       :c => l["c"],
@@ -290,19 +338,12 @@ module LibBin
       :D => l["E"],
       :E => l["E"],
       :G => l["G"],
-      :"a*" => l["a*"],
-      :half => [ lambda { |str| LibBin::half_from_string(str, "S<") },
-                 lambda { |v| LibBin::half_to_string(v, "S<") } ],
-      :half_le => [ lambda { |str| LibBin::half_from_string(str, "S<") },
-                    lambda { |v| LibBin::half_to_string(v, "S<") } ],
-      :half_be => [ lambda { |str| LibBin::half_from_string(str, "S>") },
-                    lambda { |v| LibBin::half_to_string(v, "S>") } ],
-      :pghalf => [ lambda { |str| LibBin::pghalf_from_string(str, "S<") },
-                   lambda { |v| LibBin::pghalf_to_string(v, "S<") } ],
-      :pghalf_le => [ lambda { |str| LibBin::pghalf_from_string(str, "S<") },
-                      lambda { |v| LibBin::pghalf_to_string(v, "S<") } ],
-      :pghalf_be => [ lambda { |str| LibBin::pghalf_from_string(str, "S>") },
-                      lambda { |v| LibBin::pghalf_to_string(v, "S>") } ]
+      :half => hl["S<"],
+      :half_le => hl["S<"],
+      :half_be => hl["S>"],
+      :pghalf => pghl["S<"],
+      :pghalf_le => pghl["S<"],
+      :pghalf_be => pghl["S>"]
     } )
 
 
@@ -312,8 +353,9 @@ module LibBin
         @size
       end
 
-      def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape)
-        kind::new(previous_offset, previous_offset + @size - 1)
+      def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape, length = nil)
+        length = 1 unless length
+        kind::new(previous_offset, previous_offset - 1 + length * @size)
       end
 
       def self.init(symbol)
@@ -323,20 +365,22 @@ module LibBin
         @rl_le, @sl_le = DATA_ENDIAN[false][symbol]
       end
 
-      def self.load(input, input_big = LibBin::default_big?, _ = nil, _ = nil)
-        str = input.read(@size)
-        input_big ? @rl_be[str] : @rl_le[str]
+      def self.load(input, input_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
+        l = (length ? length : 1)
+        str = input.read(@size*l)
+        input_big ? @rl_be[str, length] : @rl_le[str, length]
       end
 
-      def self.dump(value, output, output_big = LibBin::default_big?, _ = nil, _ = nil)
-        str = (output_big ? @sl_be[value] : @sl_le[value])
+      def self.dump(value, output, output_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
+        str = (output_big ? @sl_be[value, length] : @sl_le[value, length])
         output.write(str)
       end
 
-      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, _ = nil, _ = nil)
-        str = input.read(@size)
-        value = (input_big ? @rl_be[str] : @rl_le[str])
-        str = (output_big ? @sl_be[value] : @sl_le[value])
+      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, _ = nil, _ = nil, length = nil)
+        l = (length ? length : 1)
+        str = input.read(@size*l)
+        value = (input_big ? @rl_be[str, length] : @rl_le[str, length])
+        str = (output_big ? @sl_be[value, length] : @sl_le[value, length])
         output.write(str)
         value
       end
@@ -345,30 +389,34 @@ module LibBin
 
     class Str < Scalar
 
-      def self.load(input,  input_big = LibBin::default_big?, _ = nil, _ = nil)
-        str = (@size < 0 ? input.readline("\x00") : input.read(@size))
-        input_big ? @rl_be[str] : @rl_le[str]
+      def self.size(value, previous_offset = 0, parent = nil, index = nil, length = nil)
+        length ? length : value.size
       end
 
-      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big, _ = nil, _ = nil)
-        str = (@size < 0 ? input.readline("\x00") : input.read(@size))
-        value = (input_big ? @rl_be[str] : @rl_le[str])
-        str = (output_big ? @sl_be[value] : @sl_le[value])
+      def self.load(input,  input_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
+        str = (length ? input.read(length) : input.readline("\x00"))
+      end
+
+      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big, _ = nil, _ = nil, length = nil)
+        str = (length ? input.read(length) : input.readline("\x00"))
         output.write(str)
-        value
+        str
       end
 
-      def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape)
-        if @size < 0
-          kind::new(previous_offset, previous_offset + value.size - 1)
+      def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape, length = nil)
+        if length
+          kind::new(previous_offset, previous_offset + length - 1)
         else
-          kind::new(previous_offset, previous_offset + @size - 1)
+          kind::new(previous_offset, previous_offset + value.size - 1)
         end
       end
 
+      def self.dump(value, output, output_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
+        output.write(value)
+      end
     end
 
-    def self.register_field(field, type, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+    def self.register_field(field, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       if type.kind_of?(Symbol)
         if type[0] == 'a'
           real_type = Class::new(Str) do init(sym) end
@@ -378,7 +426,7 @@ module LibBin
       else
         real_type = type
       end
-      @fields.push(Field::new(field, real_type, count, offset, sequence, condition, relative_offset))
+      @fields.push(Field::new(field, real_type, length, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
 
@@ -389,8 +437,8 @@ module LibBin
       init(#{symbol.inspect})
     end
 
-    def self.#{name}(field, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
-      @fields.push(Field::new(field, #{klassname}, count, offset, sequence, condition, relative_offset))
+    def self.#{name}(field, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+      @fields.push(Field::new(field, #{klassname}, length, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
 EOF
@@ -430,14 +478,13 @@ EOF
     create_scalar_type(:pghalf_be)
 
     def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
-      sym = (length ? :"a#{length}" : :"a*")
+      sym = (length ? :"a" : :"a*")
       c = Class::new(Str) do
         init(sym)
       end
-      @fields.push(Field::new(field, c, count, offset, sequence, condition, relative_offset))
+      @fields.push(Field::new(field, c, length, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
-
 
   end
 

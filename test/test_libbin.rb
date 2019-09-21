@@ -9,7 +9,7 @@ class LibBinTest < Minitest::Test
   def test_half
     c = Class::new(LibBin::DataConverter) do
       register_field :a, :half, count: 4
-      register_field :b, :pghalf, count: 4
+      register_field :b, :pghalf, length: 4
     end
 
     [true, false].each { |big|
@@ -35,7 +35,7 @@ class LibBinTest < Minitest::Test
 
   def test_half_le
     c = Class::new(LibBin::DataConverter) do
-      register_field :a, :half_le, count: 4
+      register_field :a, :half_le, length: 4
       register_field :b, :pghalf_le, count: 4
     end
 
@@ -332,7 +332,7 @@ class LibBinTest < Minitest::Test
     end
     b = Class::new(LibBin::DataConverter) do
       register_field :header, h
-      int32 :data, count: 'header.count', offset: 'header.offset'
+      int32 :data, length: 'header.count', offset: 'header.offset'
     end
 
     [true, false].each { |big|

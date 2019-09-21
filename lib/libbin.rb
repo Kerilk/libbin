@@ -142,10 +142,15 @@ module LibBin
       return __decode_expression(type)
     end
 
+    def __decode_length(length)
+      __decode_expression(length)
+    end
+
     def __decode_static_conditions(field)
       @__offset = nil
       @__condition = nil
       @__type = nil
+      @__length = nil
       @__count = nil
       unless field.sequence?
         @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
@@ -153,6 +158,7 @@ module LibBin
         @__condition = __decode_condition(field.condition)
         throw :ignored, nil unless @__condition
         @__type = __decode_type(field.type)
+        @__length = __decode_length(field.length)
       end
       @__count = __decode_count(field.count)
     end
@@ -162,17 +168,20 @@ module LibBin
       @__offset = nil
       @__condition = nil
       @__type = nil
+      @__length = nil
       @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
       return false if @__offset == false
       @__condition = __decode_condition(field.condition)
       return false unless @__condition
       @__type = __decode_type(field.type)
+      @__length = __decode_length(field.length)
       return true
     end
 
     def __restore_context
       @__iterator = nil
       @__type = nil
+      @__length = nil
       @__count = nil
       @__offset = nil
       @__condition = nil
@@ -183,7 +192,7 @@ module LibBin
       vs = @__count.times.collect do |it|
         @__iterator = it
         if __decode_dynamic_conditions(field)
-          @__type::convert(@__input, @__output, @__input_big, @__output_big, self, it)
+          @__type::convert(@__input, @__output, @__input_big, @__output_big, self, it, @__length)
         else
           nil
         end
@@ -198,7 +207,7 @@ module LibBin
       vs = @__count.times.collect do |it|
         @__iterator = it
         if __decode_dynamic_conditions(field)
-          @__type::load(@__input, @__input_big, self, it)
+          @__type::load(@__input, @__input_big, self, it, @__length)
         else
           nil
         end
@@ -214,7 +223,7 @@ module LibBin
       vs.each_with_index do |v, it|
         @__iterator = it
         if __decode_dynamic_conditions(field)
-          @__type::dump(v, @__output, @__output_big, self, it)
+          @__type::dump(v, @__output, @__output_big, self, it, @__length)
         end
       end
       __restore_context
@@ -226,7 +235,7 @@ module LibBin
       vs = vs.each_with_index.collect do |v, it|
         @__iterator = it
         if __decode_dynamic_conditions(field)
-          sh = @__type::shape(v, @__cur_position, self, it, kind)
+          sh = @__type::shape(v, @__cur_position, self, it, kind, @__length)
           @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
           sh
         end
@@ -326,28 +335,57 @@ module LibBin
       self
     end
       
-    def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big?, parent = nil, index = nil)
-      h = self::new
-      h.__convert(input, output, input_big, output_big, parent, index)
-      h
+    def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big?, parent = nil, index = nil, length = nil)
+      if length
+        length.times.collect {
+          h = self::new
+          h.__load(input, input_big, parent, index)
+        }
+      else
+        h = self::new
+        h.__convert(input, output, input_big, output_big, parent, index)
+      end
     end
 
-    def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil)
-      h = self::new
-      h.__load(input, input_big, parent, index)
-      h
+    def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+      if length
+        length.times.collect {
+          h = self::new
+          h.__load(input, input_big, parent, index)
+        }
+      else
+        h = self::new
+        h.__load(input, input_big, parent, index)
+      end
     end
 
-    def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil)
-      value.__dump(output, output_big, parent, index)
+    def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+      if length
+        length.times.collect { |i|
+          value[i].__dump(output, output_big, parent, index)
+        }
+        value
+      else
+        value.__dump(output, output_big, parent, index)
+      end
     end
 
-    def self.size(value, previous_offset = 0, parent = nil, index = nil)
-      value.__shape(previous_offset, parent, index).size
+    def self.size(value, previous_offset = 0, parent = nil, index = nil, length = nil)
+      if length
+        shape(value, previous_offset, parent, index, length).size
+      else
+        value.__shape(previous_offset, parent, index).size
+      end
     end
 
-    def self.shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape)
-      value.__shape(previous_offset, parent, index, kind)
+    def self.shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
+      if length
+        kind::new(length.times.collect { |i|
+          value[i].__shape(previous_offset, parent, index, kind)
+        })
+      else
+        value.__shape(previous_offset, parent, index, kind)
+      end
     end
 
   end
