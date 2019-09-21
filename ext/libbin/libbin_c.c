@@ -11,7 +11,7 @@ static VALUE pghalf_from_string_p(VALUE self, VALUE str, VALUE pack_str) {
 	Check_Type(str, T_STRING);
 	Check_Type(pack_str, T_STRING);
 	VALUE arr = rb_funcall(str, rb_intern("unpack"), 1, pack_str);
-        uint16_t val = NUM2USHORT(rb_funcall(arr, rb_intern("first"), 0));
+	uint16_t val = NUM2USHORT(rb_funcall(arr, rb_intern("first"), 0));
 	union float_u res;
 
 	res.i = pghalf_to_float(val);
@@ -22,7 +22,7 @@ static VALUE half_from_string_p(VALUE self, VALUE str, VALUE pack_str) {
 	Check_Type(str, T_STRING);
 	Check_Type(pack_str, T_STRING);
 	VALUE arr = rb_funcall(str, rb_intern("unpack"), 1, pack_str);
-        uint16_t val = NUM2USHORT(rb_funcall(arr, rb_intern("first"), 0));
+	uint16_t val = NUM2USHORT(rb_funcall(arr, rb_intern("first"), 0));
 	union float_u res;
 
 	res.i = half_to_float(val);
@@ -32,25 +32,25 @@ static VALUE half_from_string_p(VALUE self, VALUE str, VALUE pack_str) {
 static VALUE pghalf_to_string_p(VALUE self, VALUE number, VALUE pack_str) {
 	Check_Type(number, T_FLOAT);
 	union float_u val;
-        uint16_t res;
+	uint16_t res;
 
 	val.f = NUM2DBL(number);
 	res = pghalf_from_float(val.i);
-        VALUE arr = rb_ary_new3(1, UINT2NUM(res) );
+	VALUE arr = rb_ary_new3(1, UINT2NUM(res) );
 
-        return rb_funcall(arr, rb_intern("pack"), 1, pack_str);
+	return rb_funcall(arr, rb_intern("pack"), 1, pack_str);
 }
 
 static VALUE half_to_string_p(VALUE self, VALUE number, VALUE pack_str) {
 	Check_Type(number, T_FLOAT);
 	union float_u val;
-        uint16_t res;
+	uint16_t res;
 
 	val.f = NUM2DBL(number);
 	res = half_from_float(val.i);
-        VALUE arr = rb_ary_new3(1, UINT2NUM(res) );
+	VALUE arr = rb_ary_new3(1, UINT2NUM(res) );
 
-        return rb_funcall(arr, rb_intern("pack"), 1, pack_str);
+	return rb_funcall(arr, rb_intern("pack"), 1, pack_str);
 }
 
 void Init_libbin_c() {
