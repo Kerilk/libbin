@@ -188,59 +188,79 @@ module LibBin
     end
 
     def __convert_field(field)
-      __decode_static_conditions(field)
+      instance_exec(field, &field.decode_static_conditions)
       vs = @__count.times.collect do |it|
         @__iterator = it
-        if __decode_dynamic_conditions(field)
+        if instance_exec(field, &field.decode_dynamic_conditions)
           @__type::convert(@__input, @__output, @__input_big, @__output_big, self, it, @__length)
         else
           nil
         end
       end
-      __restore_context
+      @__iterator = nil
+      @__type = nil
+      @__length = nil
+      @__count = nil
+      @__offset = nil
+      @__condition = nil
       vs = vs.first unless field.count
       vs
     end
 
     def __load_field(field)
-      __decode_static_conditions(field)
+      instance_exec(field, &field.decode_static_conditions)
       vs = @__count.times.collect do |it|
         @__iterator = it
-        if __decode_dynamic_conditions(field)
+        if instance_exec(field, &field.decode_dynamic_conditions)
           @__type::load(@__input, @__input_big, self, it, @__length)
         else
           nil
         end
       end
-      __restore_context
+      @__iterator = nil
+      @__type = nil
+      @__length = nil
+      @__count = nil
+      @__offset = nil
+      @__condition = nil
       vs = vs.first unless field.count
       vs
     end
 
     def __dump_field(vs, field)
-      __decode_static_conditions(field)
+      instance_exec(field, &field.decode_static_conditions)
       vs = [vs] unless field.count
       vs.each_with_index do |v, it|
         @__iterator = it
-        if __decode_dynamic_conditions(field)
+        if instance_exec(field, &field.decode_dynamic_conditions)
           @__type::dump(v, @__output, @__output_big, self, it, @__length)
         end
       end
-      __restore_context
+      @__iterator = nil
+      @__type = nil
+      @__length = nil
+      @__count = nil
+      @__offset = nil
+      @__condition = nil
     end
 
     def __shape_field(vs, previous_offset, kind, field)
-      __decode_static_conditions(field)
+      instance_exec(field, &field.decode_static_conditions)
       vs = [vs] unless field.count
       vs = vs.each_with_index.collect do |v, it|
         @__iterator = it
-        if __decode_dynamic_conditions(field)
+        if instance_exec(field, &field.decode_dynamic_conditions)
           sh = @__type::shape(v, @__cur_position, self, it, kind, @__length)
           @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
           sh
         end
       end
-      __restore_context
+      @__iterator = nil
+      @__type = nil
+      @__length = nil
+      @__count = nil
+      @__offset = nil
+      @__condition = nil
       vs = vs.first unless field.count
       vs
     end

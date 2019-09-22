@@ -77,7 +77,9 @@ module LibBin
                 :count,
                 :offset,
                 :sequence,
-                :condition
+                :condition,
+                :decode_static_conditions,
+                :decode_dynamic_conditions
 
     def sequence?
       @sequence
@@ -85,6 +87,92 @@ module LibBin
 
     def relative_offset?
       @relative_offset
+    end
+
+    def generate_decode_expression(sym, name)
+      case sym
+      when Proc
+        return "field.#{name}.call"
+      when String
+        return "eval('#{sym.gsub("..","__parent").gsub("\\",".")}')"
+      else
+        return "field.#{name}"
+      end
+    end
+
+    def generate_static_decoder(type, length, count, offset, sequence, condition, relative_offset)
+      block_src =  <<EOF
+lambda { |field|
+  @__offset = nil
+  @__condition = nil
+  @__type = nil
+  @__length = nil
+  @__count = nil
+EOF
+      unless sequence
+        if offset
+          block_src << <<EOF
+@__offset = begin
+  off = #{generate_decode_expression(offset, :offset)}
+  if off == 0x0
+    false
+  else
+    offset += @__position if field.relative_offset?
+    @__cur_position = off
+    @__input.seek(off) if @__input
+    @__output.seek(off) if @__output
+    off
+  end
+end
+EOF
+          block_src << "throw :ignored, nil if @__offset == false\n"
+        end
+        if condition
+          block_src << "@__condition = " << generate_decode_expression(condition, :condition) << "\n"
+          block_src << "throw :ignored, nil unless @__condition\n"
+        else
+          block_src << "@__condition = true\n" 
+        end
+        block_src << "@__type = " << generate_decode_expression(type, :type) << "\n"
+        if length
+          block_src << "@__length = " << generate_decode_expression(length, :length) << "\n"
+        end
+      end
+      if count
+        block_src << " @__count = " << generate_decode_expression(count, :count) << "\n"
+      else
+        block_src << " @__count = 1\n"
+      end
+      block_src << "}\n"
+      eval(block_src)
+    end
+
+    def generate_dynamic_decoder(type, length, count, offset, sequence, condition, relative_offset)
+      return eval("lambda { |field| true }") unless sequence
+      block_src =  <<EOF
+lambda { |field|
+  @__offset = nil
+  @__condition = nil
+  @__type = nil
+  @__length = nil
+  @__count = nil
+EOF
+      if offset
+        block_src << "@__offset = __decode_seek_offset(field.offset, field.relative_offset?)\n"
+        block_src << "return false if @__offset == false\n"
+      end
+      if condition
+        block_src << "@__condition = " << generate_decode_expression(condition, :condition) << "\n"
+        block_src << "return false unless @__condition\n"
+      else
+        block_src << "@__condition = true\n"
+      end
+      block_src << "@__type = " << generate_decode_expression(type, :type) << "\n"
+      if length
+        block_src << "@__length = " << generate_decode_expression(length, :length) << "\n"
+      end
+      block_src << "true }\n"
+      eval(block_src)
     end
 
     def initialize(name, type, length, count, offset, sequence, condition, relative_offset)
@@ -96,6 +184,8 @@ module LibBin
       @sequence = sequence
       @condition = condition
       @relative_offset = relative_offset
+      @decode_static_conditions = generate_static_decoder(type, length, count, offset, sequence, condition, relative_offset)
+      @decode_dynamic_conditions = generate_dynamic_decoder(type, length, count, offset, sequence, condition, relative_offset)
     end
 
   end
@@ -429,6 +519,8 @@ module LibBin
       @fields.push(Field::new(field, real_type, length, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
+
+
 
     def self.create_scalar_type(symbol)
       klassname, name = SCALAR_TYPES[symbol]
