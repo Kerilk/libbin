@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'libbin'
-  s.version = "1.0.4"
+  s.version = "1.0.5"
   s.author = "Brice Videau"
   s.email = "brice.videau@imag.fr"
   s.homepage = "https://github.com/kerilk/libbin"
