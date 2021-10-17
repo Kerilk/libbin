@@ -3,9 +3,10 @@ module LibBin
   module RangeRefinement
     refine Range do
       def +(other)
-        Range::new(first <= other.first ? first : other.first,
-                   last >= other.last ? last : other.last,
-                   exclude_end?)
+        return other.dup unless min
+        return self.dup unless other.min
+        Range::new(min <= other.min ? min : other.min,
+                   max >= other.max ? max : other.max)
       end
     end
   end
@@ -26,7 +27,7 @@ module LibBin
         @members = nil
       else
         @members = args[0]
-        @range = @members.values.flatten.compact.collect(&:range).reduce { |memo, obj| memo + obj }
+        @range = @members.values.flatten.compact.collect(&:range).reduce(:+)
       end
     end
 
@@ -52,7 +53,7 @@ module LibBin
       if args.length == 2
         @range = Range::new(args[0], args[1])
       else
-        @range = args[0].values.flatten.compact.collect(&:range).reduce { |memo, obj| memo + obj }
+        @range = args[0].values.flatten.compact.collect(&:range).reduce(:+)
       end
     end
 
