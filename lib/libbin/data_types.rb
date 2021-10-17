@@ -412,7 +412,11 @@ module LibBin
       end
 
       def self.dump(value, output, output_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
-        output.write(value)
+        if length
+          output.write([value].pack("Z#{length}"))
+        else
+          output.write(value)
+        end
       end
     end
 

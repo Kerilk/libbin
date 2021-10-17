@@ -457,4 +457,28 @@ class LibBinTest < Minitest::Test
     end
   end
 
+  def test_strings2
+    b = Class::new(LibBin::DataConverter) do
+      string :h, 32
+      float :f
+    end
+
+    File::open("binary/test_string2.bin") do |f|
+      s = b::load(f)
+      assert_equal("Hello"+"\x00"*27, s.h)
+      assert_equal(14.5, s.f)
+      str = StringIO::new
+      b::dump(s, str)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
+      s.h = "Hello"
+      str = StringIO::new
+      b::dump(s, str)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
+    end
+  end
+
 end
