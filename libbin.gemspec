@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name = 'libbin'
-  s.version = "1.0.6"
+  s.version = "1.0.7"
   s.author = "Brice Videau"
-  s.email = "brice.videau@imag.fr"
+  s.email = "brice.videau@gmail.com"
   s.homepage = "https://github.com/kerilk/libbin"
   s.summary = "Library for loading and converting binary files"
   s.description = "Read, write and convert Binary data in Ruby."
