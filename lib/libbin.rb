@@ -335,11 +335,11 @@ module LibBin
       self
     end
       
-    def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big?, parent = nil, index = nil, length = nil)
+    def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
       if length
         length.times.collect {
           h = self::new
-          h.__load(input, input_big, parent, index)
+          h.__convert(input, output, input_big, output_big, parent, index)
         }
       else
         h = self::new

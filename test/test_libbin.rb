@@ -395,6 +395,39 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def test_class_count
+    h = Class::new(LibBin::DataConverter) do
+      register_field :f, :half
+    end
+    pgh = Class::new(LibBin::DataConverter) do
+      register_field :f, :pghalf
+    end
+    c = Class::new(LibBin::DataConverter) do
+      register_field :a, h, count: 4
+      register_field :b, pgh, length: 4
+    end
+
+    [true, false].each { |big|
+      File::open("binary/half_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal( (1..4).to_a, s.a.collect(&:f) )
+        assert_equal( (1..4).to_a, s.b.collect(&:f) )
+        str = StringIO::new
+        c::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
+        File::open("binary/half_#{SUFFIX[!big]}.bin") do |g|
+          str = StringIO::new
+          f.rewind
+          s = c::convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
+      end
+    }
+  end
+
   def test_size
     h = Class::new(LibBin::DataConverter) do
       int32 :offset1
