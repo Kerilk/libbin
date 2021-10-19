@@ -5,12 +5,12 @@ require_relative 'libbin/data_types'
 
 module LibBin
 
-  @__big_architecture = [0x12345678].pack("i") == "\x12\x34\x56\x78"
+  BIG_ARCHITECTURE = [0x12345678].pack("i") == "\x12\x34\x56\x78"
   @__big = nil
 
   def self.default_big?
     if @__big.nil?
-      @__big_architecture
+      BIG_ARCHITECTURE
     else
       @__big
     end
@@ -137,7 +137,7 @@ module LibBin
     end
 
     def __decode_type(type)
-      return __decode_expression(type)
+      __decode_expression(type)
     end
 
     def __decode_length(length)

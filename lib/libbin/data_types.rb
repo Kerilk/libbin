@@ -350,8 +350,8 @@ module LibBin
 
     class Scalar
 
-      def self.size(*args)
-        @size
+      def self.size(_, _ = 0, _ = nil, _ = nil, length = nil)
+        length ? length * @size : @size
       end
 
       def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape, length = nil)
@@ -398,7 +398,7 @@ module LibBin
         str = (length ? input.read(length) : input.readline("\x00"))
       end
 
-      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !LibBin::default_big, _ = nil, _ = nil, length = nil)
+      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, _ = nil, _ = nil, length = nil)
         str = (length ? input.read(length) : input.readline("\x00"))
         output.write(str)
         str
