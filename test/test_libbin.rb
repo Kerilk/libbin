@@ -3,6 +3,18 @@ require 'minitest/autorun'
 require 'libbin'
 require 'stringio'
 
+def bin_path(filename)
+  File.join(__dir__, "binary", filename)
+end
+
+def open_bin(filename, &block)
+  File::open(bin_path(filename), "rb", &block)
+end
+
+def new_stringio()
+  StringIO::new("", "r+b")
+end
+
 class LibBinTest < Minitest::Test
   SUFFIX = { true => "be", false => "le" }
 
@@ -13,17 +25,17 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/half_#{SUFFIX[big]}.bin") do |f|
+      open_bin("half_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal( (1..4).to_a, s.a )
         assert_equal( (1..4).to_a, s.b )
-        str = StringIO::new
+        str = new_stringio
         c::dump(s, str, big)
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
-        File::open("binary/half_#{SUFFIX[!big]}.bin") do |g|
-          str = StringIO::new
+        open_bin("half_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
           f.rewind
           s = c::convert(f, str, big, !big)
           str.rewind
@@ -39,17 +51,17 @@ class LibBinTest < Minitest::Test
       register_field :b, :pghalf_le, count: 4
     end
 
-    File::open("binary/half_le.bin") do |f|
+    open_bin("half_le.bin") do |f|
       s = c::load(f, true)
       assert_equal( (1..4).to_a, s.a )
       assert_equal( (1..4).to_a, s.b )
-      str = StringIO::new
+      str = new_stringio
       c::dump(s, str, true)
       f.rewind
       str.rewind
       assert_equal(f.read, str.read)
       f.rewind
-      str = StringIO::new
+      str = new_stringio
       c::convert(f, str, true, true)
       f.rewind
       str.rewind
@@ -63,17 +75,17 @@ class LibBinTest < Minitest::Test
       register_field :b, :pghalf_be, count: 4
     end
 
-    File::open("binary/half_be.bin") do |f|
+    open_bin("half_be.bin") do |f|
       s = c::load(f, false)
       assert_equal( (1..4).to_a, s.a )
       assert_equal( (1..4).to_a, s.b )
-      str = StringIO::new
+      str = new_stringio
       c::dump(s, str, false)
       f.rewind
       str.rewind
       assert_equal(f.read, str.read)
       f.rewind
-      str = StringIO::new
+      str = new_stringio
       c::convert(f, str, false, false)
       f.rewind
       str.rewind
@@ -91,20 +103,20 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/simple_layout_#{SUFFIX[big]}.bin") do |f|
+      open_bin("simple_layout_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal(1, s.a)
         assert_equal(0, s.b)
         assert_equal(2, s.c)
         assert_equal(3, s.d)
         assert_equal(4.0, s.e)
-        str = StringIO::new
+        str = new_stringio
         c::dump(s, str, big)
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
-        File::open("binary/simple_layout_#{SUFFIX[!big]}.bin") do |g|
-          str = StringIO::new
+        open_bin("simple_layout_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
           f.rewind
           s = c::convert(f, str, big, !big)
           str.rewind
@@ -124,14 +136,14 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/simple_layout_le.bin") do |f|
+      open_bin("simple_layout_le.bin") do |f|
         s = c::load(f, big)
         assert_equal(1, s.a)
         assert_equal(0, s.b)
         assert_equal(2, s.c)
         assert_equal(3, s.d)
         assert_equal(4.0, s.e)
-        str = StringIO::new
+        str = new_stringio
         c::dump(s, str, big)
         f.rewind
         str.rewind
@@ -148,14 +160,14 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/simple_layout_be.bin") do |f|
+      open_bin("simple_layout_be.bin") do |f|
         s = c::load(f, big)
         assert_equal(1, s.a)
         assert_equal(0, s.b)
         assert_equal(2, s.c)
         assert_equal(3, s.d)
         assert_equal(4.0, s.e)
-        str = StringIO::new
+        str = new_stringio
         c::dump(s, str, big)
         f.rewind
         str.rewind
@@ -174,20 +186,20 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/simple_layout_#{SUFFIX[big]}.bin") do |f|
+      open_bin("simple_layout_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal(1, s.a)
         assert_equal(0, s.b)
         assert_equal(2, s.c)
         assert_equal(3, s.d)
         assert_equal(4.0, s.e)
-        str = StringIO::new
+        str = new_stringio
         c::dump(s, str, big)
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
-        File::open("binary/simple_layout_#{SUFFIX[!big]}.bin") do |g|
-          str = StringIO::new
+        open_bin("simple_layout_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
           f.rewind
           s = c::convert(f, str, big, !big)
           str.rewind
@@ -203,14 +215,14 @@ class LibBinTest < Minitest::Test
       int8 :a, count: 'num'
     end
 
-    File::open("binary/simple_array.bin") do |f|
+    open_bin("simple_array.bin") do |f|
       s = c::load(f)
       assert_equal(15,  s.num)
       assert_equal(s.num, s.a.length)
       s.a.each_with_index { |e, i|
          assert_equal(i, e)
       }
-      str = StringIO::new
+      str = new_stringio
       c::dump(s, str)
       f.rewind
       str.rewind
@@ -225,7 +237,7 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/simple_layout_#{SUFFIX[big]}.bin") do |f|
+      open_bin("simple_layout_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal(0, s.b)
         assert_equal(3, s.d)
@@ -240,7 +252,7 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/simple_layout_#{SUFFIX[big]}.bin") do |f|
+      open_bin("simple_layout_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal(0, s.b)
         assert_equal(3, s.d)
@@ -255,16 +267,16 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/sequence_layout_#{SUFFIX[big]}.bin") do |f|
+      open_bin("sequence_layout_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal((1..6).to_a, s.data)
-        str = StringIO::new
+        str = new_stringio
         c::dump(s, str, big)
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
-        File::open("binary/sequence_layout_#{SUFFIX[!big]}.bin") do |g|
-          str = StringIO::new
+        open_bin("sequence_layout_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
           f.rewind
           s = c::convert(f, str, big, !big)
           str.rewind
@@ -283,7 +295,7 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/sequence_layout_#{SUFFIX[big]}.bin") do |f|
+      open_bin("sequence_layout_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal([1, nil, 3, nil, 5, nil], s.data)
       end
@@ -297,7 +309,7 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/sequence_null_layout_#{SUFFIX[big]}.bin") do |f|
+      open_bin("sequence_null_layout_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal([1, 2, nil, 4, 5, 6], s.data)
       end
@@ -314,7 +326,7 @@ class LibBinTest < Minitest::Test
       register_field :bs, b, count: 5
     end
 
-    File::open("binary/simple_array.bin") do |f|
+    open_bin("simple_array.bin") do |f|
       s = c::load(f)
       assert_equal(15,  s.bs[0].a)
       assert_equal(0,  s.bs[0].b)
@@ -336,20 +348,20 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/offset_#{SUFFIX[big]}.bin") do |f|
+      open_bin("offset_#{SUFFIX[big]}.bin") do |f|
         s = b::load(f, big)
         assert_equal(32, s.header.offset)
         assert_equal(4, s.header.count)
         (0..3).each { |i|
           assert_equal(i+1, s.data[i])
         }
-        str = StringIO::new
+        str = new_stringio
         b::dump(s, str, big)
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
-        File::open("binary/offset_#{SUFFIX[!big]}.bin") do |g|
-          str = StringIO::new
+        open_bin("offset_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
           f.rewind
           s = b::convert(f, str, big, !big)
           str.rewind
@@ -372,20 +384,20 @@ class LibBinTest < Minitest::Test
       register_field :body, d
     end
     [true, false].each { |big|
-      File::open("binary/offset_#{SUFFIX[big]}.bin") do |f|
+      open_bin("offset_#{SUFFIX[big]}.bin") do |f|
         s = b::load(f, big)
         assert_equal(32, s.header.offset)
         assert_equal(4, s.header.count)
         (0..3).each { |i|
           assert_equal(i+1, s.body.data[i])
         }
-        str = StringIO::new
+        str = new_stringio
         b::dump(s, str, big)
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
-        File::open("binary/offset_#{SUFFIX[!big]}.bin") do |g|
-          str = StringIO::new
+        open_bin("offset_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
           f.rewind
           s = b::convert(f, str, big, !big)
           str.rewind
@@ -408,17 +420,17 @@ class LibBinTest < Minitest::Test
     end
 
     [true, false].each { |big|
-      File::open("binary/half_#{SUFFIX[big]}.bin") do |f|
+      open_bin("half_#{SUFFIX[big]}.bin") do |f|
         s = c::load(f, big)
         assert_equal( (1..4).to_a, s.a.collect(&:f) )
         assert_equal( (1..4).to_a, s.b.collect(&:f) )
-        str = StringIO::new
+        str = new_stringio
         c::dump(s, str, big)
         f.rewind
         str.rewind
         assert_equal(f.read, str.read)
-        File::open("binary/half_#{SUFFIX[!big]}.bin") do |g|
-          str = StringIO::new
+        open_bin("half_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
           f.rewind
           s = c::convert(f, str, big, !big)
           str.rewind
@@ -442,7 +454,7 @@ class LibBinTest < Minitest::Test
       register_field :body, b
     end
     [false, true].each { |big|
-      File::open("binary/test_size_#{SUFFIX[big]}.bin") do |f|
+      open_bin("test_size_#{SUFFIX[big]}.bin") do |f|
         str = s::load(f, big)
         assert_equal(1, str.body.datum1)
         assert_equal(2, str.body.datum2)
@@ -463,7 +475,7 @@ class LibBinTest < Minitest::Test
       int8 :a, count: 'num'
     end
 
-    File::open("binary/simple_array.bin") do |f|
+    open_bin("simple_array.bin") do |f|
       s = c::load(f)
       assert_equal(0x10, s.__size)
       shape = s.__shape
@@ -479,7 +491,7 @@ class LibBinTest < Minitest::Test
       string :w, offset: 0x10
     end
 
-    File::open("binary/test_string.bin") do |f|
+    open_bin("test_string.bin") do |f|
       s = b::load(f)
       assert_equal("Hello", s.h)
       assert_equal("World!\x00", s.w)
@@ -496,17 +508,17 @@ class LibBinTest < Minitest::Test
       float :f
     end
 
-    File::open("binary/test_string2.bin") do |f|
+    open_bin("test_string2.bin") do |f|
       s = b::load(f)
       assert_equal("Hello"+"\x00"*27, s.h)
       assert_equal(14.5, s.f)
-      str = StringIO::new
+      str = new_stringio
       b::dump(s, str)
       f.rewind
       str.rewind
       assert_equal(f.read, str.read)
       s.h = "Hello"
-      str = StringIO::new
+      str = new_stringio
       b::dump(s, str)
       f.rewind
       str.rewind
