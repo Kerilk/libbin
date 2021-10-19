@@ -58,30 +58,28 @@ static VALUE half_to_string_p(VALUE self, VALUE number, VALUE pack_str) {
 }
 
 static VALUE decode_static_conditions(VALUE self, VALUE field) {
-  VALUE iv;
-  rb_iv_set(self, "@__offset", Qnil);
-  rb_iv_set(self, "@__condition", Qnil);
-  rb_iv_set(self, "@__type", Qnil);
-  rb_iv_set(self, "@__length", Qnil);
-  rb_iv_set(self, "@__count", Qnil);
-  iv = rb_iv_get(field, "@sequence");
-  if (!RTEST(iv)) {
+  rb_ivar_set(self, rb_intern("@__offset"), Qnil);
+  rb_ivar_set(self, rb_intern("@__condition"), Qnil);
+  rb_ivar_set(self, rb_intern("@__type"), Qnil);
+  rb_ivar_set(self, rb_intern("@__length"), Qnil);
+  rb_ivar_set(self, rb_intern("@__count"), Qnil);
+  if (!RTEST(rb_ivar_get(field, rb_intern("@sequence")))) {
     VALUE tmp;
     tmp = rb_funcall(self, rb_intern("__decode_seek_offset"), 2,
-        rb_iv_get(field, "@offset"),
-        rb_iv_get(field, "@relative_offset")
+        rb_ivar_get(field, rb_intern("@offset")),
+        rb_ivar_get(field, rb_intern("@relative_offset"))
       );
-    rb_iv_set(self, "@__offset", tmp);
+    rb_ivar_set(self, rb_intern("@__offset"), tmp);
     if (!tmp)
       rb_throw_obj(ID2SYM(rb_intern("ignored")), Qnil);
-    tmp = rb_funcall(self, rb_intern("__decode_condition"), 1, rb_iv_get(field, "@condition"));
-    rb_iv_set(self, "@__condition", tmp);
+    tmp = rb_funcall(self, rb_intern("__decode_condition"), 1, rb_ivar_get(field, rb_intern("@condition")));
+    rb_ivar_set(self, rb_intern("@__condition"), tmp);
     if (!RTEST(tmp))
       rb_throw_obj(ID2SYM(rb_intern("ignored")), Qnil);
-    rb_iv_set(self, "@__type", rb_funcall(self, rb_intern("__decode_type"), 1, rb_iv_get(field, "@type")));
-    rb_iv_set(self, "@__length", rb_funcall(self, rb_intern("__decode_length"), 1, rb_iv_get(field, "@length")));
+    rb_ivar_set(self, rb_intern("@__type"), rb_funcall(self, rb_intern("__decode_type"), 1, rb_ivar_get(field, rb_intern("@type"))));
+    rb_ivar_set(self, rb_intern("@__length"), rb_funcall(self, rb_intern("__decode_length"), 1, rb_ivar_get(field, rb_intern("@length"))));
   }
-  return rb_iv_set(self, "@__count", rb_funcall(self, rb_intern("__decode_count"), 1, rb_iv_get(field, "@count")));
+  return rb_ivar_set(self, rb_intern("@__count"), rb_funcall(self, rb_intern("__decode_count"), 1, rb_ivar_get(field, rb_intern("@count"))));
 }
 
 void Init_libbin_c() {
