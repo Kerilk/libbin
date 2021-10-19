@@ -54,7 +54,6 @@ static VALUE half_to_string_p(VALUE self, VALUE number, VALUE pack_str) {
 
   return rb_funcall(arr, rb_intern("pack"), 1, pack_str);
 }
-}
 
 void Init_libbin_c() {
   mLibBin = rb_define_module("LibBin");
