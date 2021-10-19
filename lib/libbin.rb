@@ -144,22 +144,22 @@ module LibBin
       __decode_expression(length)
     end
 
-    def __decode_static_conditions(field)
-      @__offset = nil
-      @__condition = nil
-      @__type = nil
-      @__length = nil
-      @__count = nil
-      unless field.sequence?
-        @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
-        throw :ignored, nil if @__offset == false
-        @__condition = __decode_condition(field.condition)
-        throw :ignored, nil unless @__condition
-        @__type = __decode_type(field.type)
-        @__length = __decode_length(field.length)
-      end
-      @__count = __decode_count(field.count)
-    end
+#    def __decode_static_conditions(field)
+#      @__offset = nil
+#      @__condition = nil
+#      @__type = nil
+#      @__length = nil
+#      @__count = nil
+#      unless field.sequence?
+#        @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
+#        throw :ignored, nil if @__offset == false
+#        @__condition = __decode_condition(field.condition)
+#        throw :ignored, nil unless @__condition
+#        @__type = __decode_type(field.type)
+#        @__length = __decode_length(field.length)
+#      end
+#      @__count = __decode_count(field.count)
+#    end
 
     def __decode_dynamic_conditions(field)
       return true unless field.sequence?
