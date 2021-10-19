@@ -1,5 +1,3 @@
-module LibBin
-end
 require "libbin_c.so"
 
 require_relative 'libbin/alignment'
