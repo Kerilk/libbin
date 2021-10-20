@@ -790,7 +790,7 @@ static VALUE cHalf_load(int argc, VALUE* argv, VALUE self)
 
   VALUE str;
   VALUE res;
-  long n = RTEST(length) ? NUM2LONG(length) : 1
+  long n = RTEST(length) ? NUM2LONG(length) : 1;
   size_t cnt = sizeof(uint16_t) * n;
   str = rb_funcall(input, rb_intern("read"), 1, ULL2NUM(cnt));
   char *str_data = RSTRING_PTR(str);
@@ -830,7 +830,7 @@ static VALUE cHalf_dump(int argc, VALUE* argv, VALUE self)
   little = RTEST(output_big) ? 0 : 1;
 
   VALUE str;
-  long n = RTEST(length) ? NUM2LONG(length) : 1
+  long n = RTEST(length) ? NUM2LONG(length) : 1;
   size_t cnt = sizeof(uint16_t) * n;
   str = rb_str_buf_new((long)cnt);
   char *str_data = RSTRING_PTR(str);
