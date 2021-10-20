@@ -71,35 +71,35 @@ module LibBin
 
   end
 
-  class Field
-    attr_reader :name,
-                :type,
-                :length,
-                :count,
-                :offset,
-                :sequence,
-                :condition
-
-    def sequence?
-      @sequence
-    end
-
-    def relative_offset?
-      @relative_offset
-    end
-
-    def initialize(name, type, length, count, offset, sequence, condition, relative_offset)
-      @name = name
-      @type = type
-      @length = length
-      @count = count
-      @offset = offset
-      @sequence = sequence
-      @condition = condition
-      @relative_offset = relative_offset
-    end
-
-  end
+#  class Field
+#    attr_reader :name,
+#                :type,
+#                :length,
+#                :count,
+#                :offset,
+#                :sequence,
+#                :condition
+#
+#    def sequence?
+#      @sequence
+#    end
+#
+#    def relative_offset?
+#      @relative_offset
+#    end
+#
+#    def initialize(name, type, length, count, offset, sequence, condition, relative_offset)
+#      @name = name
+#      @type = type
+#      @length = length
+#      @count = count
+#      @offset = offset
+#      @sequence = sequence
+#      @condition = condition
+#      @relative_offset = relative_offset
+#    end
+#
+#  end
 
   class DataConverter
 

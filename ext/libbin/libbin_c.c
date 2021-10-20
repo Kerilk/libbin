@@ -3,6 +3,132 @@
 #include "./pghalf.h"
 
 static VALUE mLibBin;
+static VALUE cField;
+
+struct cField_data {
+  VALUE name;
+  VALUE type;
+  VALUE length;
+  VALUE count;
+  VALUE offset;
+  VALUE sequence;
+  VALUE condition;
+  VALUE relative_offset;
+};
+
+static void cField_mark(void* data) {
+  void *start = data;
+  void *end = (char *)data + sizeof(struct cField_data);
+  rb_gc_mark_locations((VALUE *)start, (VALUE *)end);
+}
+
+static size_t cField_size(const void* data) {
+  return sizeof(struct cField_data);
+}
+
+static const rb_data_type_t cField_type = {
+  .wrap_struct_name = "cField_data",
+  .function = {
+    .dmark = cField_mark,
+    .dfree = RUBY_DEFAULT_FREE,
+    .dsize = cField_size,
+  },
+  .data = NULL,
+  .flags = RUBY_TYPED_FREE_IMMEDIATELY
+};
+
+static VALUE cField_alloc(VALUE self) {
+  struct cField_data *data;
+  VALUE res = TypedData_Make_Struct(self, struct cField_data, &cField_type, data);
+  return res;
+}
+
+static VALUE cField_initialize(
+    VALUE self,
+    VALUE name,
+    VALUE type,
+    VALUE length,
+    VALUE count,
+    VALUE offset,
+    VALUE sequence,
+    VALUE condition,
+    VALUE relative_offset) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  data->name = name;
+  data->type = type;
+  data->length = length;
+  data->count = count;
+  data->offset = offset;
+  data->sequence = sequence;
+  data->condition = condition;
+  data->relative_offset = relative_offset;
+  return self;
+}
+
+static VALUE cField_name(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->name;
+}
+
+static VALUE cField_get_type(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->type;
+}
+
+static VALUE cField_length(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->length;
+}
+
+static VALUE cField_count(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->count;
+}
+
+static VALUE cField_offset(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->offset;
+}
+
+static VALUE cField_sequence(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->sequence;
+}
+
+static VALUE cField_condition(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->condition;
+}
+
+static VALUE cField_relative_offset(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->relative_offset;
+}
+
+static void define_cField() {
+  cField = rb_define_class_under(mLibBin, "Field", rb_cObject);
+  rb_define_alloc_func(cField, cField_alloc);
+  rb_define_method(cField, "initialize", cField_initialize, 8);
+  rb_define_method(cField, "name", cField_name, 0);
+  rb_define_method(cField, "type", cField_get_type, 0);
+  rb_define_method(cField, "length", cField_length, 0);
+  rb_define_method(cField, "count", cField_count, 0);
+  rb_define_method(cField, "offset", cField_offset, 0);
+  rb_define_method(cField, "sequence", cField_sequence, 0);
+  rb_define_method(cField, "sequence?", cField_sequence, 0);
+  rb_define_method(cField, "condition", cField_condition, 0);
+  rb_define_method(cField, "relative_offset?", cField_relative_offset, 0);
+}
+
 static VALUE cDataConverter;
 
 struct cDataConverter_data {
@@ -266,47 +392,47 @@ static inline VALUE cDataConverter_decode_length(VALUE self, VALUE length) {
 
 static VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
   struct cDataConverter_data *data;
+  struct cField_data *field_data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
   data->__offset = Qnil;
   data->__condition = Qnil;
   data->__type = Qnil;
   data->__length = Qnil;
   data->__count = Qnil;
-  if (!RTEST(rb_ivar_get(field, rb_intern("@sequence")))) {
-    data->__offset = cDataConverter_decode_seek_offset(self,
-                       rb_ivar_get(field, rb_intern("@offset")),
-                       rb_ivar_get(field, rb_intern("@relative_offset")));
+  if (!RTEST(field_data->sequence)) {
+    data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset);
     if (!data->__offset)
       rb_throw_obj(ID2SYM(rb_intern("ignored")), Qnil);
-    data->__condition = cDataConverter_decode_condition(self, rb_ivar_get(field, rb_intern("@condition")));
+    data->__condition = cDataConverter_decode_condition(self, field_data->condition);
     if (!RTEST(data->__condition))
       rb_throw_obj(ID2SYM(rb_intern("ignored")), Qnil);
-    data->__type = cDataConverter_decode_type(self, rb_ivar_get(field, rb_intern("@type")));
-    data->__length = cDataConverter_decode_length(self, rb_ivar_get(field, rb_intern("@length")));
+    data->__type = cDataConverter_decode_type(self, field_data->type);
+    data->__length = cDataConverter_decode_length(self, field_data->length);
   }
-  data->__count = cDataConverter_decode_count(self, rb_ivar_get(field, rb_intern("@count")));
+  data->__count = cDataConverter_decode_count(self, field_data->count);
   return Qnil;
 }
 
 static VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE field) {
   struct cDataConverter_data *data;
-  if (!RTEST(rb_ivar_get(field, rb_intern("@sequence"))))
+  struct cField_data *field_data;
+  TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
+  if (!RTEST(field_data->sequence))
     return Qtrue;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__offset = Qnil;
   data->__condition = Qnil;
   data->__type = Qnil;
   data->__length = Qnil;
-  data->__offset = cDataConverter_decode_seek_offset(self,
-                     rb_ivar_get(field, rb_intern("@offset")),
-                     rb_ivar_get(field, rb_intern("@relative_offset")));
+  data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset);
   if (!data->__offset)
     return Qfalse;
-  data->__condition = cDataConverter_decode_condition(self, rb_ivar_get(field, rb_intern("@condition")));
+  data->__condition = cDataConverter_decode_condition(self, field_data->condition);
   if (!RTEST(data->__condition))
     return Qfalse;
-  data->__type = cDataConverter_decode_type(self, rb_ivar_get(field, rb_intern("@type")));
-  data->__length = cDataConverter_decode_length(self, rb_ivar_get(field, rb_intern("@length")));
+  data->__type = cDataConverter_decode_type(self, field_data->type);
+  data->__length = cDataConverter_decode_length(self, field_data->length);
   return Qtrue;
 }
 
@@ -325,10 +451,12 @@ static inline VALUE cDataConverter_restore_context(VALUE self) {
 static VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
+  struct cField_data *field_data;
   cDataConverter_decode_static_conditions(self, field);
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
-  if (RTEST(rb_ivar_get(field, rb_intern("@count")))) {
+  if (RTEST(field_data->count)) {
     long count = NUM2LONG(data->__count);
     res = rb_ary_new_capa(count);
 
@@ -368,10 +496,12 @@ static VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
 static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
+  struct cField_data *field_data;
   cDataConverter_decode_static_conditions(self, field);
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
-  if (RTEST(rb_ivar_get(field, rb_intern("@count")))) {
+  if (RTEST(field_data->count)) {
     long count = NUM2LONG(data->__count);
     res = rb_ary_new_capa(count);
 
@@ -406,10 +536,12 @@ static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
 static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
+  struct cField_data *field_data;
   cDataConverter_decode_static_conditions(self, field);
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
-  if (RTEST(rb_ivar_get(field, rb_intern("@count")))) {
+  if (RTEST(field_data->count)) {
     long count = RARRAY_LEN(values);
 
     for (long i = 0; i < count; i++) {
@@ -445,10 +577,12 @@ static VALUE cDataConverter_shape_field(
 {
   VALUE res;
   struct cDataConverter_data *data;
+  struct cField_data *field_data;
   cDataConverter_decode_static_conditions(self, field);
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
-  if (RTEST(rb_ivar_get(field, rb_intern("@count")))) {
+  if (RTEST(field_data->count)) {
     long count = RARRAY_LEN(values);
     res = rb_ary_new_capa(count);
 
@@ -588,5 +722,6 @@ void Init_libbin_c() {
   rb_define_module_function(mLibBin, "pghalf_from_string", pghalf_from_string_p, 2);
   rb_define_module_function(mLibBin, "pghalf_to_string", pghalf_to_string_p, 2);
   cScalar = rb_define_class_under(mLibBin, "Scalar", rb_cObject);
+  define_cField();
   define_cDataConverter();
 }
