@@ -475,12 +475,17 @@ EOF
     create_scalar_type(:D)
     create_scalar_type(:E)
     create_scalar_type(:G)
-    create_scalar_type(:half)
+#    create_scalar_type(:half)
     create_scalar_type(:half_le)
     create_scalar_type(:half_be)
     create_scalar_type(:pghalf)
     create_scalar_type(:pghalf_le)
     create_scalar_type(:pghalf_be)
+
+    def self.half(field, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+      @fields.push(Field::new(field, Half, length, count, offset, sequence, condition, relative_offset))
+      attr_accessor field
+    end
 
     def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       sym = (length ? :"a" : :"a*")

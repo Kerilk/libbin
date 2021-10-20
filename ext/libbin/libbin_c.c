@@ -2,6 +2,22 @@
 #include "./half.h"
 #include "./pghalf.h"
 
+static inline void little_big_swap(void *addr, size_t sz) {
+  char *p = (char *)addr;
+  for (size_t i = 0, j = sz - 1; i < (sz >> 1); i++, j--) {
+    char tmp = p[i];
+    p[i] = p[j];
+    p[j] = tmp;
+  }
+}
+#define LITTLE_BIG_SWAP(val) little_big_swap(&(val), sizeof(val))
+
+static inline unsigned is_little_endian(void)
+{
+  const union { unsigned u; unsigned char c[4]; } one = { 1 };
+  return one.c[0];
+}
+
 static VALUE mLibBin;
 static VALUE cField;
 
@@ -662,8 +678,6 @@ static void define_cDataConverter() {
   rb_define_method(cDataConverter, "__shape_field", cDataConverter_shape_field, 3);
 }
 
-static VALUE cScalar;
-
 union float_u {
   float f;
   uint32_t i;
@@ -715,13 +729,156 @@ static VALUE half_to_string_p(VALUE self, VALUE number, VALUE pack_str) {
   return rb_funcall(arr, rb_intern("pack"), 1, pack_str);
 }
 
+static VALUE cScalar;
+static VALUE cHalf;
+static VALUE cDataShape;
+
+/* size(value, previous_offset = 0, parent = nil, index = nil, length = nil)*/
+static VALUE cHalf_size(int argc, VALUE* argv, VALUE self)
+{
+  VALUE length;
+  rb_scan_args(argc, argv, "14", NULL, NULL, NULL, NULL, &length);
+  if (RTEST(length))
+    return ULL2NUM(sizeof(uint16_t)*NUM2ULL(length));
+  else
+    return ULL2NUM(sizeof(uint16_t));
+}
+
+static inline float str_half(void *p) {
+  uint16_t val = *(uint16_t *)p;
+  union float_u u;
+  u.i = half_to_float(val);
+  return u.f;
+}
+
+static inline float str_half_swap(void *p) {
+  uint16_t val = *(uint16_t *)p;
+  LITTLE_BIG_SWAP(val);
+  union float_u u;
+  u.i = half_to_float(val);
+  return u.f;
+}
+
+static inline void half_str(void *p, float f) {
+  uint16_t res;
+  union float_u u;
+  u.f = f;
+  res = half_from_float(u.i);
+  *(uint16_t *)p = res;
+}
+
+static inline void half_str_swap(void *p, float f) {
+  uint16_t res;
+  union float_u u;
+  u.f = f;
+  res = half_from_float(u.i);
+  LITTLE_BIG_SWAP(res);
+  *(uint16_t *)p = res;
+}
+
+/* load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil) */
+static VALUE cHalf_load(int argc, VALUE* argv, VALUE self)
+{
+  VALUE input;
+  VALUE input_big;
+  VALUE length;
+  unsigned little;
+  rb_scan_args(argc, argv, "14", &input, &input_big, NULL, NULL, &length);
+  if (NIL_P(input_big))
+    input_big = rb_funcall(mLibBin, rb_intern("default_big?"), 0);
+  little = RTEST(input_big) ? 0 : 1;
+
+  VALUE str;
+  VALUE res;
+  long n = RTEST(length) ? NUM2LONG(length) : 1
+  size_t cnt = sizeof(uint16_t) * n;
+  str = rb_funcall(input, rb_intern("read"), 1, ULL2NUM(cnt));
+  char *str_data = RSTRING_PTR(str);
+  if (little != is_little_endian()) {
+    if (RTEST(length)) {
+      res = rb_ary_new_capa(n);
+      long i = 0;
+      for (char *p = str_data; p != str_data + cnt; p += sizeof(uint16_t), i++) {
+        rb_ary_store(res, i, DBL2NUM(str_half_swap(p)));
+      }
+    } else
+      res = DBL2NUM(str_half_swap(str_data));
+  } else {
+    if (RTEST(length)) {
+      res = rb_ary_new_capa(n);
+      long i = 0;
+      for (char *p = str_data; p != str_data + cnt; p += sizeof(uint16_t), i++) {
+        rb_ary_store(res, i, DBL2NUM(str_half(p)));
+      }
+    } else
+      res = DBL2NUM(str_half(str_data));
+  }
+  return res;
+}
+
+/* dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil) */
+static VALUE cHalf_dump(int argc, VALUE* argv, VALUE self)
+{
+  VALUE value;
+  VALUE output;
+  VALUE output_big;
+  VALUE length;
+  unsigned little;
+  rb_scan_args(argc, argv, "24", &value, &output, &output_big, NULL, NULL, &length);
+  if (NIL_P(output_big))
+    output_big = rb_funcall(mLibBin, rb_intern("default_big?"), 0);
+  little = RTEST(output_big) ? 0 : 1;
+
+  VALUE str;
+  long n = RTEST(length) ? NUM2LONG(length) : 1
+  size_t cnt = sizeof(uint16_t) * n;
+  str = rb_str_buf_new((long)cnt);
+  char *str_data = RSTRING_PTR(str);
+  if (little != is_little_endian()) {
+    if (RTEST(length)) {
+      for (long i = 0; i < n; i++) {
+        uint16_t v;
+        half_str_swap(&v, NUM2DBL(rb_ary_entry(value, i)));
+        rb_str_cat(str, (char *)&v, sizeof(uint16_t));
+      }
+    } else {
+      uint16_t v;
+      half_str_swap(&v, NUM2DBL(value));
+      rb_str_cat(str, (char *)&v, sizeof(uint16_t));
+    }
+  } else {
+    if (RTEST(length)) {
+      for (long i = 0; i < n; i++) {
+        uint16_t v;
+        half_str(&v, NUM2DBL(rb_ary_entry(value, i)));
+        rb_str_cat(str, (char *)&v, sizeof(uint16_t));
+      }
+    } else {
+      uint16_t v;
+      half_str(&v, NUM2DBL(value));
+      rb_str_cat(str, (char *)&v, sizeof(uint16_t));
+    }
+  }
+  rb_funcall(output, rb_intern("write"), 1, str);
+  return Qnil;
+}
+
+void define_cScalar() {
+  cScalar = rb_define_class_under(cDataConverter, "Scalar", rb_cObject);
+  cHalf = rb_define_class_under(cDataConverter, "Half", cScalar);
+  rb_define_singleton_method(cHalf, "size", cHalf_size, -1);
+  rb_define_singleton_method(cHalf, "load", cHalf_load, -1);
+  rb_define_singleton_method(cHalf, "dump", cHalf_dump, -1);
+}
+
 void Init_libbin_c() {
   mLibBin = rb_define_module("LibBin");
   rb_define_module_function(mLibBin, "half_from_string", half_from_string_p, 2);
   rb_define_module_function(mLibBin, "half_to_string", half_to_string_p, 2);
   rb_define_module_function(mLibBin, "pghalf_from_string", pghalf_from_string_p, 2);
   rb_define_module_function(mLibBin, "pghalf_to_string", pghalf_to_string_p, 2);
-  cScalar = rb_define_class_under(mLibBin, "Scalar", rb_cObject);
+  cDataShape = rb_define_class_under(mLibBin, "DataShape", rb_cObject);
   define_cField();
   define_cDataConverter();
+  define_cScalar();
 }
