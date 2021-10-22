@@ -730,6 +730,23 @@ static VALUE cHalf_size(int argc, VALUE* argv, VALUE self)
     return ULL2NUM(sizeof(uint16_t));
 }
 
+/* shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil) */
+static VALUE cHalf_shape(int argc, VALUE* argv, VALUE self)
+{
+  VALUE value;
+  VALUE previous_offset;
+  VALUE kind;
+  VALUE length;
+  rb_scan_args(argc, argv, "15", &value, &previous_offset, NULL, NULL, &kind, &length);
+  if (NIL_P(previous_offset))
+    previous_offset = ULL2NUM(0);
+  if (NIL_P(kind))
+    kind = cDataShape;
+  if (NIL_P(length))
+    length = ULL2NUM(1);
+  return rb_funcall(kind, rb_intern("new"), 2, previous_offset, LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length) * (ptrdiff_t)sizeof(uint16_t)));
+}
+
 static inline float half_to_float_le(uint16_t val) {
   val = unpack_half_le(val);
   union float_u u;
@@ -903,6 +920,7 @@ void define_cScalar() {
   cScalar = rb_define_class_under(cDataConverter, "Scalar", rb_cObject);
   cHalf = rb_define_class_under(cDataConverter, "Half", cScalar);
   rb_define_singleton_method(cHalf, "size", cHalf_size, -1);
+  rb_define_singleton_method(cHalf, "shape", cHalf_shape, -1);
   rb_define_singleton_method(cHalf, "load", cHalf_load, -1);
   rb_define_singleton_method(cHalf, "dump", cHalf_dump, -1);
   rb_define_singleton_method(cHalf, "convert", cHalf_convert, -1);
