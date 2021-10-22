@@ -1,3 +1,6 @@
+#ifndef LIBBIN_ENDIAN_H__
+#define LIBBIN_ENDIAN_H__
+
 #include <stdint.h>
 
 static inline void little_big_swap(void *addr, size_t sz) {
@@ -113,3 +116,5 @@ CONVERTER(float, float, 32)
 CONVERTER(double, double, 64)
 CONVERTER(half, uint16_t, 16)
 CONVERTER(pghalf, uint16_t, 16)
+
+#endif
