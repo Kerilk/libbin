@@ -1,22 +1,7 @@
 #include "ruby.h"
 #include "./half.h"
 #include "./pghalf.h"
-
-static inline void little_big_swap(void *addr, size_t sz) {
-  char *p = (char *)addr;
-  for (size_t i = 0, j = sz - 1; i < (sz >> 1); i++, j--) {
-    char tmp = p[i];
-    p[i] = p[j];
-    p[j] = tmp;
-  }
-}
-#define LITTLE_BIG_SWAP(val) little_big_swap(&(val), sizeof(val))
-
-static inline unsigned is_little_endian(void)
-{
-  const union { unsigned u; unsigned char c[4]; } one = { 1 };
-  return one.c[0];
-}
+#include "./libbin_endian.h"
 
 static VALUE mLibBin;
 static VALUE cField;
@@ -744,35 +729,35 @@ static VALUE cHalf_size(int argc, VALUE* argv, VALUE self)
     return ULL2NUM(sizeof(uint16_t));
 }
 
-static inline float str_half(void *p) {
-  uint16_t val = *(uint16_t *)p;
+static inline float half_to_float_le(uint16_t val) {
+  val = unpack_half_le(val);
   union float_u u;
   u.i = half_to_float(val);
   return u.f;
 }
 
-static inline float str_half_swap(void *p) {
-  uint16_t val = *(uint16_t *)p;
-  LITTLE_BIG_SWAP(val);
+static inline float half_to_float_be(uint16_t val) {
+  val = unpack_half_be(val);
   union float_u u;
   u.i = half_to_float(val);
   return u.f;
 }
 
-static inline void half_str(void *p, float f) {
+static inline void half_str_le(void *p, float f) {
   uint16_t res;
   union float_u u;
   u.f = f;
   res = half_from_float(u.i);
+  res = pack_half_le(res);
   *(uint16_t *)p = res;
 }
 
-static inline void half_str_swap(void *p, float f) {
+static inline void half_str_be(void *p, float f) {
   uint16_t res;
   union float_u u;
   u.f = f;
   res = half_from_float(u.i);
-  LITTLE_BIG_SWAP(res);
+  res = pack_half_be(res);
   *(uint16_t *)p = res;
 }
 
@@ -793,25 +778,24 @@ static VALUE cHalf_load(int argc, VALUE* argv, VALUE self)
   long n = RTEST(length) ? NUM2LONG(length) : 1;
   size_t cnt = sizeof(uint16_t) * n;
   str = rb_funcall(input, rb_intern("read"), 1, ULL2NUM(cnt));
-  char *str_data = RSTRING_PTR(str);
-  if (little != is_little_endian()) {
+  uint16_t *data = (uint16_t *)RSTRING_PTR(str);
+  if (little) {
     if (RTEST(length)) {
       res = rb_ary_new_capa(n);
       long i = 0;
-      for (char *p = str_data; p != str_data + cnt; p += sizeof(uint16_t), i++) {
-        rb_ary_store(res, i, DBL2NUM(str_half_swap(p)));
-      }
+      for (uint16_t *p = data; p != data + n; p++, i++)
+        rb_ary_store(res, i, DBL2NUM(half_to_float_le(*p)));
     } else
-      res = DBL2NUM(str_half_swap(str_data));
+      res = DBL2NUM(half_to_float_le(*data));
   } else {
     if (RTEST(length)) {
       res = rb_ary_new_capa(n);
       long i = 0;
-      for (char *p = str_data; p != str_data + cnt; p += sizeof(uint16_t), i++) {
-        rb_ary_store(res, i, DBL2NUM(str_half(p)));
+      for (uint16_t *p = data; p != data + n; p++, i++) {
+        rb_ary_store(res, i, DBL2NUM(half_to_float_be(*p)));
       }
     } else
-      res = DBL2NUM(str_half(str_data));
+      res = DBL2NUM(half_to_float_be(*data));
   }
   return res;
 }
@@ -834,28 +818,28 @@ static VALUE cHalf_dump(int argc, VALUE* argv, VALUE self)
   size_t cnt = sizeof(uint16_t) * n;
   str = rb_str_buf_new((long)cnt);
   char *str_data = RSTRING_PTR(str);
-  if (little != is_little_endian()) {
+  if (little) {
     if (RTEST(length)) {
       for (long i = 0; i < n; i++) {
         uint16_t v;
-        half_str_swap(&v, NUM2DBL(rb_ary_entry(value, i)));
+        half_str_le(&v, NUM2DBL(rb_ary_entry(value, i)));
         rb_str_cat(str, (char *)&v, sizeof(uint16_t));
       }
     } else {
       uint16_t v;
-      half_str_swap(&v, NUM2DBL(value));
+      half_str_le(&v, NUM2DBL(value));
       rb_str_cat(str, (char *)&v, sizeof(uint16_t));
     }
   } else {
     if (RTEST(length)) {
       for (long i = 0; i < n; i++) {
         uint16_t v;
-        half_str(&v, NUM2DBL(rb_ary_entry(value, i)));
+        half_str_be(&v, NUM2DBL(rb_ary_entry(value, i)));
         rb_str_cat(str, (char *)&v, sizeof(uint16_t));
       }
     } else {
       uint16_t v;
-      half_str(&v, NUM2DBL(value));
+      half_str_be(&v, NUM2DBL(value));
       rb_str_cat(str, (char *)&v, sizeof(uint16_t));
     }
   }
