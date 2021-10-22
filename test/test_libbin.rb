@@ -29,6 +29,10 @@ class LibBinTest < Minitest::Test
         s = c::load(f, big)
         assert_equal( (1..4).to_a, s.a )
         assert_equal( (1..4).to_a, s.b )
+        shape = s.__shape
+        assert_equal( 0x08, shape.b.size)
+        assert_equal( 0x08, shape.b.first)
+        assert_equal( 0x0f, shape.b.last)
         str = new_stringio
         c::dump(s, str, big)
         f.rewind
@@ -56,6 +60,10 @@ class LibBinTest < Minitest::Test
       assert_equal( (1..4).to_a, s.a )
       assert_equal( (1..4).to_a, s.b )
       str = new_stringio
+      shape = s.__shape
+      assert_equal( 0x08, shape.b.size)
+      assert_equal( 0x08, shape.b.first)
+      assert_equal( 0x0f, shape.b.last)
       c::dump(s, str, true)
       f.rewind
       str.rewind
@@ -461,9 +469,14 @@ class LibBinTest < Minitest::Test
         assert_equal(0x22, str.__size)
         shape = str.__shape
         assert_equal(0x22, shape.size)
+        assert_equal(0x00, shape.first)
+        assert_equal(0x21, shape.last)
         assert_equal(0x06, shape.header.size)
         assert_equal(0x00, shape.header.first)
         assert_equal(0x05, shape.header.last)
+        assert_equal(0x04, shape.header.offset1.size)
+        assert_equal(0x00, shape.header.offset1.first)
+        assert_equal(0x03, shape.header.offset1.last)
         assert_equal(0x12, shape.body.size)
         assert_equal(0x10, shape.body.first)
         assert_equal(0x21, shape.body.last)
@@ -499,6 +512,7 @@ class LibBinTest < Minitest::Test
       assert_equal(0x17, shape.size)
       assert_equal(0x05, shape.h.size)
       assert_equal(0x07, shape.w.size)
+      assert_equal(0x10, shape.w.first)
     end
   end
 

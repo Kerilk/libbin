@@ -606,6 +606,7 @@ static VALUE cDataConverter_shape_field(
         }
       }
     }
+    res = rb_funcall(kind, rb_intern("new"), 1, res);
   } else {
     data->__iterator = LONG2NUM(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field))) {

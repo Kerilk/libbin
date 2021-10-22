@@ -239,7 +239,7 @@ module LibBin
 #        end
 #      end
 #      __restore_context
-#      vs = vs.first unless field.count
+#      vs = field.count ? kind.new(vs) : vs.first
 #      vs
 #    end
 
@@ -263,7 +263,7 @@ module LibBin
         end
       }
       __unset_size_type
-      return nil if members.values.flatten.compact.size <= 0
+      return nil if members.values.compact.size <= 0
       kind::new(members)
     end
 

@@ -27,7 +27,11 @@ module LibBin
         @members = nil
       else
         @members = args[0]
-        @range = @members.values.flatten.compact.collect(&:range).reduce(:+)
+        if @members.kind_of?(Hash)
+          @range = @members.values.compact.collect(&:range).reduce(:+)
+        else
+          @range = @members.compact.collect(&:range).reduce(:+)
+        end
       end
     end
 
@@ -53,7 +57,11 @@ module LibBin
       if args.length == 2
         @range = Range::new(args[0], args[1])
       else
-        @range = args[0].values.flatten.compact.collect(&:range).reduce(:+)
+        if args[0].kind_of?(Hash)
+          @range = args[0].values.compact.collect(&:range).reduce(:+)
+        else
+          @range = args[0].compact.collect(&:range).reduce(:+)
+        end
       end
     end
 
