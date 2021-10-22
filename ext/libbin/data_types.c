@@ -1,39 +1,42 @@
 #include "ruby.h"
 #include "./libbin_c.h"
 
+VALUE cDataShape;
 VALUE cScalar;
 VALUE cHalf;
-VALUE cDataShape;
 
 /* size(value, previous_offset = 0, parent = nil, index = nil, length = nil)*/
-static VALUE cHalf_size(int argc, VALUE* argv, VALUE self)
-{
-  (void)self;
-  VALUE length;
-  rb_scan_args(argc, argv, "14", NULL, NULL, NULL, NULL, &length);
-  if (RTEST(length))
-    return ULL2NUM(sizeof(uint16_t)*NUM2ULL(length));
-  else
-    return ULL2NUM(sizeof(uint16_t));
+#define MAKE_TYPE_SIZE(CLASS, MAPPED_TYPE)                         \
+static VALUE CLASS ## _size(int argc, VALUE* argv, VALUE self) {   \
+  (void)self;                                                      \
+  VALUE length;                                                    \
+  rb_scan_args(argc, argv, "14", NULL, NULL, NULL, NULL, &length); \
+  if (RTEST(length))                                               \
+    return ULL2NUM(sizeof(MAPPED_TYPE)*NUM2ULL(length));           \
+  else                                                             \
+    return ULL2NUM(sizeof(MAPPED_TYPE));                           \
 }
 
 /* shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil) */
-static VALUE cHalf_shape(int argc, VALUE* argv, VALUE self)
-{
-  (void)self;
-  VALUE value;
-  VALUE previous_offset;
-  VALUE kind;
-  VALUE length;
-  rb_scan_args(argc, argv, "15", &value, &previous_offset, NULL, NULL, &kind, &length);
-  if (NIL_P(previous_offset))
-    previous_offset = ULL2NUM(0);
-  if (NIL_P(kind))
-    kind = cDataShape;
-  if (NIL_P(length))
-    length = ULL2NUM(1);
-  return rb_funcall(kind, rb_intern("new"), 2, previous_offset, LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length) * (ptrdiff_t)sizeof(uint16_t)));
+#define MAKE_TYPE_SHAPE(CLASS, MAPPED_TYPE)                                                \
+static VALUE CLASS ## _shape(int argc, VALUE* argv, VALUE self) {                          \
+  (void)self;                                                                              \
+  VALUE previous_offset;                                                                   \
+  VALUE kind;                                                                              \
+  VALUE length;                                                                            \
+  rb_scan_args(argc, argv, "15", NULL, &previous_offset, NULL, NULL, &kind, &length);      \
+  if (NIL_P(previous_offset))                                                              \
+    previous_offset = ULL2NUM(0);                                                          \
+  if (NIL_P(kind))                                                                         \
+    kind = cDataShape;                                                                     \
+  if (NIL_P(length))                                                                       \
+    length = ULL2NUM(1);                                                                   \
+  return rb_funcall(kind, rb_intern("new"), 2, previous_offset,                            \
+   LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length) * (ptrdiff_t)sizeof(MAPPED_TYPE))); \
 }
+
+MAKE_TYPE_SIZE(cHalf, uint16_t);
+MAKE_TYPE_SHAPE(cHalf, uint16_t);
 
 static inline float half_to_float_le(uint16_t val) {
   val = unpack_half_le(val);
@@ -207,7 +210,7 @@ static VALUE cHalf_convert(int argc, VALUE* argv, VALUE self)
   return res;
 }
 
-void define_cHalf() {
+static void define_cHalf() {
   cHalf = rb_define_class_under(cDataConverter, "Half", cScalar);
   rb_define_singleton_method(cHalf, "size", cHalf_size, -1);
   rb_define_singleton_method(cHalf, "shape", cHalf_shape, -1);
