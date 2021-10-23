@@ -467,41 +467,54 @@ EOF
 EOF
     end
 
-    create_scalar_type(:c)
-    create_scalar_type(:C)
-    create_scalar_type(:s)
-    create_scalar_type(:"s<")
-    create_scalar_type(:"s>")
-    create_scalar_type(:S)
-    create_scalar_type(:"S<")
-    create_scalar_type(:"S>")
-    create_scalar_type(:l)
-    create_scalar_type(:"l<")
-    create_scalar_type(:"l>")
-    create_scalar_type(:L)
-    create_scalar_type(:"L<")
-    create_scalar_type(:"L>")
-    create_scalar_type(:q)
-    create_scalar_type(:"q<")
-    create_scalar_type(:"q>")
-    create_scalar_type(:Q)
-    create_scalar_type(:"Q<")
-    create_scalar_type(:"Q>")
-    create_scalar_type(:F)
-    create_scalar_type(:e)
-    create_scalar_type(:g)
-    create_scalar_type(:D)
-    create_scalar_type(:E)
-    create_scalar_type(:G)
+#    create_scalar_type(:c)
+#    create_scalar_type(:C)
+#    create_scalar_type(:s)
+#    create_scalar_type(:"s<")
+#    create_scalar_type(:"s>")
+#    create_scalar_type(:S)
+#    create_scalar_type(:"S<")
+#    create_scalar_type(:"S>")
+#    create_scalar_type(:l)
+#    create_scalar_type(:"l<")
+#    create_scalar_type(:"l>")
+#    create_scalar_type(:L)
+#    create_scalar_type(:"L<")
+#    create_scalar_type(:"L>")
+#    create_scalar_type(:q)
+#    create_scalar_type(:"q<")
+#    create_scalar_type(:"q>")
+#    create_scalar_type(:Q)
+#    create_scalar_type(:"Q<")
+#    create_scalar_type(:"Q>")
+#    create_scalar_type(:F)
+#    create_scalar_type(:e)
+#    create_scalar_type(:g)
+#    create_scalar_type(:D)
+#    create_scalar_type(:E)
+#    create_scalar_type(:G)
 #    create_scalar_type(:half)
-    create_scalar_type(:half_le)
-    create_scalar_type(:half_be)
+#    create_scalar_type(:half_le)
+#    create_scalar_type(:half_be)
 #    create_scalar_type(:pghalf)
-    create_scalar_type(:pghalf_le)
-    create_scalar_type(:pghalf_be)
+#    create_scalar_type(:pghalf_le)
+#    create_scalar_type(:pghalf_be)
 
-    create_scalar_accessor(:half)
-    create_scalar_accessor(:pghalf)
+    [:c,
+     :C,
+     :s, :"s<", :"s>",
+     :S, :"S<", :"S>",
+     :l, :"l<", :"l>",
+     :L, :"L<", :"L>",
+     :q, :"q<", :"q>",
+     :Q, :"Q<", :"Q>",
+     :F, :e, :g,
+     :D, :E, :G,
+     :half, :half_le, :half_be,
+     :pghalf, :pghalf_le, :pghalf_be].each { |c|
+      create_scalar_accessor(c)
+    }
+
 
     def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       sym = (length ? :"a" : :"a*")

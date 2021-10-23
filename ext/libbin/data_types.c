@@ -3,8 +3,6 @@
 
 VALUE cDataShape;
 VALUE cScalar;
-VALUE cHalf;
-VALUE cPGHalf;
 
 /* size(value, previous_offset = 0, parent = nil, index = nil, length = nil)*/
 #define MAKE_TYPE_SIZE(CLASS, MAPPED_TYPE)                         \
@@ -47,27 +45,35 @@ do {                                                              \
     res = RUBY_CONVERT(NATIVE_CONVERT(*data));                    \
 } while (0)
 
-/* load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil) */
-#define MAKE_TYPE_LOAD(CLASS, MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT)   \
-static VALUE CLASS ## _load(int argc, VALUE* argv, VALUE self) {           \
-  (void)self;                                                              \
-  VALUE input;                                                             \
-  VALUE input_big;                                                         \
-  VALUE length;                                                            \
-  rb_scan_args(argc, argv, "14", &input, &input_big, NULL, NULL, &length); \
-  if (NIL_P(input_big))                                                    \
-    input_big = rb_funcall(mLibBin, rb_intern("default_big?"), 0);         \
-  unsigned little = RTEST(input_big) ? 0 : 1;                              \
-  long n = RTEST(length) ? NUM2LONG(length) : 1;                           \
-  size_t cnt = sizeof(MAPPED_TYPE) * n;                                    \
-  VALUE res;                                                               \
-  VALUE str = rb_funcall(input, rb_intern("read"), 1, ULL2NUM(cnt));       \
-  MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                     \
+#define MAKE_LOAD_ENDIAN(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT)        \
+do {                                                                       \
   if (little)                                                              \
     MAKE_LOAD_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT ## _ ## le ); \
   else                                                                     \
     MAKE_LOAD_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT ## _ ## be ); \
-  return res;                                                              \
+} while (0)
+
+#define MAKE_LOAD(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT) \
+  MAKE_LOAD_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT)
+
+/* load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil) */
+#define MAKE_TYPE_LOAD(CLASS, MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT, LOAD) \
+static VALUE CLASS ## _load(int argc, VALUE* argv, VALUE self) {               \
+  (void)self;                                                                  \
+  VALUE input;                                                                 \
+  VALUE input_big;                                                             \
+  VALUE length;                                                                \
+  rb_scan_args(argc, argv, "14", &input, &input_big, NULL, NULL, &length);     \
+  if (NIL_P(input_big))                                                        \
+    input_big = rb_funcall(mLibBin, rb_intern("default_big?"), 0);             \
+  unsigned little = RTEST(input_big) ? 0 : 1;                                  \
+  long n = RTEST(length) ? NUM2LONG(length) : 1;                               \
+  size_t cnt = sizeof(MAPPED_TYPE) * n;                                        \
+  VALUE res;                                                                   \
+  VALUE str = rb_funcall(input, rb_intern("read"), 1, ULL2NUM(cnt));           \
+  MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                         \
+  LOAD(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT);                             \
+  return res;                                                                  \
 }
 
 #define MAKE_DUMP_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT)           \
@@ -83,8 +89,19 @@ do {                                                                        \
   }                                                                         \
 } while (0)
 
+#define MAKE_DUMP_ENDIAN(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT)        \
+do {                                                                       \
+  if (little)                                                              \
+    MAKE_DUMP_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT ## _ ## le ); \
+  else                                                                     \
+    MAKE_DUMP_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT ## _ ## be ); \
+} while (0)
+
+#define MAKE_DUMP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT) \
+  MAKE_DUMP_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT)
+
 /* dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil) */
-#define MAKE_TYPE_DUMP(CLASS, MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT)             \
+#define MAKE_TYPE_DUMP(CLASS, MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT, DUMP)       \
 static VALUE CLASS ## _dump(int argc, VALUE* argv, VALUE self) {                     \
   (void)self;                                                                        \
   VALUE value;                                                                       \
@@ -98,10 +115,7 @@ static VALUE CLASS ## _dump(int argc, VALUE* argv, VALUE self) {                
   long n = RTEST(length) ? NUM2LONG(length) : 1;                                     \
   size_t cnt = sizeof(MAPPED_TYPE) * n;                                              \
   VALUE str = rb_str_buf_new((long)cnt);                                             \
-  if (little)                                                                        \
-    MAKE_DUMP_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT ## _ ## le );           \
-  else                                                                               \
-    MAKE_DUMP_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT ## _ ## be );           \
+  DUMP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT);                                   \
   rb_funcall(output, rb_intern("write"), 1, str);                                    \
   return Qnil;                                                                       \
 }
@@ -123,8 +137,20 @@ do {                                                                            
   }                                                                                          \
 } while(0)
 
+#define MAKE_CONVERT_ENDIAN(MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT, NATIVE_CONVERT)                        \
+do {                                                                                                       \
+  if (little_input)                                                                                        \
+    MAKE_CONVERT_LOOP(MAPPED_TYPE, MAPPED_SWAP, !little_output, RUBY_CONVERT, NATIVE_CONVERT ## _ ## le ); \
+  else                                                                                                     \
+    MAKE_CONVERT_LOOP(MAPPED_TYPE, MAPPED_SWAP, little_output, RUBY_CONVERT, NATIVE_CONVERT ## _ ## be );  \
+} while (0)
+
+#define MAKE_CONVERT(MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT, NATIVE_CONVERT) \
+  MAKE_CONVERT_LOOP(MAPPED_TYPE, MAPPED_SWAP, 0, RUBY_CONVERT, NATIVE_CONVERT)
+
+
 /* convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil) */
-#define MAKE_TYPE_CONVERT(CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT, NATIVE_CONVERT)                   \
+#define MAKE_TYPE_CONVERT(CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT, NATIVE_CONVERT, CONVERT)          \
 static VALUE CLASS ## _convert(int argc, VALUE* argv, VALUE self) {                                        \
   (void)self;                                                                                              \
   VALUE input;                                                                                             \
@@ -144,34 +170,86 @@ static VALUE CLASS ## _convert(int argc, VALUE* argv, VALUE self) {             
   VALUE res;                                                                                               \
   VALUE str = rb_funcall(input, rb_intern("read"), 1, ULL2NUM(cnt));                                       \
   MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                                                     \
-  if (little_input)                                                                                        \
-    MAKE_CONVERT_LOOP(MAPPED_TYPE, MAPPED_SWAP, !little_output, RUBY_CONVERT, NATIVE_CONVERT ## _ ## le ); \
-  else                                                                                                     \
-    MAKE_CONVERT_LOOP(MAPPED_TYPE, MAPPED_SWAP, little_output, RUBY_CONVERT, NATIVE_CONVERT ## _ ## be );  \
+  CONVERT(MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT, NATIVE_CONVERT);                                         \
   rb_funcall(output, rb_intern("write"), 1, str);                                                          \
   return res;                                                                                              \
 }
 
-#define MAKE_CLASS_TYPE(CLASS_NAME, CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM) \
-  MAKE_TYPE_SIZE(CLASS, MAPPED_TYPE)                                                     \
-  MAKE_TYPE_SHAPE(CLASS, MAPPED_TYPE)                                                    \
-  MAKE_TYPE_LOAD(CLASS, MAPPED_TYPE, RUBY_CONVERT_TO, NATIVE_CONVERT_TO)                 \
-  MAKE_TYPE_DUMP(CLASS, MAPPED_TYPE, RUBY_CONVERT_FROM, NATIVE_CONVERT_FROM)             \
-  MAKE_TYPE_CONVERT(CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT_TO, NATIVE_CONVERT_TO) \
-                                                                                         \
-static void define_ ## CLASS() {                                                         \
-  CLASS = rb_define_class_under(cDataConverter, #CLASS_NAME, cScalar);                   \
-  rb_define_singleton_method(CLASS, "size", CLASS ## _size, -1);                         \
-  rb_define_singleton_method(CLASS, "shape", CLASS ## _shape, -1);                       \
-  rb_define_singleton_method(CLASS, "load", CLASS ## _load, -1);                         \
-  rb_define_singleton_method(CLASS, "dump", CLASS ## _dump, -1);                         \
-  rb_define_singleton_method(CLASS, "convert", CLASS ## _convert, -1);                   \
+#define MAKE_CLASS_DEFINE(CLASS_NAME, CLASS)                           \
+static void define_ ## CLASS() {                                       \
+  CLASS = rb_define_class_under(cDataConverter, #CLASS_NAME, cScalar); \
+  rb_define_singleton_method(CLASS, "size", CLASS ## _size, -1);       \
+  rb_define_singleton_method(CLASS, "shape", CLASS ## _shape, -1);     \
+  rb_define_singleton_method(CLASS, "load", CLASS ## _load, -1);       \
+  rb_define_singleton_method(CLASS, "dump", CLASS ## _dump, -1);       \
+  rb_define_singleton_method(CLASS, "convert", CLASS ## _convert, -1); \
 }
 
+#define MAKE_STATIC_OBJECT(CLASS) \
+static VALUE CLASS;
 
+#define MAKE_CLASS_TYPE_ENDIAN_EX(CLASS_NAME, CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM, ENDIAN) \
+  MAKE_STATIC_OBJECT(CLASS)                                                                                 \
+  MAKE_TYPE_SIZE(CLASS, MAPPED_TYPE)                                                                             \
+  MAKE_TYPE_SHAPE(CLASS, MAPPED_TYPE)                                                                            \
+  MAKE_TYPE_LOAD(CLASS, MAPPED_TYPE, RUBY_CONVERT_TO, NATIVE_CONVERT_TO, MAKE_LOAD ## ENDIAN)                    \
+  MAKE_TYPE_DUMP(CLASS, MAPPED_TYPE, RUBY_CONVERT_FROM, NATIVE_CONVERT_FROM, MAKE_DUMP ## ENDIAN)                \
+  MAKE_TYPE_CONVERT(CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT_TO, NATIVE_CONVERT_TO, MAKE_CONVERT ## ENDIAN) \
+  MAKE_CLASS_DEFINE(CLASS_NAME, CLASS)
 
-#define MAKE_CLASS(CLASS_NAME, SIZE, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM) \
-  MAKE_CLASS_TYPE(CLASS_NAME, c ## CLASS_NAME, uint ## SIZE ## _t, bswap_uint ## SIZE, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM)
+#define MAKE_CLASS_TYPE_ENDIAN(CLASS_NAME, CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM, ENDIAN) \
+  MAKE_CLASS_TYPE_ENDIAN_EX(CLASS_NAME, CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM, ENDIAN)
+
+#define ENDIAN_little
+#define ENDIAN_big
+#define ENDIAN_nil _ENDIAN
+#define ENDIAN_suffix_little _le
+#define ENDIAN_suffix_big _be
+#define ENDIAN_suffix_nil
+#define ENDIAN_SUFFIX_little _LE
+#define ENDIAN_SUFFIX_big _BE
+#define ENDIAN_SUFFIX_nil
+
+#define MAKE_ENDIAN(ENDIAN) ENDIAN_ ## ENDIAN
+#define MAKE_ENDIAN_suffix(ENDIAN) ENDIAN_suffix_ ## ENDIAN
+#define MAKE_ENDIAN_SUFFIX(ENDIAN) ENDIAN_SUFFIX_ ## ENDIAN
+#define MAKE_CONVERT_NAME_SUFFIX_EX(NAME, SUFFIX) NAME ## SUFFIX
+#define MAKE_CONVERT_NAME_SUFFIX(NAME, SUFFIX) MAKE_CONVERT_NAME_SUFFIX_EX(NAME, SUFFIX)
+#define MAKE_CONVERT_NAME_MAKE_SUFFIX(NAME, ENDIAN, MAKE_SUFFIX) MAKE_CONVERT_NAME_SUFFIX(NAME, MAKE_SUFFIX(ENDIAN))
+#define MAKE_CLASS_NAME(CLASS_NAME, ENDIAN) MAKE_CONVERT_NAME_MAKE_SUFFIX(CLASS_NAME, ENDIAN, MAKE_ENDIAN_SUFFIX)
+#define MAKE_C_CLASS_NAME(CLASS_NAME, ENDIAN) MAKE_CONVERT_NAME_MAKE_SUFFIX(c ## CLASS_NAME, ENDIAN, MAKE_ENDIAN_SUFFIX)
+#define MAKE_CONVERT_NAME(NAME, ENDIAN) MAKE_CONVERT_NAME_MAKE_SUFFIX(NAME, ENDIAN, MAKE_ENDIAN_suffix)
+
+#define MAKE_CLASS(CLASS_NAME, SIZE, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM, ENDIAN) \
+  MAKE_CLASS_TYPE_ENDIAN(MAKE_CLASS_NAME(CLASS_NAME, ENDIAN),            \
+                         MAKE_C_CLASS_NAME(CLASS_NAME, ENDIAN),          \
+                         uint ## SIZE ## _t,                             \
+                         bswap_uint ## SIZE,                             \
+                         RUBY_CONVERT_TO,                                \
+                         RUBY_CONVERT_FROM,                              \
+                         MAKE_CONVERT_NAME(NATIVE_CONVERT_TO, ENDIAN),   \
+                         MAKE_CONVERT_NAME(NATIVE_CONVERT_FROM, ENDIAN), \
+                         MAKE_ENDIAN(ENDIAN))
+
+#define MAKE_CLASSES(CLASS_NAME, SIZE, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM) \
+  MAKE_CLASS(CLASS_NAME, SIZE, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM, nil)    \
+  MAKE_CLASS(CLASS_NAME, SIZE, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM, little) \
+  MAKE_CLASS(CLASS_NAME, SIZE, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM, big)
+
+#define MAKE_CALL_DEFINE(CLASS_NAME) \
+do {                                 \
+  define_ ## CLASS_NAME();           \
+} while (0)
+
+#define MAKE_CALL_DEFINE_EX(CLASS_NAME) \
+  MAKE_CALL_DEFINE(CLASS_NAME)
+
+#define MAKE_CALL_DEFINES(CLASS_NAME)                         \
+do {                                                          \
+  MAKE_CALL_DEFINE_EX(MAKE_C_CLASS_NAME(CLASS_NAME, nil));    \
+  MAKE_CALL_DEFINE_EX(MAKE_C_CLASS_NAME(CLASS_NAME, little)); \
+  MAKE_CALL_DEFINE_EX(MAKE_C_CLASS_NAME(CLASS_NAME, big));    \
+} while (0)
 
 static inline float half_to_float_le(uint16_t val) {
   val = unpack_half_le(val);
@@ -205,7 +283,8 @@ static inline uint16_t float_to_half_be(float f) {
   return res;
 }
 
-MAKE_CLASS(Half, 16, DBL2NUM, NUM2DBL, half_to_float, float_to_half)
+
+MAKE_CLASSES(Half, 16, DBL2NUM, NUM2DBL, half_to_float, float_to_half)
 
 static inline float pghalf_to_float_le(uint16_t val) {
   val = unpack_pghalf_le(val);
@@ -239,12 +318,34 @@ static inline uint16_t float_to_pghalf_be(float f) {
   return res;
 }
 
-MAKE_CLASS(PGHalf, 16, DBL2NUM, NUM2DBL, pghalf_to_float, float_to_pghalf)
+MAKE_CLASSES(PGHalf, 16, DBL2NUM, NUM2DBL, pghalf_to_float, float_to_pghalf)
+
+MAKE_CLASSES(Int8, 8, INT2NUM, NUM2SHORT, unpack_int8, pack_int8)
+MAKE_CLASSES(UInt8, 8, USHORT2NUM, NUM2USHORT, unpack_uint8, pack_uint8)
+MAKE_CLASSES(Int16, 16, INT2NUM, NUM2SHORT, unpack_int16, pack_int16)
+MAKE_CLASSES(UInt16, 16, USHORT2NUM, NUM2USHORT, unpack_uint16, pack_uint16)
+MAKE_CLASSES(Int32, 32, INT2NUM, NUM2INT, unpack_int32, pack_int32)
+MAKE_CLASSES(UInt32, 32, UINT2NUM, NUM2UINT, unpack_uint32, pack_uint32)
+MAKE_CLASSES(Int64, 64, INT2NUM, NUM2INT, unpack_int64, pack_int64)
+MAKE_CLASSES(UInt64, 64, UINT2NUM, NUM2UINT, unpack_uint64, pack_uint64)
+MAKE_CLASSES(Flt, 32, DBL2NUM, NUM2DBL, unpack_float, pack_float)
+MAKE_CLASSES(Double, 64, DBL2NUM, NUM2DBL, unpack_double, pack_double)
+
 
 void define_cScalar() {
   cScalar = rb_define_class_under(cDataConverter, "Scalar", rb_cObject);
-  define_cHalf();
-  define_cPGHalf();
+  MAKE_CALL_DEFINES(Half);
+  MAKE_CALL_DEFINES(PGHalf);
+  MAKE_CALL_DEFINES(Int8);
+  MAKE_CALL_DEFINES(UInt8);
+  MAKE_CALL_DEFINES(Int16);
+  MAKE_CALL_DEFINES(UInt16);
+  MAKE_CALL_DEFINES(Int32);
+  MAKE_CALL_DEFINES(UInt32);
+  MAKE_CALL_DEFINES(Int64);
+  MAKE_CALL_DEFINES(UInt64);
+  MAKE_CALL_DEFINES(Flt);
+  MAKE_CALL_DEFINES(Double);
 }
 
 

@@ -20,6 +20,10 @@ static inline unsigned is_little_endian(void)
 }
 
 /* https://stackoverflow.com/a/2182184 */
+static inline uint8_t bswap_uint8(uint8_t x) {
+  return x;
+}
+
 static inline uint16_t bswap_uint16(uint16_t x) {
   return ((( x  & 0xff00u ) >> 8 ) |
           (( x  & 0x00ffu ) << 8 ));
@@ -106,6 +110,8 @@ static inline MAPPED_TYPE pack_ ## NAME ## _le(TYPE x) { \
 #define CONVERTER(NAME, TYPE, SIZE)                            \
   CONVERTER_TYPE(NAME, TYPE, uint ## SIZE, uint ## SIZE ## _t)
 
+CONVERTER(uint8, uint8_t, 8)
+CONVERTER(int8, int8_t, 8)
 CONVERTER(uint16, uint16_t, 16)
 CONVERTER(int16, int16_t, 16)
 CONVERTER(uint32, uint32_t, 32)
