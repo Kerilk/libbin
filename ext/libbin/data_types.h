@@ -8,6 +8,7 @@ union float_u {
 
 extern VALUE cScalar;
 extern VALUE cHalf;
+extern VALUE cPGHalf;
 extern VALUE cDataShape;
 extern VALUE cDataConverter;
 

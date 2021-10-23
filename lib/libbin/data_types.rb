@@ -457,6 +457,16 @@ module LibBin
 EOF
     end
 
+    def self.create_scalar_accessor(symbol)
+      klassname, name = SCALAR_TYPES[symbol]
+      eval <<EOF
+    def self.#{name}(field, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+      @fields.push(Field::new(field, #{klassname}, length, count, offset, sequence, condition, relative_offset))
+      attr_accessor field
+    end
+EOF
+    end
+
     create_scalar_type(:c)
     create_scalar_type(:C)
     create_scalar_type(:s)
@@ -486,14 +496,12 @@ EOF
 #    create_scalar_type(:half)
     create_scalar_type(:half_le)
     create_scalar_type(:half_be)
-    create_scalar_type(:pghalf)
+#    create_scalar_type(:pghalf)
     create_scalar_type(:pghalf_le)
     create_scalar_type(:pghalf_be)
 
-    def self.half(field, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
-      @fields.push(Field::new(field, Half, length, count, offset, sequence, condition, relative_offset))
-      attr_accessor field
-    end
+    create_scalar_accessor(:half)
+    create_scalar_accessor(:pghalf)
 
     def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       sym = (length ? :"a" : :"a*")
