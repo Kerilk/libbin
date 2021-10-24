@@ -168,7 +168,7 @@ module LibBin
       :pghalf => [:PGHalf, :pghalf],
       :pghalf_le => [:PGHalf_LE, :pghalf_le],
       :pghalf_be => [:PGHalf_BE, :pghalf_be]
-     }
+    }
 
     DATA_SIZES = Hash::new { |h,k|
       if k.kind_of?(Symbol) && m = k.match(/a(\d+)/)
@@ -396,43 +396,43 @@ module LibBin
 
     end
 
-    class Str < Scalar
-
-      def self.size(value, previous_offset = 0, parent = nil, index = nil, length = nil)
-        length ? length : value.size
-      end
-
-      def self.load(input,  input_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
-        str = (length ? input.read(length) : input.readline("\x00"))
-      end
-
-      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, _ = nil, _ = nil, length = nil)
-        str = (length ? input.read(length) : input.readline("\x00"))
-        output.write(str)
-        str
-      end
-
-      def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape, length = nil)
-        if length
-          kind::new(previous_offset, previous_offset + length - 1)
-        else
-          kind::new(previous_offset, previous_offset + value.size - 1)
-        end
-      end
-
-      def self.dump(value, output, output_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
-        if length
-          output.write([value].pack("Z#{length}"))
-        else
-          output.write(value)
-        end
-      end
-    end
+#    class Str < Scalar
+#
+#      def self.size(value, previous_offset = 0, parent = nil, index = nil, length = nil)
+#        length ? length : value.bytesize
+#      end
+#
+#      def self.load(input,  input_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
+#        str = (length ? input.read(length) : input.readline("\x00"))
+#      end
+#
+#      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, _ = nil, _ = nil, length = nil)
+#        str = (length ? input.read(length) : input.readline("\x00"))
+#        output.write(str)
+#        str
+#      end
+#
+#      def self.shape(value, previous_offset = 0, _ = nil, _ = nil, kind = DataShape, length = nil)
+#        if length
+#          kind::new(previous_offset, previous_offset + length - 1)
+#        else
+#          kind::new(previous_offset, previous_offset + value.size - 1)
+#        end
+#      end
+#
+#      def self.dump(value, output, output_big = LibBin::default_big?, _ = nil, _ = nil, length = nil)
+#        if length
+#          output.write([value].pack("Z#{length}"))
+#        else
+#          output.write(value)
+#        end
+#      end
+#    end
 
     def self.register_field(field, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       if type.kind_of?(Symbol)
         if type[0] == 'a'
-          real_type = Class::new(Str) do init(sym) end
+          real_type = Str
         else
           real_type = const_get(SCALAR_TYPES[type][0])
         end
@@ -517,11 +517,7 @@ EOF
 
 
     def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
-      sym = (length ? :"a" : :"a*")
-      c = Class::new(Str) do
-        init(sym)
-      end
-      @fields.push(Field::new(field, c, length, count, offset, sequence, condition, relative_offset))
+      @fields.push(Field::new(field, Str, length, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
 

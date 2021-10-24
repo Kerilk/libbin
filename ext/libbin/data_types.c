@@ -331,6 +331,97 @@ MAKE_CLASSES(UInt64, 64, UINT2NUM, NUM2UINT, unpack_uint64, pack_uint64)
 MAKE_CLASSES(Flt, 32, DBL2NUM, NUM2DBL, unpack_float, pack_float)
 MAKE_CLASSES(Double, 64, DBL2NUM, NUM2DBL, unpack_double, pack_double)
 
+static VALUE cStr;
+
+static VALUE cStr_size(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE value;
+  VALUE length;
+  rb_scan_args(argc, argv, "14", &value, NULL, NULL, NULL, &length);
+  if (RTEST(length))
+    return length;
+  else
+    return rb_funcall(value, rb_intern("bytesize"), 0);
+}
+
+static VALUE cStr_shape(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE value;
+  VALUE previous_offset;
+  VALUE kind;
+  VALUE length;
+  rb_scan_args(argc, argv, "15", &value, &previous_offset, NULL, NULL, &kind, &length);
+  if (NIL_P(previous_offset))
+    previous_offset = ULL2NUM(0);
+  if (NIL_P(kind))
+    kind = cDataShape;
+  if (NIL_P(length))
+    return rb_funcall(kind, rb_intern("new"), 2, previous_offset,
+      LL2NUM(NUM2LL(previous_offset) - 1 + RSTRING_LEN(value)));
+  else
+    return rb_funcall(kind, rb_intern("new"), 2, previous_offset,
+      LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length)));
+}
+
+static VALUE cStr_load(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE input;
+  VALUE length;
+  rb_scan_args(argc, argv, "14", &input, NULL, NULL, NULL, &length);
+  if (NIL_P(length))
+    return rb_funcall(input, rb_intern("readline"), 1, rb_str_new_static("", 1));
+  else
+    return rb_funcall(input, rb_intern("read"), 1, length);
+}
+
+static VALUE cStr_dump(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE value;
+  VALUE output;
+  VALUE length;
+  rb_scan_args(argc, argv, "24", &value, &output, NULL, NULL, NULL, &length);
+  if (NIL_P(length))
+    rb_funcall(output, rb_intern("write"), 1, value);
+  else {
+    long l = NUM2LONG(length);
+    long vl = RSTRING_LEN(value);
+    VALUE str;
+    if (vl > l)
+      str = rb_str_new(RSTRING_PTR(value), l);
+    else {
+      str = rb_str_buf_new(l);
+      rb_str_cat(str, RSTRING_PTR(value), vl);
+      for (long i = 0; i < l - vl; i++)
+        rb_str_cat(str, "", 1);
+    }
+    rb_funcall(output, rb_intern("write"), 1, str);
+  }
+  return Qnil;
+}
+
+static VALUE cStr_convert(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE input;
+  VALUE output;
+  VALUE length;
+  rb_scan_args(argc, argv, "25", &input, &output, NULL, NULL, NULL, NULL, &length);
+  VALUE str;
+  if (NIL_P(length))
+    str = rb_funcall(input, rb_intern("readline"), 1, rb_str_new_static("", 1));
+  else
+    str = rb_funcall(input, rb_intern("read"), 1, length);
+  rb_funcall(output, rb_intern("write"), 1, str);
+  return str;
+}
+
+static void define_cStr() {
+  cStr = rb_define_class_under(cDataConverter, "Str", cScalar);
+  rb_define_singleton_method(cStr, "size", cStr_size, -1);
+  rb_define_singleton_method(cStr, "shape", cStr_shape, -1);
+  rb_define_singleton_method(cStr, "load", cStr_load, -1);
+  rb_define_singleton_method(cStr, "dump", cStr_dump, -1);
+  rb_define_singleton_method(cStr, "convert", cStr_convert, -1);
+}
 
 void define_cScalar() {
   cScalar = rb_define_class_under(cDataConverter, "Scalar", rb_cObject);
@@ -346,6 +437,7 @@ void define_cScalar() {
   MAKE_CALL_DEFINES(UInt64);
   MAKE_CALL_DEFINES(Flt);
   MAKE_CALL_DEFINES(Double);
+  define_cStr();
 }
 
 
