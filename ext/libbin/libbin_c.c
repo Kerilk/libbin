@@ -196,6 +196,11 @@ static VALUE cDataConverter_initialize(VALUE self) {
   return self;
 }
 
+/*  attr_reader :__parent
+    attr_reader :__index
+    attr_reader :__iterator
+    attr_reader :__position*/
+
 static VALUE cDataConverter_parent(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -220,6 +225,17 @@ static VALUE cDataConverter_position(VALUE self) {
   return data->__position;
 }
 
+/*  def __set_convert_type(input, output, input_big, output_big, parent, index)
+      @__input_big = input_big
+      @__output_big = output_big
+      @__input = input
+      @__output = output
+      @__parent = parent
+      @__index = index
+      @__position = input.tell
+      @__cur_position = @__position
+    end */
+
 static VALUE cDataConverter_set_convert_type(
     VALUE self,
     VALUE input,
@@ -242,6 +258,17 @@ static VALUE cDataConverter_set_convert_type(
   return Qnil;
 }
 
+/*  def __unset_convert_type
+      @__input_big = nil
+      @__output_big = nil
+      @__input = nil
+      @__output = nil
+      @__parent = nil
+      @__index = nil
+      @__position = nil
+      @__cur_position = nil
+    end */
+
 static VALUE cDataConverter_unset_convert_type(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -255,6 +282,13 @@ static VALUE cDataConverter_unset_convert_type(VALUE self) {
   data->__cur_position = Qnil;
   return Qnil;
 }
+
+/*  def __set_size_type(position, parent, index)
+      @__parent = parent
+      @__index = index
+      @__position = position
+      @__cur_position = @__position
+    end */
 
 static VALUE cDataConverter_set_size_type(
     VALUE self,
@@ -271,6 +305,13 @@ static VALUE cDataConverter_set_size_type(
   return Qnil;
 }
 
+/*  def __unset_size_type
+      @__parent = nil
+      @__index = nil
+      @__position = nil
+      @__cur_position = nil
+    end */
+
 static VALUE cDataConverter_unset_size_type(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -280,6 +321,15 @@ static VALUE cDataConverter_unset_size_type(VALUE self) {
   data->__cur_position = Qnil;
   return Qnil;
 }
+
+/*  def __set_load_type(input, input_big, parent, index)
+      @__input_big = input_big
+      @__input = input
+      @__parent = parent
+      @__index = index
+      @__position = input.tell
+      @__cur_position = @__position
+    end */
 
 static VALUE cDataConverter_set_load_type(
     VALUE self,
@@ -299,6 +349,15 @@ static VALUE cDataConverter_set_load_type(
   return Qnil;
 }
 
+/*  def __unset_load_type
+      @__input_big = nil
+      @__input = nil
+      @__parent = nil
+      @__index = nil
+      @__position = nil
+      @__cur_position = nil
+    end */
+
 static VALUE cDataConverter_unset_load_type(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -310,6 +369,15 @@ static VALUE cDataConverter_unset_load_type(VALUE self) {
   data->__cur_position = Qnil;
   return Qnil;
 }
+
+/*  def __set_dump_type(output, output_big, parent, index)
+      @__output_big = output_big
+      @__output = output
+      @__parent = parent
+      @__index = index
+      @__position = output.tell
+      @__cur_position = @__position
+    end */
 
 static VALUE cDataConverter_set_dump_type(
     VALUE self,
@@ -329,6 +397,15 @@ static VALUE cDataConverter_set_dump_type(
   return Qnil;
 }
 
+/*  def __unset_dump_type
+      @__output_big = nil
+      @__output = nil
+      @__parent = nil
+      @__index = nil
+      @__position = nil
+      @__cur_position = nil
+    end */
+
 static VALUE cDataConverter_unset_dump_type(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -341,6 +418,18 @@ static VALUE cDataConverter_unset_dump_type(VALUE self) {
   return Qnil;
 }
 
+/*  def __decode_expression(sym)
+      case sym
+      when Proc
+        return sym.call
+      when String
+        exp = sym.gsub("..","__parent").gsub("\\",".")
+        return eval(exp)
+      else
+        return sym
+      end
+    end */
+
 static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expression) {
   if (T_STRING == TYPE(expression)) {
     VALUE tmp = rb_funcall(expression, rb_intern("gsub"), 2, rb_str_new_cstr(".."), rb_str_new_cstr("__parent"));
@@ -351,6 +440,17 @@ static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expressio
   } else
     return expression;
 }
+
+/*  def __decode_seek_offset(offset, relative_offset)
+      return nil unless offset
+      offset = __decode_expression(offset)
+      return false if offset == 0x0
+      offset += @__position if relative_offset
+      @__cur_position = offset
+      @__input.seek(offset) if @__input
+      @__output.seek(offset) if @__output
+      offset
+    end */
 
 static VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset) {
   struct cDataConverter_data *data;
@@ -370,11 +470,21 @@ static VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE r
   return data->__cur_position;
 }
 
+/*  def __decode_condition(condition)
+      return true unless condition
+      __decode_expression(condition)
+    end */
+
 static inline VALUE cDataConverter_decode_condition(VALUE self, VALUE condition) {
   if (!RTEST(condition))
     return Qtrue;
   return cDataConverter_decode_expression(self, condition);
 }
+
+/*  def __decode_count(count)
+      return 1 unless count
+      __decode_expression(count)
+    end */
 
 static inline VALUE cDataConverter_decode_count(VALUE self, VALUE count) {
   if (!RTEST(count))
@@ -382,13 +492,38 @@ static inline VALUE cDataConverter_decode_count(VALUE self, VALUE count) {
   return cDataConverter_decode_expression(self, count);
 }
 
+/*  def __decode_type(type)
+      __decode_expression(type)
+    end */
+
 static inline VALUE cDataConverter_decode_type(VALUE self, VALUE type) {
   return cDataConverter_decode_expression(self, type);
 }
 
+/*  def __decode_length(length)
+      __decode_expression(length)
+    end */
+
 static inline VALUE cDataConverter_decode_length(VALUE self, VALUE length) {
   return cDataConverter_decode_expression(self, length);
 }
+
+/*  def __decode_static_conditions(field)
+      @__offset = nil
+      @__condition = nil
+      @__type = nil
+      @__length = nil
+      @__count = nil
+      unless field.sequence?
+        @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
+        throw :ignored, nil if @__offset == false
+        @__condition = __decode_condition(field.condition)
+        throw :ignored, nil unless @__condition
+        @__type = __decode_type(field.type)
+        @__length = __decode_length(field.length)
+      end
+      @__count = __decode_count(field.count)
+    end */
 
 static VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
   struct cDataConverter_data *data;
@@ -414,6 +549,21 @@ static VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
   return Qnil;
 }
 
+/*  def __decode_dynamic_conditions(field)
+      return true unless field.sequence?
+      @__offset = nil
+      @__condition = nil
+      @__type = nil
+      @__length = nil
+      @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
+      return false if @__offset == false
+      @__condition = __decode_condition(field.condition)
+      return false unless @__condition
+      @__type = __decode_type(field.type)
+      @__length = __decode_length(field.length)
+      return true
+    end */
+
 static VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE field) {
   struct cDataConverter_data *data;
   struct cField_data *field_data;
@@ -436,6 +586,15 @@ static VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE field) {
   return Qtrue;
 }
 
+/*  def __restore_context
+      @__iterator = nil
+      @__type = nil
+      @__length = nil
+      @__count = nil
+      @__offset = nil
+      @__condition = nil
+    end */
+
 static inline VALUE cDataConverter_restore_context(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -447,6 +606,21 @@ static inline VALUE cDataConverter_restore_context(VALUE self) {
   data->__condition = Qnil;
   return Qnil;
 }
+
+/*  def __convert_field(field)
+      __decode_static_conditions(field)
+      vs = @__count.times.collect do |it|
+        @__iterator = it
+        if __decode_dynamic_conditions(field)
+          @__type::convert(@__input, @__output, @__input_big, @__output_big, self, it, @__length)
+        else
+          nil
+        end
+      end
+      __restore_context
+      vs = vs.first unless field.count
+      vs
+    end */
 
 static VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   VALUE res;
@@ -493,6 +667,21 @@ static VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   return res;
 }
 
+/*  def __load_field(field)
+      __decode_static_conditions(field)
+      vs = @__count.times.collect do |it|
+        @__iterator = it
+        if __decode_dynamic_conditions(field)
+          @__type::load(@__input, @__input_big, self, it, @__length)
+        else
+          nil
+        end
+      end
+      __restore_context
+      vs = vs.first unless field.count
+      vs
+    end */
+
 static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
@@ -533,6 +722,18 @@ static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   return res;
 }
 
+/*  def __dump_field(vs, field)
+      __decode_static_conditions(field)
+      vs = [vs] unless field.count
+      vs.each_with_index do |v, it|
+        @__iterator = it
+        if __decode_dynamic_conditions(field)
+          @__type::dump(v, @__output, @__output_big, self, it, @__length)
+        end
+      end
+      __restore_context
+    end */
+
 static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
   struct cDataConverter_data *data;
   struct cField_data *field_data;
@@ -567,6 +768,22 @@ static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
   }
   return cDataConverter_restore_context(self);
 }
+
+/*  def __shape_field(vs, kind, field)
+      __decode_static_conditions(field)
+      vs = [vs] unless field.count
+      vs = vs.each_with_index.collect do |v, it|
+        @__iterator = it
+        if __decode_dynamic_conditions(field)
+          sh = @__type::shape(v, @__cur_position, self, it, kind, @__length)
+          @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
+          sh
+        end
+      end
+      __restore_context
+      vs = field.count ? kind.new(vs) : vs.first
+      vs
+    end */
 
 static VALUE cDataConverter_shape_field(
     VALUE self,
