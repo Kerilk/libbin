@@ -19,21 +19,22 @@ static VALUE CLASS ## _size(int argc, VALUE* argv, VALUE self) {   \
 }
 
 /* shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil) */
-#define MAKE_TYPE_SHAPE(CLASS, MAPPED_TYPE)                                                \
-static VALUE CLASS ## _shape(int argc, VALUE* argv, VALUE self) {                          \
-  (void)self;                                                                              \
-  VALUE previous_offset;                                                                   \
-  VALUE kind;                                                                              \
-  VALUE length;                                                                            \
-  rb_scan_args(argc, argv, "15", NULL, &previous_offset, NULL, NULL, &kind, &length);      \
-  if (NIL_P(previous_offset))                                                              \
-    previous_offset = ULL2NUM(0);                                                          \
-  if (NIL_P(kind))                                                                         \
-    kind = cDataShape;                                                                     \
-  if (NIL_P(length))                                                                       \
-    length = ULL2NUM(1);                                                                   \
-  return rb_funcall(kind, rb_intern("new"), 2, previous_offset,                            \
-   LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length) * (ptrdiff_t)sizeof(MAPPED_TYPE))); \
+#define MAKE_TYPE_SHAPE(CLASS, MAPPED_TYPE)                                                  \
+static VALUE CLASS ## _shape(int argc, VALUE* argv, VALUE self) {                            \
+  (void)self;                                                                                \
+  VALUE previous_offset;                                                                     \
+  VALUE kind;                                                                                \
+  VALUE length;                                                                              \
+  rb_scan_args(argc, argv, "15", NULL, &previous_offset, NULL, NULL, &kind, &length);        \
+  if (NIL_P(previous_offset))                                                                \
+    previous_offset = ULL2NUM(0);                                                            \
+  if (NIL_P(kind))                                                                           \
+    kind = cDataShape;                                                                       \
+  if (NIL_P(length))                                                                         \
+    length = ULL2NUM(1);                                                                     \
+  VALUE args[] = {  previous_offset,                                                         \
+    LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length) * (ptrdiff_t)sizeof(MAPPED_TYPE)) }; \
+  return rb_class_new_instance(2, args, kind);                                               \
 }
 
 #define MAKE_LOAD_LOOP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT) \
@@ -363,12 +364,13 @@ static VALUE cStr_shape(int argc, VALUE* argv, VALUE self) {
     previous_offset = ULL2NUM(0);
   if (NIL_P(kind))
     kind = cDataShape;
-  if (NIL_P(length))
-    return rb_funcall(kind, rb_intern("new"), 2, previous_offset,
-      LL2NUM(NUM2LL(previous_offset) - 1 + RSTRING_LEN(value)));
-  else
-    return rb_funcall(kind, rb_intern("new"), 2, previous_offset,
-      LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length)));
+  if (NIL_P(length)) {
+    VALUE args[] = { previous_offset, LL2NUM(NUM2LL(previous_offset) - 1 + RSTRING_LEN(value)) };
+    return rb_class_new_instance(2, args, kind);
+  } else {
+    VALUE args[] = { previous_offset, LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length)) };
+    return rb_class_new_instance(2, args, kind);
+  }
 }
 
 static VALUE cStr_load(int argc, VALUE* argv, VALUE self) {

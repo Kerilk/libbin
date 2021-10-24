@@ -271,7 +271,7 @@ static VALUE cDataConverter_output_big(VALUE self) {
       @__cur_position = @__position
     end */
 
-static VALUE cDataConverter_set_convert_type(
+static inline VALUE cDataConverter_set_convert_type(
     VALUE self,
     VALUE input,
     VALUE output,
@@ -304,7 +304,7 @@ static VALUE cDataConverter_set_convert_type(
       @__cur_position = nil
     end */
 
-static VALUE cDataConverter_unset_convert_type(VALUE self) {
+static inline VALUE cDataConverter_unset_convert_type(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__input = Qnil;
@@ -325,7 +325,7 @@ static VALUE cDataConverter_unset_convert_type(VALUE self) {
       @__cur_position = @__position
     end */
 
-static VALUE cDataConverter_set_size_type(
+static inline VALUE cDataConverter_set_size_type(
     VALUE self,
     VALUE position,
     VALUE parent,
@@ -347,7 +347,7 @@ static VALUE cDataConverter_set_size_type(
       @__cur_position = nil
     end */
 
-static VALUE cDataConverter_unset_size_type(VALUE self) {
+static inline VALUE cDataConverter_unset_size_type(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__parent = Qnil;
@@ -366,7 +366,7 @@ static VALUE cDataConverter_unset_size_type(VALUE self) {
       @__cur_position = @__position
     end */
 
-static VALUE cDataConverter_set_load_type(
+static inline VALUE cDataConverter_set_load_type(
     VALUE self,
     VALUE input,
     VALUE input_big,
@@ -393,7 +393,7 @@ static VALUE cDataConverter_set_load_type(
       @__cur_position = nil
     end */
 
-static VALUE cDataConverter_unset_load_type(VALUE self) {
+static inline VALUE cDataConverter_unset_load_type(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__input = Qnil;
@@ -414,7 +414,7 @@ static VALUE cDataConverter_unset_load_type(VALUE self) {
       @__cur_position = @__position
     end */
 
-static VALUE cDataConverter_set_dump_type(
+static inline VALUE cDataConverter_set_dump_type(
     VALUE self,
     VALUE output,
     VALUE output_big,
@@ -441,7 +441,7 @@ static VALUE cDataConverter_set_dump_type(
       @__cur_position = nil
     end */
 
-static VALUE cDataConverter_unset_dump_type(VALUE self) {
+static inline VALUE cDataConverter_unset_dump_type(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__output = Qnil;
@@ -487,7 +487,7 @@ static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expressio
       offset
     end */
 
-static VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset) {
+static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   if (!RTEST(offset))
@@ -560,7 +560,7 @@ static inline VALUE cDataConverter_decode_length(VALUE self, VALUE length) {
       @__count = __decode_count(field.count)
     end */
 
-static VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
+static inline VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
   struct cDataConverter_data *data;
   struct cField_data *field_data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -599,7 +599,7 @@ static VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
       return true
     end */
 
-static VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE field) {
+static inline VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE field) {
   struct cDataConverter_data *data;
   struct cField_data *field_data;
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
@@ -657,7 +657,7 @@ static inline VALUE cDataConverter_restore_context(VALUE self) {
       vs
     end */
 
-static VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
+static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
   struct cField_data *field_data;
@@ -828,7 +828,7 @@ static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE fi
       vs
     end */
 
-static VALUE cDataConverter_shape_field(
+static inline VALUE cDataConverter_shape_field(
     VALUE self,
     VALUE values,
     VALUE kind,
@@ -865,7 +865,7 @@ static VALUE cDataConverter_shape_field(
         }
       }
     }
-    res = rb_funcall(kind, rb_intern("new"), 1, res);
+    res = rb_class_new_instance(1, &res, kind);
   } else {
     data->__iterator = LONG2NUM(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field))) {
@@ -949,6 +949,8 @@ static inline VALUE cDataConverter_load_fields_wrapper(VALUE state_p) {
   return state->self;
 }
 
+static ID id___load_fields;
+
 static inline VALUE cDataConverter_load_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
   rb_rescue(&cDataConverter_load_fields_wrapper, (VALUE)&state,
@@ -979,6 +981,8 @@ static inline VALUE cDataConverter_dump_fields_wrapper(VALUE state_p) {
   }
   return state->self;
 }
+
+static ID id___dump_fields;
 
 static inline VALUE cDataConverter_dump_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
@@ -1011,6 +1015,8 @@ static inline VALUE cDataConverter_convert_fields_wrapper(VALUE state_p) {
   return state->self;
 }
 
+static ID id___convert_fields;
+
 static inline VALUE cDataConverter_convert_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
   rb_rescue(&cDataConverter_convert_fields_wrapper, (VALUE)&state,
@@ -1018,9 +1024,91 @@ static inline VALUE cDataConverter_convert_fields(VALUE self) {
   return self;
 }
 
+/* def __load(input, input_big, parent = nil, index = nil)
+      __set_load_type(input, input_big, parent, index)
+      __load_fields
+      __unset_load_type
+      self
+    end */
+
+static inline VALUE cDataConverter_load(int argc, VALUE *argv, VALUE self) {
+  VALUE input;
+  VALUE input_big;
+  VALUE parent;
+  VALUE index;
+  rb_scan_args(argc, argv, "22", &input, &input_big, &parent, &index);
+  cDataConverter_set_load_type(self, input, input_big, parent, index);
+  rb_funcall(self, id___load_fields, 0);
+  cDataConverter_unset_load_type(self);
+  return self;
+}
+
+/* def __dump(output, output_big, parent = nil, index = nil)
+      __set_dump_type(output, output_big, parent, index)
+      __dump_fields
+      __unset_dump_type
+      self
+    end */
+
+static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
+  VALUE output;
+  VALUE output_big;
+  VALUE parent;
+  VALUE index;
+  rb_scan_args(argc, argv, "22", &output, &output_big, &parent, &index);
+  cDataConverter_set_dump_type(self, output, output_big, parent, index);
+  rb_funcall(self, id___dump_fields, 0);
+  cDataConverter_unset_dump_type(self);
+  return self;
+}
+
+/*  def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+      if length
+        length.times.collect {
+          h = self::new
+          h.__load(input, input_big, parent, index)
+        }
+      else
+        h = self::new
+        h.__load(input, input_big, parent, index)
+      end
+    end */
+
+static ID id___load;
+
+static inline VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self) {
+  VALUE input;
+  VALUE input_big;
+  VALUE parent;
+  VALUE index;
+  VALUE length;
+  rb_scan_args(argc, argv, "14", &input, &input_big, &parent, &index, &length);
+  if (NIL_P(input_big))
+    input_big = rb_funcall(mLibBin, rb_intern("default_big?"), 0);
+  VALUE res;
+  if (!NIL_P(length)) {
+    long l = NUM2LONG(length);
+    res = rb_ary_new_capa(l);
+    for (long i = 0; i < l; i++) {
+      VALUE obj = rb_class_new_instance(0, NULL, self);
+      rb_funcall(obj, id___load, 4, input, input_big, parent, index);
+      rb_ary_store(res, i, obj);
+    }
+    return res;
+  } else {
+    res = rb_class_new_instance(0, NULL, self);
+    rb_funcall(res, id___load, 4, input, input_big, parent, index);
+  }
+  return res;
+}
+
 static void define_cDataConverter() {
   id_fields = rb_intern("@fields");
+  id___load_fields = rb_intern("__load_fields");
+  id___dump_fields = rb_intern("__dump_fields");
+  id___convert_fields = rb_intern("__convert_fields");
   id_load = rb_intern("load");
+  id___load = rb_intern("__load");
   id_dump = rb_intern("dump");
   cDataConverter = rb_define_class_under(mLibBin, "DataConverter", rb_cObject);
   rb_define_alloc_func(cDataConverter, cDataConverter_alloc);
@@ -1062,6 +1150,11 @@ static void define_cDataConverter() {
   rb_define_method(cDataConverter, "__load_fields", cDataConverter_load_fields, 0);
   rb_define_method(cDataConverter, "__dump_fields", cDataConverter_dump_fields, 0);
   rb_define_method(cDataConverter, "__convert_fields", cDataConverter_convert_fields, 0);
+
+  rb_define_method(cDataConverter, "__load", cDataConverter_load, -1);
+  rb_define_method(cDataConverter, "__dump", cDataConverter_dump, -1);
+
+  rb_define_singleton_method(cDataConverter, "load", cDataConverter_singl_load, -1);
 }
 
 static VALUE pghalf_from_string_p(VALUE self, VALUE str, VALUE pack_str) {

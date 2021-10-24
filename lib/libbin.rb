@@ -59,20 +59,6 @@ module LibBin
       self
     end
 
-    def __load(input, input_big, parent = nil, index = nil)
-      __set_load_type(input, input_big, parent, index)
-      __load_fields
-      __unset_load_type
-      self
-    end
-
-    def __dump(output, output_big, parent = nil, index = nil)
-      __set_dump_type(output, output_big, parent, index)
-      __dump_fields
-      __unset_dump_type
-      self
-    end
-      
     def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
       if length
         length.times.collect {
@@ -82,18 +68,6 @@ module LibBin
       else
         h = self::new
         h.__convert(input, output, input_big, output_big, parent, index)
-      end
-    end
-
-    def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
-      if length
-        length.times.collect {
-          h = self::new
-          h.__load(input, input_big, parent, index)
-        }
-      else
-        h = self::new
-        h.__load(input, input_big, parent, index)
       end
     end
 
