@@ -540,4 +540,68 @@ class LibBinTest < Minitest::Test
     end
   end
 
+  def test_exception
+    h = Class::new(LibBin::DataConverter) do
+      int32 :offset1
+      int16 :offset2
+    end
+    b = Class::new(LibBin::DataConverter) do
+      int32 :datum1, offset: '..\header.offset1'
+      int16 :datum2, offset: '..\header.offset2'
+      int32 :error, length: 4
+    end
+    s = Class::new(LibBin::DataConverter) do
+      register_field :header, h
+      register_field :body, b
+    end
+    begin
+      LibBin.__output = nil
+      [false, true].each { |big|
+        open_bin("test_size_#{SUFFIX[big]}.bin") do |f|
+          struct = nil
+          assert_raises {
+            struct = s::load(f, big)
+          }
+          str = new_stringio
+          f.rewind
+          assert_raises {
+            struct = s::convert(f, str, big, !big)
+          }
+        end
+      }
+    ensure
+      LibBin.__output = $stderr
+    end
+  end
+
+  def test_exception2
+    h = Class::new(LibBin::DataConverter) do
+      int32 :offset1
+      int16 :offset2
+    end
+    b = Class::new(LibBin::DataConverter) do
+      int32 :datum1, offset: '..\header.offset1'
+      int16 :datum2, offset: '..\header.offset2'
+    end
+    s = Class::new(LibBin::DataConverter) do
+      register_field :header, h
+      register_field :body, b
+    end
+    begin
+      LibBin.__output = nil
+      [false, true].each { |big|
+        open_bin("test_size_#{SUFFIX[big]}.bin") do |f|
+          struct = s::load(f, big)
+          struct.body.datum2 = nil
+          str = new_stringio
+          assert_raises {
+            s::dump(struct, str)
+          }
+        end
+      }
+    ensure
+      LibBin.__output = $stderr
+    end
+  end
+
 end

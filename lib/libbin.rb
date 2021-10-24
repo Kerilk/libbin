@@ -7,6 +7,11 @@ module LibBin
 
   BIG_ARCHITECTURE = [0x12345678].pack("i") == "\x12\x34\x56\x78"
   @__big = nil
+  @__output = $stderr
+
+  class << self
+    attr_accessor :__output
+  end
 
   def self.default_big?
     if @__big.nil?
@@ -46,30 +51,6 @@ module LibBin
       return nil if members.values.compact.size <= 0
       kind::new(members)
     end
-
-    def __convert_fields
-      self.class.instance_variable_get(:@fields).each { |field|
-        begin
-          send("#{field.name}=", __convert_field(field))
-        rescue
-          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-          raise
-        end
-      }
-      self
-    end
-
-#    def __dump_fields
-#      self.class.instance_variable_get(:@fields).each { |field|
-#        begin
-#          __dump_field(send(field.name), field)
-#        rescue
-#          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-#          raise
-#        end
-#      }
-#      self
-#    end
 
     def __convert(input, output, input_big, output_big, parent = nil, index = nil)
       __set_convert_type(input, output, input_big, output_big, parent, index)

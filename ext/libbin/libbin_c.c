@@ -902,14 +902,57 @@ static VALUE cDataConverter_shape_field(
 
 static ID id_fields;
 
-static inline VALUE cDataConverter_load_fields(VALUE self) {
-  VALUE fields = rb_ivar_get(rb_obj_class(self), id_fields);
-  for (long i = 0; i < RARRAY_LEN(fields); i++) {
-    VALUE field = rb_ary_entry(fields, i);
+struct fields_state {
+    VALUE self;
+    VALUE fields;
+    VALUE field;
+};
+
+static inline VALUE cDataConverter_fields_rescue(VALUE state_p, VALUE exception) {
+  struct fields_state *state = (struct fields_state *)state_p;
+  if (NIL_P(state->field)) {
+    struct cDataConverter_data *data;
+    TypedData_Get_Struct(state->self, struct cDataConverter_data, &cDataConverter_type, data);
+    if (!NIL_P(rb_ivar_get(mLibBin, rb_intern("@__output"))))
+      rb_funcall(rb_ivar_get(mLibBin, rb_intern("@__output")), rb_intern("print"), 6,
+        rb_obj_class(state->self),
+        rb_str_new_cstr(": could not load fields, index: "),
+        data->__index,
+        rb_str_new_cstr(", current position: "),
+        data->__cur_position,
+        rb_str_new_cstr("\n"));
+  } else {
     struct cField_data *field_data;
-    TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
-    rb_funcall(self, field_data->setter, 1, cDataConverter_load_field(self, field));
+    TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
+    if (!NIL_P(rb_ivar_get(mLibBin, rb_intern("@__output"))))
+      rb_funcall(rb_ivar_get(mLibBin, rb_intern("@__output")), rb_intern("print"), 6,
+        rb_obj_class(state->self),
+        rb_str_new_cstr(": "),
+        field_data->name,
+        rb_str_new_cstr("("),
+        field_data->type,
+        rb_str_new_cstr(")\n"));
   }
+  rb_exc_raise(exception);
+  return state->self;
+}
+
+static inline VALUE cDataConverter_load_fields_wrapper(VALUE state_p) {
+  struct fields_state *state = (struct fields_state *)state_p;
+  state->fields = rb_ivar_get(rb_obj_class(state->self), id_fields);
+  for (long i = 0; i < RARRAY_LEN(state->fields); i++) {
+    state->field = rb_ary_entry(state->fields, i);
+    struct cField_data *field_data;
+    TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
+    rb_funcall(state->self, field_data->setter, 1, cDataConverter_load_field(state->self, state->field));
+  }
+  return state->self;
+}
+
+static inline VALUE cDataConverter_load_fields(VALUE self) {
+  struct fields_state state = {self, Qnil, Qnil};
+  rb_rescue(&cDataConverter_load_fields_wrapper, (VALUE)&state,
+            &cDataConverter_fields_rescue, (VALUE)&state);
   return self;
 }
 
@@ -925,14 +968,53 @@ static inline VALUE cDataConverter_load_fields(VALUE self) {
       self
     end */
 
-static inline VALUE cDataConverter_dump_fields(VALUE self) {
-  VALUE fields = rb_ivar_get(rb_obj_class(self), id_fields);
-  for (long i = 0; i < RARRAY_LEN(fields); i++) {
-    VALUE field = rb_ary_entry(fields, i);
+static inline VALUE cDataConverter_dump_fields_wrapper(VALUE state_p) {
+  struct fields_state *state = (struct fields_state *)state_p;
+  state->fields = rb_ivar_get(rb_obj_class(state->self), id_fields);
+  for (long i = 0; i < RARRAY_LEN(state->fields); i++) {
+    state->field = rb_ary_entry(state->fields, i);
     struct cField_data *field_data;
-    TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
-    cDataConverter_dump_field(self, rb_funcall(self, field_data->getter, 0), field);
+    TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
+    cDataConverter_dump_field(state->self, rb_funcall(state->self, field_data->getter, 0), state->field);
   }
+  return state->self;
+}
+
+static inline VALUE cDataConverter_dump_fields(VALUE self) {
+  struct fields_state state = {self, Qnil, Qnil};
+  rb_rescue(&cDataConverter_dump_fields_wrapper, (VALUE)&state,
+            &cDataConverter_fields_rescue, (VALUE)&state);
+  return self;
+}
+
+/*  def __convert_fields
+      self.class.instance_variable_get(:@fields).each { |field|
+        begin
+          send("#{field.name}=", __convert_field(field))
+        rescue
+          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
+          raise
+        end
+      }
+      self
+    end */
+
+static inline VALUE cDataConverter_convert_fields_wrapper(VALUE state_p) {
+  struct fields_state *state = (struct fields_state *)state_p;
+  state->fields = rb_ivar_get(rb_obj_class(state->self), id_fields);
+  for (long i = 0; i < RARRAY_LEN(state->fields); i++) {
+    state->field = rb_ary_entry(state->fields, i);
+    struct cField_data *field_data;
+    TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
+    rb_funcall(state->self, field_data->setter, 1, cDataConverter_convert_field(state->self, state->field));
+  }
+  return state->self;
+}
+
+static inline VALUE cDataConverter_convert_fields(VALUE self) {
+  struct fields_state state = {self, Qnil, Qnil};
+  rb_rescue(&cDataConverter_convert_fields_wrapper, (VALUE)&state,
+            &cDataConverter_fields_rescue, (VALUE)&state);
   return self;
 }
 
@@ -979,6 +1061,7 @@ static void define_cDataConverter() {
 
   rb_define_method(cDataConverter, "__load_fields", cDataConverter_load_fields, 0);
   rb_define_method(cDataConverter, "__dump_fields", cDataConverter_dump_fields, 0);
+  rb_define_method(cDataConverter, "__convert_fields", cDataConverter_convert_fields, 0);
 }
 
 static VALUE pghalf_from_string_p(VALUE self, VALUE str, VALUE pack_str) {

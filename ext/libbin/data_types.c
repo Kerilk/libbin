@@ -73,6 +73,10 @@ static VALUE CLASS ## _load(int argc, VALUE* argv, VALUE self) {               \
   size_t cnt = sizeof(MAPPED_TYPE) * n;                                        \
   VALUE res;                                                                   \
   VALUE str = rb_funcall(input, id_read, 1, ULL2NUM(cnt));                     \
+  if (NIL_P(str)  || RSTRING_LEN(str) < (long)cnt)                             \
+    rb_raise(rb_eRuntimeError,                                                 \
+        "could not read enough data: got %ld needed %zu",                      \
+        RSTRING_LEN(str), cnt);                                                \
   MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                         \
   LOAD(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT);                             \
   return res;                                                                  \
@@ -171,6 +175,8 @@ static VALUE CLASS ## _convert(int argc, VALUE* argv, VALUE self) {             
   size_t cnt = sizeof(MAPPED_TYPE) * n;                                                                    \
   VALUE res;                                                                                               \
   VALUE str = rb_funcall(input, id_read, 1, ULL2NUM(cnt));                                                 \
+  if (NIL_P(str)  || RSTRING_LEN(str) < (long)cnt)                                                         \
+    rb_raise(rb_eRuntimeError, "could not read enough data: got %ld needed %zu",RSTRING_LEN(str), cnt);    \
   MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                                                     \
   CONVERT(MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT, NATIVE_CONVERT);                                         \
   rb_funcall(output, id_write, 1, str);                                                                    \
@@ -372,8 +378,13 @@ static VALUE cStr_load(int argc, VALUE* argv, VALUE self) {
   rb_scan_args(argc, argv, "14", &input, NULL, NULL, NULL, &length);
   if (NIL_P(length))
     return rb_funcall(input, rb_intern("readline"), 1, rb_str_new_static("", 1));
-  else
-    return rb_funcall(input, id_read, 1, length);
+  else {
+    VALUE str = rb_funcall(input, id_read, 1, length);
+    if (NIL_P(str) || RSTRING_LEN(str) < NUM2LONG(length))
+      rb_raise(rb_eRuntimeError,
+        "could not read enough data: got %ld needed %zu", RSTRING_LEN(str), NUM2LONG(length));
+    return str;
+  }
 }
 
 static VALUE cStr_dump(int argc, VALUE* argv, VALUE self) {
@@ -410,8 +421,12 @@ static VALUE cStr_convert(int argc, VALUE* argv, VALUE self) {
   VALUE str;
   if (NIL_P(length))
     str = rb_funcall(input, rb_intern("readline"), 1, rb_str_new_static("", 1));
-  else
+  else {
     str = rb_funcall(input, id_read, 1, length);
+    if (NIL_P(str) || RSTRING_LEN(str) < NUM2LONG(length))
+      rb_raise(rb_eRuntimeError,
+        "could not read enough data: got %ld needed %zu", RSTRING_LEN(str), NUM2LONG(length));
+  }
   rb_funcall(output, id_write, 1, str);
   return str;
 }
