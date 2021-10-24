@@ -37,10 +37,7 @@ module LibBin
       self.class.instance_variable_get(:@fields).each { |field|
         begin
           vs = send(field.name)
-          member = catch(:ignored) do
-            __shape_field(vs, kind, field)
-          end
-          members[field.name] = member
+          members[field.name] = __shape_field(vs, kind, field)
         rescue
           STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise
@@ -54,10 +51,7 @@ module LibBin
     def __convert_fields
       self.class.instance_variable_get(:@fields).each { |field|
         begin
-          vs = catch(:ignored) do
-            __convert_field(field)
-          end
-          send("#{field.name}=", vs)
+          send("#{field.name}=", __convert_field(field))
         rescue
           STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise
@@ -69,10 +63,7 @@ module LibBin
     def __load_fields
       self.class.instance_variable_get(:@fields).each { |field|
         begin
-          vs = catch(:ignored) do
-            __load_field(field)
-          end
-          send("#{field.name}=", vs)
+          send("#{field.name}=", __load_field(field))
         rescue
           STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise
@@ -84,10 +75,7 @@ module LibBin
     def __dump_fields
       self.class.instance_variable_get(:@fields).each { |field|
         begin
-          vs = send(field.name)
-          catch(:ignored) do
-            __dump_field(vs, field)
-          end
+          __dump_field(send(field.name), field)
         rescue
           STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise

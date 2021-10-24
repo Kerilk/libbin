@@ -538,15 +538,15 @@ static VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
   if (!RTEST(field_data->sequence)) {
     data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset);
     if (!data->__offset)
-      rb_throw_obj(ID2SYM(rb_intern("ignored")), Qnil);
+      return Qnil;
     data->__condition = cDataConverter_decode_condition(self, field_data->condition);
     if (!RTEST(data->__condition))
-      rb_throw_obj(ID2SYM(rb_intern("ignored")), Qnil);
+      return Qnil;
     data->__type = cDataConverter_decode_type(self, field_data->type);
     data->__length = cDataConverter_decode_length(self, field_data->length);
   }
   data->__count = cDataConverter_decode_count(self, field_data->count);
-  return Qnil;
+  return Qtrue;
 }
 
 /*  def __decode_dynamic_conditions(field)
@@ -626,7 +626,8 @@ static VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
   struct cField_data *field_data;
-  cDataConverter_decode_static_conditions(self, field);
+  if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
+    return Qnil;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
@@ -686,7 +687,8 @@ static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
   struct cField_data *field_data;
-  cDataConverter_decode_static_conditions(self, field);
+  if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
+    return Qnil;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
@@ -737,7 +739,8 @@ static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
 static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
   struct cDataConverter_data *data;
   struct cField_data *field_data;
-  cDataConverter_decode_static_conditions(self, field);
+  if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
+    return Qnil;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
@@ -766,7 +769,8 @@ static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
         data->__iterator,
         data->__length);
   }
-  return cDataConverter_restore_context(self);
+  cDataConverter_restore_context(self);
+  return Qnil;
 }
 
 /*  def __shape_field(vs, kind, field)
@@ -794,7 +798,8 @@ static VALUE cDataConverter_shape_field(
   VALUE res = Qnil;
   struct cDataConverter_data *data;
   struct cField_data *field_data;
-  cDataConverter_decode_static_conditions(self, field);
+  if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
+    return Qnil;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
