@@ -199,7 +199,7 @@ static VALUE cDataConverter_initialize(VALUE self) {
 /*  attr_reader :__parent
     attr_reader :__index
     attr_reader :__iterator
-    attr_reader :__position*/
+    attr_reader :__position */
 
 static VALUE cDataConverter_parent(VALUE self) {
   struct cDataConverter_data *data;
@@ -223,6 +223,35 @@ static VALUE cDataConverter_position(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   return data->__position;
+}
+
+/*  attr_reader :__input
+    attr_reader :__output
+    attr_reader :__input_big
+    attr_reader :__output_big */
+
+static VALUE cDataConverter_input(VALUE self) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__input;
+}
+
+static VALUE cDataConverter_output(VALUE self) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__output;
+}
+
+static VALUE cDataConverter_input_big(VALUE self) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__input_big;
+}
+
+static VALUE cDataConverter_output_big(VALUE self) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__output_big;
 }
 
 /*  def __set_convert_type(input, output, input_big, output_big, parent, index)
@@ -857,6 +886,10 @@ static void define_cDataConverter() {
   rb_define_method(cDataConverter, "__index", cDataConverter_index, 0);
   rb_define_method(cDataConverter, "__iterator", cDataConverter_iterator, 0);
   rb_define_method(cDataConverter, "__position", cDataConverter_position, 0);
+  rb_define_method(cDataConverter, "__input", cDataConverter_input, 0);
+  rb_define_method(cDataConverter, "__output", cDataConverter_output, 0);
+  rb_define_method(cDataConverter, "__input_big", cDataConverter_input_big, 0);
+  rb_define_method(cDataConverter, "__output_big", cDataConverter_output_big, 0);
 
   rb_define_method(cDataConverter, "__set_convert_type", cDataConverter_set_convert_type, 6);
   rb_define_method(cDataConverter, "__unset_convert_type", cDataConverter_unset_convert_type, 0);
