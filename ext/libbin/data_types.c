@@ -4,6 +4,8 @@
 VALUE cDataShape;
 VALUE cScalar;
 
+static ID id_read, id_write;
+
 /* size(value, previous_offset = 0, parent = nil, index = nil, length = nil)*/
 #define MAKE_TYPE_SIZE(CLASS, MAPPED_TYPE)                         \
 static VALUE CLASS ## _size(int argc, VALUE* argv, VALUE self) {   \
@@ -70,7 +72,7 @@ static VALUE CLASS ## _load(int argc, VALUE* argv, VALUE self) {               \
   long n = RTEST(length) ? NUM2LONG(length) : 1;                               \
   size_t cnt = sizeof(MAPPED_TYPE) * n;                                        \
   VALUE res;                                                                   \
-  VALUE str = rb_funcall(input, rb_intern("read"), 1, ULL2NUM(cnt));           \
+  VALUE str = rb_funcall(input, id_read, 1, ULL2NUM(cnt));                     \
   MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                         \
   LOAD(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT);                             \
   return res;                                                                  \
@@ -116,7 +118,7 @@ static VALUE CLASS ## _dump(int argc, VALUE* argv, VALUE self) {                
   size_t cnt = sizeof(MAPPED_TYPE) * n;                                              \
   VALUE str = rb_str_buf_new((long)cnt);                                             \
   DUMP(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT);                                   \
-  rb_funcall(output, rb_intern("write"), 1, str);                                    \
+  rb_funcall(output, id_write, 1, str);                                              \
   return Qnil;                                                                       \
 }
 
@@ -168,10 +170,10 @@ static VALUE CLASS ## _convert(int argc, VALUE* argv, VALUE self) {             
   long n = RTEST(length) ? NUM2LONG(length) : 1;                                                           \
   size_t cnt = sizeof(MAPPED_TYPE) * n;                                                                    \
   VALUE res;                                                                                               \
-  VALUE str = rb_funcall(input, rb_intern("read"), 1, ULL2NUM(cnt));                                       \
+  VALUE str = rb_funcall(input, id_read, 1, ULL2NUM(cnt));                                                 \
   MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                                                     \
   CONVERT(MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT, NATIVE_CONVERT);                                         \
-  rb_funcall(output, rb_intern("write"), 1, str);                                                          \
+  rb_funcall(output, id_write, 1, str);                                                                    \
   return res;                                                                                              \
 }
 
@@ -371,7 +373,7 @@ static VALUE cStr_load(int argc, VALUE* argv, VALUE self) {
   if (NIL_P(length))
     return rb_funcall(input, rb_intern("readline"), 1, rb_str_new_static("", 1));
   else
-    return rb_funcall(input, rb_intern("read"), 1, length);
+    return rb_funcall(input, id_read, 1, length);
 }
 
 static VALUE cStr_dump(int argc, VALUE* argv, VALUE self) {
@@ -381,7 +383,7 @@ static VALUE cStr_dump(int argc, VALUE* argv, VALUE self) {
   VALUE length;
   rb_scan_args(argc, argv, "24", &value, &output, NULL, NULL, NULL, &length);
   if (NIL_P(length))
-    rb_funcall(output, rb_intern("write"), 1, value);
+    rb_funcall(output, id_write, 1, value);
   else {
     long l = NUM2LONG(length);
     long vl = RSTRING_LEN(value);
@@ -394,7 +396,7 @@ static VALUE cStr_dump(int argc, VALUE* argv, VALUE self) {
       for (long i = 0; i < l - vl; i++)
         rb_str_cat(str, "", 1);
     }
-    rb_funcall(output, rb_intern("write"), 1, str);
+    rb_funcall(output, id_write, 1, str);
   }
   return Qnil;
 }
@@ -409,8 +411,8 @@ static VALUE cStr_convert(int argc, VALUE* argv, VALUE self) {
   if (NIL_P(length))
     str = rb_funcall(input, rb_intern("readline"), 1, rb_str_new_static("", 1));
   else
-    str = rb_funcall(input, rb_intern("read"), 1, length);
-  rb_funcall(output, rb_intern("write"), 1, str);
+    str = rb_funcall(input, id_read, 1, length);
+  rb_funcall(output, id_write, 1, str);
   return str;
 }
 
@@ -424,6 +426,8 @@ static void define_cStr() {
 }
 
 void define_cScalar() {
+  id_read = rb_intern("read");
+  id_write = rb_intern("write");
   cScalar = rb_define_class_under(cDataConverter, "Scalar", rb_cObject);
   MAKE_CALL_DEFINES(Half);
   MAKE_CALL_DEFINES(PGHalf);

@@ -712,6 +712,8 @@ static VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
       vs
     end */
 
+static ID id_load;
+
 static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
@@ -728,7 +730,7 @@ static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
       if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
-        rb_ary_store(res, i, rb_funcall(data->__type, rb_intern("load"), 5,
+        rb_ary_store(res, i, rb_funcall(data->__type, id_load, 5,
           data->__input,
           data->__input_big,
           self,
@@ -740,7 +742,7 @@ static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   } else {
     data->__iterator = LONG2NUM(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
-      res = rb_funcall(data->__type, rb_intern("load"), 5,
+      res = rb_funcall(data->__type, id_load, 5,
         data->__input,
         data->__input_big,
         self,
@@ -765,6 +767,8 @@ static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
       __restore_context
     end */
 
+static ID id_dump;
+
 static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
   struct cDataConverter_data *data;
   struct cField_data *field_data;
@@ -779,7 +783,7 @@ static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
       if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
-        rb_funcall(data->__type, rb_intern("dump"), 6,
+        rb_funcall(data->__type, id_dump, 6,
           rb_ary_entry(values, i),
           data->__output,
           data->__output_big,
@@ -790,7 +794,7 @@ static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
   } else {
     data->__iterator = LONG2NUM(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
-      rb_funcall(data->__type, rb_intern("dump"), 6,
+      rb_funcall(data->__type, id_dump, 6,
         values,
         data->__output,
         data->__output_big,
@@ -879,6 +883,8 @@ static VALUE cDataConverter_shape_field(
 }
 
 static void define_cDataConverter() {
+  id_load = rb_intern("load");
+  id_dump = rb_intern("dump");
   cDataConverter = rb_define_class_under(mLibBin, "DataConverter", rb_cObject);
   rb_define_alloc_func(cDataConverter, cDataConverter_alloc);
   rb_define_method(cDataConverter, "initialize", cDataConverter_initialize, 0);
