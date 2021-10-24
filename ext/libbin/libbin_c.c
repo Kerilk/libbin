@@ -14,11 +14,13 @@ struct cField_data {
   VALUE sequence;
   VALUE condition;
   VALUE relative_offset;
+  ID getter;
+  ID setter;
 };
 
 static void cField_mark(void* data) {
   void *start = data;
-  void *end = (char *)data + sizeof(struct cField_data);
+  void *end = &((struct cField_data*)data)->getter;
   rb_gc_mark_locations((VALUE *)start, (VALUE *)end);
 }
 
@@ -54,9 +56,13 @@ static VALUE cField_initialize(
     VALUE sequence,
     VALUE condition,
     VALUE relative_offset) {
+  VALUE tmp;
   struct cField_data *data;
   TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
   data->name = name;
+  tmp = rb_funcall(name, rb_intern("to_s"), 0);
+  data->getter = rb_intern_str(tmp);
+  data->setter = rb_intern_str(rb_str_cat(tmp, "=", 1));
   data->type = type;
   data->length = length;
   data->count = count;
@@ -714,7 +720,7 @@ static VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
 
 static ID id_load;
 
-static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
+static inline VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
   struct cField_data *field_data;
@@ -769,7 +775,7 @@ static VALUE cDataConverter_load_field(VALUE self, VALUE field) {
 
 static ID id_dump;
 
-static VALUE cDataConverter_dump_field(VALUE self, VALUE values,  VALUE field) {
+static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE field) {
   struct cDataConverter_data *data;
   struct cField_data *field_data;
   if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
@@ -882,7 +888,56 @@ static VALUE cDataConverter_shape_field(
   return res;
 }
 
+/*  def __load_fields
+      self.class.instance_variable_get(:@fields).each { |field|
+        begin
+          send("#{field.name}=", __load_field(field))
+        rescue
+          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
+          raise
+        end
+      }
+      self
+    end */
+
+static ID id_fields;
+
+static inline VALUE cDataConverter_load_fields(VALUE self) {
+  VALUE fields = rb_ivar_get(rb_obj_class(self), id_fields);
+  for (long i = 0; i < RARRAY_LEN(fields); i++) {
+    VALUE field = rb_ary_entry(fields, i);
+    struct cField_data *field_data;
+    TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
+    rb_funcall(self, field_data->setter, 1, cDataConverter_load_field(self, field));
+  }
+  return self;
+}
+
+/*  def __dump_fields
+      self.class.instance_variable_get(:@fields).each { |field|
+        begin
+          __dump_field(send(field.name), field)
+        rescue
+          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
+          raise
+        end
+      }
+      self
+    end */
+
+static inline VALUE cDataConverter_dump_fields(VALUE self) {
+  VALUE fields = rb_ivar_get(rb_obj_class(self), id_fields);
+  for (long i = 0; i < RARRAY_LEN(fields); i++) {
+    VALUE field = rb_ary_entry(fields, i);
+    struct cField_data *field_data;
+    TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
+    cDataConverter_dump_field(self, rb_funcall(self, field_data->getter, 0), field);
+  }
+  return self;
+}
+
 static void define_cDataConverter() {
+  id_fields = rb_intern("@fields");
   id_load = rb_intern("load");
   id_dump = rb_intern("dump");
   cDataConverter = rb_define_class_under(mLibBin, "DataConverter", rb_cObject);
@@ -921,6 +976,9 @@ static void define_cDataConverter() {
   rb_define_method(cDataConverter, "__load_field", cDataConverter_load_field, 1);
   rb_define_method(cDataConverter, "__dump_field", cDataConverter_dump_field, 2);
   rb_define_method(cDataConverter, "__shape_field", cDataConverter_shape_field, 3);
+
+  rb_define_method(cDataConverter, "__load_fields", cDataConverter_load_fields, 0);
+  rb_define_method(cDataConverter, "__dump_fields", cDataConverter_dump_fields, 0);
 }
 
 static VALUE pghalf_from_string_p(VALUE self, VALUE str, VALUE pack_str) {

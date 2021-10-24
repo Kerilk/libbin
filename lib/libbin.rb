@@ -36,8 +36,7 @@ module LibBin
       members = {}
       self.class.instance_variable_get(:@fields).each { |field|
         begin
-          vs = send(field.name)
-          members[field.name] = __shape_field(vs, kind, field)
+          members[field.name] = __shape_field(send(field.name), kind, field)
         rescue
           STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
           raise
@@ -60,29 +59,17 @@ module LibBin
       self
     end
 
-    def __load_fields
-      self.class.instance_variable_get(:@fields).each { |field|
-        begin
-          send("#{field.name}=", __load_field(field))
-        rescue
-          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-          raise
-        end
-      }
-      self
-    end
-
-    def __dump_fields
-      self.class.instance_variable_get(:@fields).each { |field|
-        begin
-          __dump_field(send(field.name), field)
-        rescue
-          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-          raise
-        end
-      }
-      self
-    end
+#    def __dump_fields
+#      self.class.instance_variable_get(:@fields).each { |field|
+#        begin
+#          __dump_field(send(field.name), field)
+#        rescue
+#          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
+#          raise
+#        end
+#      }
+#      self
+#    end
 
     def __convert(input, output, input_big, output_big, parent = nil, index = nil)
       __set_convert_type(input, output, input_big, output_big, parent, index)
