@@ -38,15 +38,7 @@ module LibBin
 
     def __shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
       __set_size_type(previous_offset, parent, index)
-      members = {}
-      self.class.instance_variable_get(:@fields).each { |field|
-        begin
-          members[field.name] = __shape_field(send(field.name), kind, field)
-        rescue
-          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-          raise
-        end
-      }
+      members = __shape_fields(kind)
       __unset_size_type
       return nil if members.values.compact.size <= 0
       kind::new(members)
@@ -68,17 +60,6 @@ module LibBin
       else
         h = self::new
         h.__convert(input, output, input_big, output_big, parent, index)
-      end
-    end
-
-    def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
-      if length
-        length.times.collect { |i|
-          value[i].__dump(output, output_big, parent, index)
-        }
-        value
-      else
-        value.__dump(output, output_big, parent, index)
       end
     end
 

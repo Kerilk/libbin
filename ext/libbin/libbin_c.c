@@ -903,9 +903,9 @@ static inline VALUE cDataConverter_shape_field(
 static ID id_fields;
 
 struct fields_state {
-    VALUE self;
-    VALUE fields;
-    VALUE field;
+  VALUE self;
+  VALUE fields;
+  VALUE field;
 };
 
 static inline VALUE cDataConverter_fields_rescue(VALUE state_p, VALUE exception) {
@@ -1024,6 +1024,47 @@ static inline VALUE cDataConverter_convert_fields(VALUE self) {
   return self;
 }
 
+/*  def __shape_fields
+      members = {}
+      self.class.instance_variable_get(:@fields).each { |field|
+        begin
+          members[field.name] = __shape_field(send(field.name), kind, field)
+        rescue
+          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
+          raise
+        end
+      }
+      return members
+    end */
+
+struct shape_fields_state {
+  VALUE self;
+  VALUE fields;
+  VALUE field;
+  VALUE kind;
+};
+
+static inline VALUE cDataConverter_shape_fields_wrapper(VALUE state_p) {
+  struct shape_fields_state *state = (struct shape_fields_state *)state_p;
+  state->fields = rb_ivar_get(rb_obj_class(state->self), id_fields);
+  VALUE members = rb_hash_new();
+  for (long i = 0; i < RARRAY_LEN(state->fields); i++) {
+    state->field = rb_ary_entry(state->fields, i);
+    struct cField_data *field_data;
+    TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
+    rb_hash_aset(members, ID2SYM(field_data->getter), cDataConverter_shape_field(state->self, rb_funcall(state->self, field_data->getter, 0), state->kind, state->field));
+  }
+  return members;
+}
+
+static ID id___shape_fields;
+
+static inline VALUE cDataConverter_shape_fields(VALUE self, VALUE kind) {
+  struct shape_fields_state state = {self, NULL, NULL, kind};
+  return rb_rescue(&cDataConverter_shape_fields_wrapper, (VALUE)&state,
+                   &cDataConverter_fields_rescue, (VALUE)&state);
+}
+
 /* def __load(input, input_big, parent = nil, index = nil)
       __set_load_type(input, input_big, parent, index)
       __load_fields
@@ -1102,6 +1143,40 @@ static inline VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self)
   return res;
 }
 
+/*  def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+      if length
+        length.times.each { |i|
+          value[i].__dump(output, output_big, parent, index)
+        }
+        value
+      else
+        value.__dump(output, output_big, parent, index)
+      end
+    end */
+
+static ID id___dump;
+
+static inline VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self) {
+  VALUE value;
+  VALUE output;
+  VALUE output_big;
+  VALUE parent;
+  VALUE index;
+  VALUE length;
+  rb_scan_args(argc, argv, "24", &value, &output, &output_big, &parent, &index, &length);
+  if (NIL_P(output_big))
+    output_big = rb_funcall(mLibBin, rb_intern("default_big?"), 0);
+  if (!NIL_P(length)) {
+    long l = NUM2LONG(length);
+    for (long i = 0; i < l; i++) {
+      rb_funcall(rb_ary_entry(value, i), id___dump, 4, output, output_big, parent, index);
+    }
+  } else {
+    rb_funcall(value, id___dump, 4, output, output_big, parent, index);
+  }
+  return value;
+}
+
 static void define_cDataConverter() {
   id_fields = rb_intern("@fields");
   id___load_fields = rb_intern("__load_fields");
@@ -1110,6 +1185,7 @@ static void define_cDataConverter() {
   id_load = rb_intern("load");
   id___load = rb_intern("__load");
   id_dump = rb_intern("dump");
+  id___dump = rb_intern("__dump");
   cDataConverter = rb_define_class_under(mLibBin, "DataConverter", rb_cObject);
   rb_define_alloc_func(cDataConverter, cDataConverter_alloc);
   rb_define_method(cDataConverter, "initialize", cDataConverter_initialize, 0);
@@ -1150,11 +1226,13 @@ static void define_cDataConverter() {
   rb_define_method(cDataConverter, "__load_fields", cDataConverter_load_fields, 0);
   rb_define_method(cDataConverter, "__dump_fields", cDataConverter_dump_fields, 0);
   rb_define_method(cDataConverter, "__convert_fields", cDataConverter_convert_fields, 0);
+  rb_define_method(cDataConverter, "__shape_fields", cDataConverter_shape_fields, 1);
 
   rb_define_method(cDataConverter, "__load", cDataConverter_load, -1);
   rb_define_method(cDataConverter, "__dump", cDataConverter_dump, -1);
 
   rb_define_singleton_method(cDataConverter, "load", cDataConverter_singl_load, -1);
+  rb_define_singleton_method(cDataConverter, "dump", cDataConverter_singl_dump, -1);
 }
 
 static VALUE pghalf_from_string_p(VALUE self, VALUE str, VALUE pack_str) {
