@@ -36,29 +36,11 @@ module LibBin
       __shape(previous_offset, parent, index, DataRange).size
     end
 
-    def __shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
-      __set_size_type(previous_offset, parent, index)
-      members = __shape_fields(kind)
-      __unset_size_type
-      return nil if members.values.compact.size <= 0
-      kind::new(members)
-    end
-
     def self.size(value, previous_offset = 0, parent = nil, index = nil, length = nil)
       if length
         shape(value, previous_offset, parent, index, length).size
       else
         value.__shape(previous_offset, parent, index).size
-      end
-    end
-
-    def self.shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
-      if length
-        kind::new(length.times.collect { |i|
-          value[i].__shape(previous_offset, parent, index, kind)
-        })
-      else
-        value.__shape(previous_offset, parent, index, kind)
       end
     end
 
