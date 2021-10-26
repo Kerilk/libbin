@@ -44,25 +44,6 @@ module LibBin
       kind::new(members)
     end
 
-    def __convert(input, output, input_big, output_big, parent = nil, index = nil)
-      __set_convert_type(input, output, input_big, output_big, parent, index)
-      __convert_fields
-      __unset_convert_type
-      self
-    end
-
-    def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
-      if length
-        length.times.collect {
-          h = self::new
-          h.__convert(input, output, input_big, output_big, parent, index)
-        }
-      else
-        h = self::new
-        h.__convert(input, output, input_big, output_big, parent, index)
-      end
-    end
-
     def self.size(value, previous_offset = 0, parent = nil, index = nil, length = nil)
       if length
         shape(value, previous_offset, parent, index, length).size

@@ -657,6 +657,8 @@ static inline VALUE cDataConverter_restore_context(VALUE self) {
       vs
     end */
 
+static ID id_convert;
+
 static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   VALUE res;
   struct cDataConverter_data *data;
@@ -673,7 +675,7 @@ static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
       if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
-        rb_ary_store(res, i, rb_funcall(data->__type, rb_intern("convert"), 7,
+        rb_ary_store(res, i, rb_funcall(data->__type, id_convert, 7,
           data->__input,
           data->__output,
           data->__input_big,
@@ -687,7 +689,7 @@ static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   } else {
     data->__iterator = LONG2NUM(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
-      res = rb_funcall(data->__type, rb_intern("convert"), 7,
+      res = rb_funcall(data->__type, id_convert, 7,
         data->__input,
         data->__output,
         data->__input_big,
@@ -828,6 +830,8 @@ static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE fi
       vs
     end */
 
+static ID id_shape;
+
 static inline VALUE cDataConverter_shape_field(
     VALUE self,
     VALUE values,
@@ -849,7 +853,7 @@ static inline VALUE cDataConverter_shape_field(
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
       if (RTEST(cDataConverter_decode_dynamic_conditions(self, field))) {
-        VALUE shape = rb_funcall(data->__type, rb_intern("shape"), 6,
+        VALUE shape = rb_funcall(data->__type, id_shape, 6,
           rb_ary_entry(values, i),
           data->__cur_position,
           self,
@@ -869,7 +873,7 @@ static inline VALUE cDataConverter_shape_field(
   } else {
     data->__iterator = LONG2NUM(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field))) {
-      res = rb_funcall(data->__type, rb_intern("shape"), 6,
+      res = rb_funcall(data->__type, id_shape, 6,
         values,
         data->__cur_position,
         self,
@@ -1060,7 +1064,7 @@ static inline VALUE cDataConverter_shape_fields_wrapper(VALUE state_p) {
 static ID id___shape_fields;
 
 static inline VALUE cDataConverter_shape_fields(VALUE self, VALUE kind) {
-  struct shape_fields_state state = {self, NULL, NULL, kind};
+  struct shape_fields_state state = {self, Qnil, Qnil, kind};
   return rb_rescue(&cDataConverter_shape_fields_wrapper, (VALUE)&state,
                    &cDataConverter_fields_rescue, (VALUE)&state);
 }
@@ -1071,6 +1075,8 @@ static inline VALUE cDataConverter_shape_fields(VALUE self, VALUE kind) {
       __unset_load_type
       self
     end */
+
+static ID id___load;
 
 static inline VALUE cDataConverter_load(int argc, VALUE *argv, VALUE self) {
   VALUE input;
@@ -1091,6 +1097,8 @@ static inline VALUE cDataConverter_load(int argc, VALUE *argv, VALUE self) {
       self
     end */
 
+static ID id___dump;
+
 static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
   VALUE output;
   VALUE output_big;
@@ -1100,6 +1108,29 @@ static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
   cDataConverter_set_dump_type(self, output, output_big, parent, index);
   rb_funcall(self, id___dump_fields, 0);
   cDataConverter_unset_dump_type(self);
+  return self;
+}
+
+/*  def __convert(input, output, input_big, output_big, parent = nil, index = nil)
+      __set_convert_type(input, output, input_big, output_big, parent, index)
+      __convert_fields
+      __unset_convert_type
+      self
+    end */
+
+static ID id___convert;
+
+static inline VALUE cDataConverter_convert(int argc, VALUE *argv, VALUE self) {
+  VALUE input;
+  VALUE output;
+  VALUE input_big;
+  VALUE output_big;
+  VALUE parent;
+  VALUE index;
+  rb_scan_args(argc, argv, "42", &input, &output, &input_big, &output_big, &parent, &index);
+  cDataConverter_set_convert_type(self, input, output, input_big, output_big, parent, index);
+  rb_funcall(self, id___convert_fields, 0);
+  cDataConverter_unset_convert_type(self);
   return self;
 }
 
@@ -1114,8 +1145,6 @@ static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
         h.__load(input, input_big, parent, index)
       end
     end */
-
-static ID id___load;
 
 static inline VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self) {
   VALUE input;
@@ -1154,8 +1183,6 @@ static inline VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self)
       end
     end */
 
-static ID id___dump;
-
 static inline VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self) {
   VALUE value;
   VALUE output;
@@ -1177,6 +1204,47 @@ static inline VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self)
   return value;
 }
 
+/*  def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
+      if length
+        length.times.collect {
+          h = self::new
+          h.__convert(input, output, input_big, output_big, parent, index)
+        }
+      else
+        h = self::new
+        h.__convert(input, output, input_big, output_big, parent, index)
+      end
+    end */
+
+static inline VALUE cDataConverter_singl_convert(int argc, VALUE *argv, VALUE self) {
+  VALUE input;
+  VALUE output;
+  VALUE input_big;
+  VALUE output_big;
+  VALUE parent;
+  VALUE index;
+  VALUE length;
+  rb_scan_args(argc, argv, "25", &input, &output, &input_big, &output_big, &parent, &index, &length);
+  if (NIL_P(input_big))
+    input_big = rb_funcall(mLibBin, rb_intern("default_big?"), 0);
+  if (NIL_P(output_big))
+    output_big = RTEST(input_big) ? Qfalse : Qtrue;
+  VALUE res;
+  if (!NIL_P(length)) {
+    long l = NUM2LONG(length);
+    res = rb_ary_new_capa(l);
+    for (long i = 0; i < l; i++) {
+      VALUE obj = rb_class_new_instance(0, NULL, self);
+      rb_funcall(obj, id___convert, 6, input, output, input_big, output_big, parent, index);
+      rb_ary_store(res, i, obj);
+    }
+  } else {
+    res = rb_class_new_instance(0, NULL, self);
+    rb_funcall(res, id___convert, 6, input, output, input_big, output_big, parent, index);
+  }
+  return res;
+}
+
 static void define_cDataConverter() {
   id_fields = rb_intern("@fields");
   id___load_fields = rb_intern("__load_fields");
@@ -1186,6 +1254,9 @@ static void define_cDataConverter() {
   id___load = rb_intern("__load");
   id_dump = rb_intern("dump");
   id___dump = rb_intern("__dump");
+  id_convert = rb_intern("convert");
+  id___convert = rb_intern("__convert");
+  id_shape = rb_intern("shape");
   cDataConverter = rb_define_class_under(mLibBin, "DataConverter", rb_cObject);
   rb_define_alloc_func(cDataConverter, cDataConverter_alloc);
   rb_define_method(cDataConverter, "initialize", cDataConverter_initialize, 0);
@@ -1230,9 +1301,11 @@ static void define_cDataConverter() {
 
   rb_define_method(cDataConverter, "__load", cDataConverter_load, -1);
   rb_define_method(cDataConverter, "__dump", cDataConverter_dump, -1);
+  rb_define_method(cDataConverter, "__convert", cDataConverter_convert, -1);
 
   rb_define_singleton_method(cDataConverter, "load", cDataConverter_singl_load, -1);
   rb_define_singleton_method(cDataConverter, "dump", cDataConverter_singl_dump, -1);
+  rb_define_singleton_method(cDataConverter, "convert", cDataConverter_singl_convert, -1);
 }
 
 static VALUE pghalf_from_string_p(VALUE self, VALUE str, VALUE pack_str) {
