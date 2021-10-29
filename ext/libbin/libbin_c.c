@@ -5,6 +5,11 @@ VALUE cField;
 VALUE mLibBin;
 VALUE cDataConverter;
 
+static VALUE rb_str_dot_dot;
+static VALUE rb_str___parent;
+static VALUE rb_str_backslash;
+static VALUE rb_str_dot;
+
 struct cField_data {
   VALUE name;
   VALUE type;
@@ -46,6 +51,15 @@ static VALUE cField_alloc(VALUE self) {
   return res;
 }
 
+static ID id_gsub;
+
+static VALUE cField_preprocess_expression(VALUE expression) {
+  if (T_STRING == TYPE(expression)) {
+    return rb_funcall(rb_funcall(expression, id_gsub, 2, rb_str_dot_dot, rb_str___parent), id_gsub, 2, rb_str_backslash, rb_str_dot);
+  } else
+    return expression;
+}
+
 static VALUE cField_initialize(
     VALUE self,
     VALUE name,
@@ -60,15 +74,15 @@ static VALUE cField_initialize(
   struct cField_data *data;
   TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
   data->name = name;
-  tmp = rb_funcall(name, rb_intern("to_s"), 0);
+  tmp = rb_str_dup(rb_obj_as_string(name));
   data->getter = rb_intern_str(tmp);
   data->setter = rb_intern_str(rb_str_cat(tmp, "=", 1));
-  data->type = type;
-  data->length = length;
-  data->count = count;
-  data->offset = offset;
+  data->type = cField_preprocess_expression(type);
+  data->length = cField_preprocess_expression(length);
+  data->count = cField_preprocess_expression(count);
+  data->offset = cField_preprocess_expression(offset);
   data->sequence = sequence;
-  data->condition = condition;
+  data->condition = cField_preprocess_expression(condition);
   data->relative_offset = relative_offset;
   return self;
 }
@@ -122,8 +136,21 @@ static VALUE cField_relative_offset(VALUE self) {
 }
 
 static void define_cField() {
+  VALUE ary = rb_ary_new_capa(4);
+  id_gsub = rb_intern("gsub");
+
+  rb_str_dot_dot = rb_str_new_cstr("..");
+  rb_ary_store(ary, 0, rb_str_dot_dot);
+  rb_str___parent = rb_str_new_cstr("__parent");
+  rb_ary_store(ary, 1, rb_str___parent);
+  rb_str_backslash = rb_str_new_cstr("\\");
+  rb_ary_store(ary, 2, rb_str_backslash);
+  rb_str_dot = rb_str_new_cstr(".");
+  rb_ary_store(ary, 3, rb_str_dot);
+
   cField = rb_define_class_under(mLibBin, "Field", rb_cObject);
   rb_define_alloc_func(cField, cField_alloc);
+  rb_const_set(cField, rb_intern("STRINGS"), ary);
   rb_define_method(cField, "initialize", cField_initialize, 8);
   rb_define_method(cField, "name", cField_name, 0);
   rb_define_method(cField, "type", cField_get_type, 0);
@@ -260,6 +287,8 @@ static VALUE cDataConverter_output_big(VALUE self) {
   return data->__output_big;
 }
 
+ID id_tell;
+
 /*  def __set_convert_type(input, output, input_big, output_big, parent, index)
       @__input_big = input_big
       @__output_big = output_big
@@ -288,7 +317,7 @@ static inline VALUE cDataConverter_set_convert_type(
   data->__output_big = output_big;
   data->__parent = parent;
   data->__index = index;
-  data->__position = rb_funcall(input, rb_intern("tell"), 0);
+  data->__position = rb_funcall(input, id_tell, 0);
   data->__cur_position = data->__position;
   return Qnil;
 }
@@ -379,7 +408,7 @@ static inline VALUE cDataConverter_set_load_type(
   data->__input_big = input_big;
   data->__parent = parent;
   data->__index = index;
-  data->__position = rb_funcall(input, rb_intern("tell"), 0);
+  data->__position = rb_funcall(input, id_tell, 0);
   data->__cur_position = data->__position;
   return Qnil;
 }
@@ -427,7 +456,7 @@ static inline VALUE cDataConverter_set_dump_type(
   data->__output_big = output_big;
   data->__parent = parent;
   data->__index = index;
-  data->__position = rb_funcall(output, rb_intern("tell"), 0);
+  data->__position = rb_funcall(output, id_tell, 0);
   data->__cur_position = data->__position;
   return Qnil;
 }
@@ -466,13 +495,11 @@ static inline VALUE cDataConverter_unset_dump_type(VALUE self) {
     end */
 
 static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expression) {
-  if (T_STRING == TYPE(expression)) {
-    VALUE tmp = rb_funcall(expression, rb_intern("gsub"), 2, rb_str_new_cstr(".."), rb_str_new_cstr("__parent"));
-    tmp = rb_funcall(tmp, rb_intern("gsub"), 2, rb_str_new_cstr("\\"), rb_str_new_cstr("."));
-    return rb_funcall(self, rb_intern("instance_eval"), 1, tmp);
-  } else if (rb_obj_is_kind_of(expression, rb_cProc)) {
-    return rb_funcall(expression, rb_intern("call"), 0);
-  } else
+  if (T_STRING == TYPE(expression))
+    return rb_obj_instance_eval(1, &expression, self);
+  else if (rb_obj_is_proc(expression))
+    return rb_proc_call_with_block(expression, 0, NULL, Qnil);
+  else
     return expression;
 }
 
@@ -487,6 +514,8 @@ static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expressio
       offset
     end */
 
+ID id_seek;
+
 static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -499,9 +528,9 @@ static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, 
     off += NUM2LL(data->__position);
   data->__cur_position = LL2NUM(off);
   if (RTEST(data->__input))
-    rb_funcall(data->__input, rb_intern("seek"), 1, data->__cur_position);
+    rb_funcall(data->__input, id_seek, 1, data->__cur_position);
   if (RTEST(data->__output))
-    rb_funcall(data->__output, rb_intern("seek"), 1, data->__cur_position);
+    rb_funcall(data->__output, id_seek, 1, data->__cur_position);
   return data->__cur_position;
 }
 
@@ -523,7 +552,7 @@ static inline VALUE cDataConverter_decode_condition(VALUE self, VALUE condition)
 
 static inline VALUE cDataConverter_decode_count(VALUE self, VALUE count) {
   if (!RTEST(count))
-    return INT2NUM(1);
+    return INT2FIX(1);
   return cDataConverter_decode_expression(self, count);
 }
 
@@ -540,6 +569,8 @@ static inline VALUE cDataConverter_decode_type(VALUE self, VALUE type) {
     end */
 
 static inline VALUE cDataConverter_decode_length(VALUE self, VALUE length) {
+  if (NIL_P(length))
+    return Qnil;
   return cDataConverter_decode_expression(self, length);
 }
 
@@ -687,7 +718,7 @@ static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
         rb_ary_store(res, i, Qnil);
     }
   } else {
-    data->__iterator = LONG2NUM(0);
+    data->__iterator = INT2FIX(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
       res = rb_funcall(data->__type, id_convert, 7,
         data->__input,
@@ -748,7 +779,7 @@ static inline VALUE cDataConverter_load_field(VALUE self, VALUE field) {
         rb_ary_store(res, i, Qnil);
     }
   } else {
-    data->__iterator = LONG2NUM(0);
+    data->__iterator = INT2FIX(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
       res = rb_funcall(data->__type, id_load, 5,
         data->__input,
@@ -800,7 +831,7 @@ static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE fi
           data->__length);
     }
   } else {
-    data->__iterator = LONG2NUM(0);
+    data->__iterator = INT2FIX(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
       rb_funcall(data->__type, id_dump, 6,
         values,
@@ -871,7 +902,7 @@ static inline VALUE cDataConverter_shape_field(
     }
     res = rb_class_new_instance(1, &res, kind);
   } else {
-    data->__iterator = LONG2NUM(0);
+    data->__iterator = INT2FIX(0);
     if (RTEST(cDataConverter_decode_dynamic_conditions(self, field))) {
       res = rb_funcall(data->__type, id_shape, 6,
         values,
@@ -1151,7 +1182,7 @@ static inline VALUE cDataConverter_shape(int argc, VALUE *argv, VALUE self) {
   VALUE kind;
   rb_scan_args(argc, argv, "04", &previous_offset, &parent, &index, &kind);
   if (NIL_P(previous_offset))
-    previous_offset = INT2NUM(0);
+    previous_offset = INT2FIX(0);
   if (NIL_P(kind))
     kind = cDataShape;
   cDataConverter_set_size_type(self, previous_offset, parent, index);
@@ -1290,7 +1321,7 @@ static inline VALUE cDataConverter_singl_shape(int argc, VALUE *argv, VALUE self
   VALUE length;
   rb_scan_args(argc, argv, "15", &value, &previous_offset, &parent, &index, &kind, &length);
   if (NIL_P(previous_offset))
-    previous_offset = INT2NUM(0);
+    previous_offset = INT2FIX(0);
   if (NIL_P(kind))
     kind = cDataShape;
   VALUE res;
@@ -1306,6 +1337,8 @@ static inline VALUE cDataConverter_singl_shape(int argc, VALUE *argv, VALUE self
 }
 
 static void define_cDataConverter() {
+  id_tell = rb_intern("tell");
+  id_seek = rb_intern("seek");
   id_fields = rb_intern("@fields");
 
   id___load_fields = rb_intern("__load_fields");

@@ -15,7 +15,7 @@ static VALUE CLASS ## _size(int argc, VALUE* argv, VALUE self) {   \
   if (RTEST(length))                                               \
     return ULL2NUM(sizeof(MAPPED_TYPE)*NUM2ULL(length));           \
   else                                                             \
-    return ULL2NUM(sizeof(MAPPED_TYPE));                           \
+    return INT2FIX(sizeof(MAPPED_TYPE));                           \
 }
 
 /* shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil) */
@@ -27,11 +27,11 @@ static VALUE CLASS ## _shape(int argc, VALUE* argv, VALUE self) {               
   VALUE length;                                                                              \
   rb_scan_args(argc, argv, "15", NULL, &previous_offset, NULL, NULL, &kind, &length);        \
   if (NIL_P(previous_offset))                                                                \
-    previous_offset = ULL2NUM(0);                                                            \
+    previous_offset = INT2FIX(0);                                                            \
   if (NIL_P(kind))                                                                           \
     kind = cDataShape;                                                                       \
   if (NIL_P(length))                                                                         \
-    length = ULL2NUM(1);                                                                     \
+    length = INT2FIX(1);                                                                     \
   VALUE args[] = {  previous_offset,                                                         \
     LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length) * (ptrdiff_t)sizeof(MAPPED_TYPE)) }; \
   return rb_class_new_instance(2, args, kind);                                               \
@@ -80,6 +80,7 @@ static VALUE CLASS ## _load(int argc, VALUE* argv, VALUE self) {               \
         RSTRING_LEN(str), cnt);                                                \
   MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                         \
   LOAD(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT);                             \
+  RB_GC_GUARD(str);                                                            \
   return res;                                                                  \
 }
 
@@ -329,14 +330,14 @@ static inline uint16_t float_to_pghalf_be(float f) {
 
 MAKE_CLASSES(PGHalf, 16, DBL2NUM, NUM2DBL, pghalf_to_float, float_to_pghalf)
 
-MAKE_CLASSES(Int8, 8, INT2NUM, NUM2SHORT, unpack_int8, pack_int8)
+MAKE_CLASSES(Int8, 8, INT2FIX, NUM2SHORT, unpack_int8, pack_int8)
 MAKE_CLASSES(UInt8, 8, USHORT2NUM, NUM2USHORT, unpack_uint8, pack_uint8)
-MAKE_CLASSES(Int16, 16, INT2NUM, NUM2SHORT, unpack_int16, pack_int16)
+MAKE_CLASSES(Int16, 16, INT2FIX, NUM2SHORT, unpack_int16, pack_int16)
 MAKE_CLASSES(UInt16, 16, USHORT2NUM, NUM2USHORT, unpack_uint16, pack_uint16)
 MAKE_CLASSES(Int32, 32, INT2NUM, NUM2INT, unpack_int32, pack_int32)
 MAKE_CLASSES(UInt32, 32, UINT2NUM, NUM2UINT, unpack_uint32, pack_uint32)
-MAKE_CLASSES(Int64, 64, INT2NUM, NUM2INT, unpack_int64, pack_int64)
-MAKE_CLASSES(UInt64, 64, UINT2NUM, NUM2UINT, unpack_uint64, pack_uint64)
+MAKE_CLASSES(Int64, 64, LL2NUM, NUM2LL, unpack_int64, pack_int64)
+MAKE_CLASSES(UInt64, 64, LL2NUM, NUM2ULL, unpack_uint64, pack_uint64)
 MAKE_CLASSES(Flt, 32, DBL2NUM, NUM2DBL, unpack_float, pack_float)
 MAKE_CLASSES(Double, 64, DBL2NUM, NUM2DBL, unpack_double, pack_double)
 
@@ -361,7 +362,7 @@ static VALUE cStr_shape(int argc, VALUE* argv, VALUE self) {
   VALUE length;
   rb_scan_args(argc, argv, "15", &value, &previous_offset, NULL, NULL, &kind, &length);
   if (NIL_P(previous_offset))
-    previous_offset = ULL2NUM(0);
+    previous_offset = INT2FIX(0);
   if (NIL_P(kind))
     kind = cDataShape;
   if (NIL_P(length)) {
