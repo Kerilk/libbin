@@ -337,7 +337,7 @@ MAKE_CLASSES(UInt16, 16, USHORT2NUM, NUM2USHORT, unpack_uint16, pack_uint16)
 MAKE_CLASSES(Int32, 32, INT2NUM, NUM2INT, unpack_int32, pack_int32)
 MAKE_CLASSES(UInt32, 32, UINT2NUM, NUM2UINT, unpack_uint32, pack_uint32)
 MAKE_CLASSES(Int64, 64, LL2NUM, NUM2LL, unpack_int64, pack_int64)
-MAKE_CLASSES(UInt64, 64, LL2NUM, NUM2ULL, unpack_uint64, pack_uint64)
+MAKE_CLASSES(UInt64, 64, ULL2NUM, NUM2ULL, unpack_uint64, pack_uint64)
 MAKE_CLASSES(Flt, 32, DBL2NUM, NUM2DBL, unpack_float, pack_float)
 MAKE_CLASSES(Double, 64, DBL2NUM, NUM2DBL, unpack_double, pack_double)
 
