@@ -424,7 +424,7 @@ class LibBinTest < Minitest::Test
     end
     c = Class::new(LibBin::DataConverter) do
       register_field :a, h, count: 4
-      register_field :b, pgh, length: 4
+      register_field :b, pgh, length: lambda { 4 }
     end
 
     [true, false].each { |big|
@@ -454,7 +454,7 @@ class LibBinTest < Minitest::Test
       int16 :offset2
     end
     b = Class::new(LibBin::DataConverter) do
-      int32 :datum1, offset: '..\header.offset1'
+      int32 :datum1, offset: '..\header\offset1'
       int16 :datum2, offset: '..\header.offset2'
     end
     s = Class::new(LibBin::DataConverter) do
