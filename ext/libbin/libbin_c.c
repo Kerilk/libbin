@@ -53,9 +53,12 @@ static VALUE cField_alloc(VALUE self) {
 
 static ID id_gsub;
 
-static VALUE cField_preprocess_expression(VALUE expression) {
+static inline VALUE cField_preprocess_expression(VALUE self, VALUE expression) {
   if (T_STRING == TYPE(expression)) {
-    return rb_funcall(rb_funcall(expression, id_gsub, 2, rb_str_dot_dot, rb_str___parent), id_gsub, 2, rb_str_backslash, rb_str_dot);
+    VALUE proc = rb_str_new_cstr("proc {");
+    rb_str_buf_append(proc, rb_funcall(rb_funcall(expression, id_gsub, 2, rb_str_dot_dot, rb_str___parent), id_gsub, 2, rb_str_backslash, rb_str_dot));
+    rb_str_cat_cstr(proc, "}");
+    return rb_obj_instance_eval(1, &proc, self);
   } else
     return expression;
 }
@@ -77,12 +80,12 @@ static VALUE cField_initialize(
   tmp = rb_str_dup(rb_obj_as_string(name));
   data->getter = rb_intern_str(tmp);
   data->setter = rb_intern_str(rb_str_cat(tmp, "=", 1));
-  data->type = cField_preprocess_expression(type);
-  data->length = cField_preprocess_expression(length);
-  data->count = cField_preprocess_expression(count);
-  data->offset = cField_preprocess_expression(offset);
+  data->type = cField_preprocess_expression(self, type);
+  data->length = cField_preprocess_expression(self, length);
+  data->count = cField_preprocess_expression(self, count);
+  data->offset = cField_preprocess_expression(self, offset);
   data->sequence = sequence;
-  data->condition = cField_preprocess_expression(condition);
+  data->condition = cField_preprocess_expression(self, condition);
   data->relative_offset = relative_offset;
   return self;
 }
@@ -494,11 +497,11 @@ static inline VALUE cDataConverter_unset_dump_type(VALUE self) {
       end
     end */
 
+static ID id_instance_exec;
+
 static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expression) {
-  if (T_STRING == TYPE(expression))
-    return rb_obj_instance_eval(1, &expression, self);
-  else if (rb_obj_is_proc(expression))
-    return rb_proc_call_with_block(expression, 0, NULL, Qnil);
+  if (rb_obj_is_proc(expression))
+    return rb_funcall_with_block(self, id_instance_exec, 0, NULL, expression);
   else
     return expression;
 }
@@ -1340,6 +1343,7 @@ static void define_cDataConverter() {
   id_tell = rb_intern("tell");
   id_seek = rb_intern("seek");
   id_fields = rb_intern("@fields");
+  id_instance_exec = rb_intern("instance_exec");
 
   id___load_fields = rb_intern("__load_fields");
   id_load = rb_intern("load");
