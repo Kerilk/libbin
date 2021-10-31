@@ -74,10 +74,10 @@ static VALUE CLASS ## _load(int argc, VALUE* argv, VALUE self) {               \
   size_t cnt = sizeof(MAPPED_TYPE) * n;                                        \
   VALUE res;                                                                   \
   VALUE str = rb_funcall(input, id_read, 1, ULL2NUM(cnt));                     \
-  if (NIL_P(str) || RSTRING_LEN(str) < (long)cnt)                             \
+  if (NIL_P(str) || RSTRING_LEN(str) < (long)cnt)                              \
     rb_raise(rb_eRuntimeError,                                                 \
         "could not read enough data: got %ld needed %zu",                      \
-        NIL_P(str) ? 0 : RSTRING_LEN(str), cnt);                                                \
+        NIL_P(str) ? 0 : RSTRING_LEN(str), cnt);                               \
   MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                         \
   LOAD(MAPPED_TYPE, RUBY_CONVERT, NATIVE_CONVERT);                             \
   RB_GC_GUARD(str);                                                            \
