@@ -424,7 +424,7 @@ class LibBinTest < Minitest::Test
     end
     c = Class::new(LibBin::DataConverter) do
       register_field :a, h, count: 4
-      register_field :b, pgh, length: proc { 4 }
+      register_field :b, pgh, length: lambda { 4 }
     end
 
     [true, false].each { |big|
@@ -610,6 +610,123 @@ class LibBinTest < Minitest::Test
       int16 :second_level, length: 16, sequence: true, count: 16, condition: "first_level[__iterator] != -1"
       int16 :third_level, length: 16, sequence: true, count: "second_level.length * 16",
             condition: "second_level[__iterator/16] && second_level[__iterator/16][__iterator%16] != -1"
+    end
+
+    [false, true].each { |big|
+      open_bin("bone_index_translate_table_#{SUFFIX[big]}.bin") do |f|
+        t = bitt.load(f, big)
+        assert_equal(0x220, bitt.size(t))
+        str = new_stringio
+        bitt.dump(t, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
+        open_bin("bone_index_translate_table_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
+          f.rewind
+          t = bitt.convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
+      end
+    }
+  end
+
+  def test_bone_index_translate_table2
+    bitt = Class::new(LibBin::DataConverter) do
+      int16 :offsets, length: 16
+
+      def __size(position = 0, parent = nil, index = nil)
+        sz = super()
+        if @second_levels
+          @second_levels.each { |e|
+            sz += e.__size(position, parent, index)
+          }
+        end
+        if @third_levels
+          @third_levels.each { |e|
+            sz += e.__size(position, parent, index)
+          }
+        end
+        sz
+      end
+
+      def __convert(input, output, input_big, output_big, parent, index, level = 1)
+        __set_convert_type(input, output, input_big, output_big, parent, index)
+        __convert_fields
+        if level == 1
+          @second_levels = []
+          @offsets.each { |o|
+            if o != -1
+              t = self.class::new
+              t.__convert(input, output, input_big, output_big, self, nil, level+1)
+              @second_levels.push t
+            end
+          }
+          @third_levels = []
+          @second_levels.each { |l|
+            l.offsets.each { |o|
+              if o != -1
+                t = self.class::new
+                t.__convert(input, output, input_big, output_big, self, nil, level+2)
+                @third_levels.push t
+              end
+            }
+          }
+        else
+          @second_levels = nil
+          @third_levels = nil
+        end
+        __unset_convert_type
+        self
+      end
+
+      def __load(input, input_big, parent, index, level = 1)
+        __set_load_type(input, input_big, parent, index)
+        __load_fields
+        if level == 1
+          @second_levels = []
+          @offsets.each { |o|
+            if o != -1
+              t = self.class::new
+              t.__load(input, input_big, self, nil, level+1)
+              @second_levels.push t
+            end
+          }
+          @third_levels = []
+          @second_levels.each { |l|
+            l.offsets.each { |o|
+              if o != -1
+                t = self.class::new
+                t.__load(input, input_big, self, nil, level+2)
+                @third_levels.push t
+              end
+            }
+          }
+        else
+          @second_levels = nil
+          @third_levels = nil
+        end
+        __unset_load_type
+        self
+      end
+
+      def __dump(output, output_big, parent, index, level = 1)
+        __set_dump_type(output, output_big, parent, index)
+        __dump_fields
+        if @second_levels
+          @second_levels.each { |e|
+            e.__dump(output, output_big, self, nil, level+1)
+          }
+        end
+        if @third_levels
+          @third_levels.each { |e|
+            e.__dump(output, output_big, self, nil, level+2)
+          }
+        end
+        __unset_dump_type
+      end
+
     end
 
     [false, true].each { |big|
