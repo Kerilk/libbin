@@ -604,4 +604,31 @@ class LibBinTest < Minitest::Test
     end
   end
 
+  def test_bone_index_translate_table
+    bitt = Class::new(LibBin::DataConverter) do
+      int16 :first_level, length: 16
+      int16 :second_level, length: 16, sequence: true, count: 16, condition: "first_level[__iterator] != -1"
+      int16 :third_level, length: 16, sequence: true, count: "second_level.length * 16",
+            condition: "second_level[__iterator/16] && second_level[__iterator/16][__iterator%16] != -1"
+    end
+
+    [false, true].each { |big|
+      open_bin("bone_index_translate_table_#{SUFFIX[big]}.bin") do |f|
+        t = bitt.load(f, big)
+        str = new_stringio
+        bitt.dump(t, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
+        open_bin("bone_index_translate_table_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
+          f.rewind
+          t = bitt.convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
+      end
+    }
+  end
+
 end
