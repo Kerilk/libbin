@@ -489,9 +489,6 @@ static inline VALUE cDataConverter_unset_dump_type(VALUE self) {
       case sym
       when Proc
         return sym.call
-      when String
-        exp = sym.gsub("..","__parent").gsub("\\",".")
-        return eval(exp)
       else
         return sym
       end
