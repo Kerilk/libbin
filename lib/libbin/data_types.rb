@@ -164,6 +164,10 @@ module LibBin
       attr_accessor field
     end
 
+    class << self
+      alias field register_field
+    end
+
     def self.create_scalar_accessor(symbol)
       klassname, name = SCALAR_TYPES[symbol]
       eval <<EOF

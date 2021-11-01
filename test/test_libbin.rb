@@ -51,8 +51,8 @@ class LibBinTest < Minitest::Test
 
   def test_half_le
     c = Class::new(LibBin::DataConverter) do
-      register_field :a, :half_le, length: 4
-      register_field :b, :pghalf_le, count: 4
+      field :a, :half_le, length: 4
+      field :b, :pghalf_le, count: 4
     end
 
     open_bin("half_le.bin") do |f|
