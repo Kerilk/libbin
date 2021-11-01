@@ -6,26 +6,26 @@ VALUE cScalar;
 
 static ID id_read, id_write;
 
-/* size(value, previous_offset = 0, parent = nil, index = nil, length = nil)*/
+/* size(value = nil, previous_offset = 0, parent = nil, index = nil, length = nil)*/
 #define MAKE_TYPE_SIZE(CLASS, MAPPED_TYPE)                         \
 static VALUE CLASS ## _size(int argc, VALUE* argv, VALUE self) {   \
   (void)self;                                                      \
   VALUE length;                                                    \
-  rb_scan_args(argc, argv, "14", NULL, NULL, NULL, NULL, &length); \
+  rb_scan_args(argc, argv, "05", NULL, NULL, NULL, NULL, &length); \
   if (RTEST(length))                                               \
     return ULL2NUM(sizeof(MAPPED_TYPE)*NUM2ULL(length));           \
   else                                                             \
     return INT2FIX(sizeof(MAPPED_TYPE));                           \
 }
 
-/* shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil) */
+/* shape(value = nil, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil) */
 #define MAKE_TYPE_SHAPE(CLASS, MAPPED_TYPE)                                                  \
 static VALUE CLASS ## _shape(int argc, VALUE* argv, VALUE self) {                            \
   (void)self;                                                                                \
   VALUE previous_offset;                                                                     \
   VALUE kind;                                                                                \
   VALUE length;                                                                              \
-  rb_scan_args(argc, argv, "15", NULL, &previous_offset, NULL, NULL, &kind, &length);        \
+  rb_scan_args(argc, argv, "06", NULL, &previous_offset, NULL, NULL, &kind, &length);        \
   if (NIL_P(previous_offset))                                                                \
     previous_offset = INT2FIX(0);                                                            \
   if (NIL_P(kind))                                                                           \
