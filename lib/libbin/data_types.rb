@@ -193,8 +193,93 @@ EOF
       create_scalar_accessor(c)
     }
 
-    def self.string( field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+    def self.string(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       @fields.push(Field::new(field, Str, length, count, offset, sequence, condition, relative_offset))
+      attr_accessor field
+    end
+
+    class Enum
+      class << self
+        @type = Int32
+        attr_reader :map
+        attr_accessor :map_to
+        attr_accessor :map_from
+        attr_accessor :type
+        def type_size=(sz)
+          t = const_get(:"Int#{sz}")
+          raise "unsupported enum size #{sz}" unless t
+          @type = t
+          return sz
+        end
+
+        def type_size
+          @type.size
+        end
+
+        def map=(m)
+          @map_to = m.invert
+          @map_from = @map = m
+        end
+      end
+
+      def self.size(value = nil, previous_offset = 0, parent = nil, index = nil, length = nil)
+        @type.size(value, previous_offset, parent, index, length)
+      end
+
+      def self.shape(value = nil, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
+        @type.shape(value, previous_offset, parent, index, kind, length)
+      end
+
+      def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+        v = @type.load(input, input_big, parent, index, length)
+        if length
+          v.collect { |val|
+             n = map_to[val]
+             n = v unless n
+             n
+          }
+        else
+          n = map_to[v]
+          n = v unless n
+          n
+        end
+      end
+
+      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
+        v = @type.convert(input, output, input_big, output_big, parent, index, length)
+        if length
+          v.collect { |val|
+             n = map_to[val]
+             n = val unless n
+             n
+          }
+        else
+          n = map_to[v]
+          n = v unless n
+          n
+        end
+      end
+
+      def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+        if length
+          v = length.times.collect { |i|
+            val = map_from[value[i]]
+            val = value[i] unless val
+            val
+          }
+        else
+          v = map_from[value]
+          v = value unless v
+        end
+        @type.dump(v, output, output_big, parent, index, length)
+      end
+    end
+
+    def self.enum(field, map, size: 4, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+      klass = Class.new(Enum) do |c|
+        c.size = size
+        c.map = map
+      end
       attr_accessor field
     end
 
