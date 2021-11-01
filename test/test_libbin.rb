@@ -748,4 +748,77 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def test_enum
+    enums = Class::new(LibBin::DataConverter) do
+      enum :short, {ONE: 1, TWO: 2, FOOR: 4, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8}, size: 16, length: 7
+      enum :short2, {ONE: 1, TWO: 2, FOOR: 4, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8}, size: 16
+      enum :def, {ONE: 1, TWO: 2}, length: 2
+      enum :byte, {ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8 }, size: 8, length: 8
+    end
+
+    [false, true].each { |big|
+      open_bin("enum_#{SUFFIX[big]}.bin") do |f|
+        e = enums.load(f, big)
+        assert_equal([:ONE, :TWO, 3, :FOUR, :FIVE, :SIX, :SEVEN], e.short)
+        assert_equal(:EIGHT, e.short2)
+        assert_equal([:ONE, :TWO], e.def)
+        assert_equal([:ONE, :TWO, :THREE, :FOUR, :FIVE, :SIX, :SEVEN, :EIGHT], e.byte)
+        str = new_stringio
+        enums.dump(e, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
+        open_bin("enum_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
+          f.rewind
+          t = enums.convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
+      end
+    }
+  end
+
+  def test_enum2
+    e1 = Class::new(LibBin::DataConverter::Enum) do |c|
+      c.type_size = 16
+      c.map = {ONE: 1, TWO: 2, FOOR: 4, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8}
+    end
+    e2 = Class::new(LibBin::DataConverter::Enum) do
+      set_map({ONE: 1, TWO: 2})
+    end
+    e3 = Class::new(LibBin::DataConverter::Enum) do
+      set_type_size 8
+      set_map({ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8})
+    end
+    enums = Class::new(LibBin::DataConverter) do
+      field :short, e1, length: 7
+      field :short2, e1
+      field :def, e2, length: 2
+      field :byte, e3, length: 8
+    end
+
+    [false, true].each { |big|
+      open_bin("enum_#{SUFFIX[big]}.bin") do |f|
+        e = enums.load(f, big)
+        assert_equal([:ONE, :TWO, 3, :FOUR, :FIVE, :SIX, :SEVEN], e.short)
+        assert_equal(:EIGHT, e.short2)
+        assert_equal([:ONE, :TWO], e.def)
+        assert_equal([:ONE, :TWO, :THREE, :FOUR, :FIVE, :SIX, :SEVEN, :EIGHT], e.byte)
+        str = new_stringio
+        enums.dump(e, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
+        open_bin("enum_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
+          f.rewind
+          t = enums.convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
+      end
+    }
+  end
+
 end

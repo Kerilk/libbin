@@ -206,11 +206,12 @@ EOF
         attr_accessor :map_from
         attr_accessor :type
         def type_size=(sz)
-          t = const_get(:"Int#{sz}")
+          t = eval "Int#{sz}"
           raise "unsupported enum size #{sz}" unless t
           @type = t
           return sz
         end
+        alias set_type_size type_size=
 
         def type_size
           @type.size
@@ -219,6 +220,11 @@ EOF
         def map=(m)
           @map_to = m.invert
           @map_from = @map = m
+        end
+        alias set_map map=
+
+        def inherited(subclass)
+          subclass.instance_variable_set(:@type, Int32)
         end
       end
 
@@ -235,7 +241,7 @@ EOF
         if length
           v.collect { |val|
              n = map_to[val]
-             n = v unless n
+             n = val unless n
              n
           }
         else
@@ -275,11 +281,12 @@ EOF
       end
     end
 
-    def self.enum(field, map, size: 4, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+    def self.enum(field, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
       klass = Class.new(Enum) do |c|
-        c.size = size
+        c.type_size = size
         c.map = map
       end
+      @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset))
       attr_accessor field
     end
 
