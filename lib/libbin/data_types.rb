@@ -200,11 +200,11 @@ EOF
 
     class Enum
       class << self
-        @type = Int32
         attr_reader :map
         attr_accessor :map_to
         attr_accessor :map_from
         attr_accessor :type
+
         def type_size=(sz)
           t = eval "Int#{sz}"
           raise "unsupported enum size #{sz}" unless t
@@ -285,6 +285,123 @@ EOF
       klass = Class.new(Enum) do |c|
         c.type_size = size
         c.map = map
+      end
+      @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset))
+      attr_accessor field
+    end
+
+    class Bifield
+      class << self
+        attr_reader :map
+        attr_reader :signed
+        attr_reader :type
+
+        def set_type_size(sz, signed)
+          tname = "#{signed ? "" : "U"}Int#{sz}"
+          t = eval tname
+          raise "unsupported bitfield type #{tname}" unless t
+          @type = t
+          return sz
+        end
+
+        def type=(type)
+          @type = type
+          @signed = name.split('::').last[0] != "U"
+          type
+        end
+
+        def map=(m)
+          raise "map already set" if @map
+          @map = m.each.collect { |k, v| [k, [v, k.to_sym, :"#{k}="]] }.to_h
+          m.each_key { |k|
+            attr_accessor k
+          }
+          m
+        end
+        alias set_map map=
+
+        def inherited(subclass)
+          subclass.instance_variable_set(:@type, Int32)
+        end
+      end
+
+      def __set_value(val)
+        base = 0
+        self.class.map.each { |k, (v, _, s)|
+          next if v <= 0
+          tmp = (val >> base) & ((1 << v) - 1)
+          tmp -= 1 << v if self.class.signed && tmp >= (1 << (v - 1))
+          send(s, tmp)
+          base += v
+        }
+      end
+
+      def __get_value
+        base = 0
+        val = 0
+        self.class.map.each { |k, (v, g, _)|
+          next if v <= 0
+          val |= (send(g) & ((1 << v) - 1) ) << base
+          base += v
+        }
+        val
+      end
+
+      def self.size(value = nil, previous_offset = 0, parent = nil, index = nil, length = nil)
+        @type.size(value, previous_offset, parent, index, length)
+      end
+
+      def self.shape(value = nil, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
+        @type.shape(value, previous_offset, parent, index, kind, length)
+      end
+
+      def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+        v = @type.load(input, input_big, parent, index, length)
+        if length
+          v.collect { |val|
+             bf = self.new
+             bf.__setvalue(val)
+             bf
+          }
+        else
+          bf = self.new
+          bf.__setvalue(v)
+          bf
+        end
+      end
+
+      def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
+        v = @type.convert(input, output, input_big, output_big, parent, index, length)
+        if length
+          v.collect { |val|
+             bf = self.new
+             bf.__setvalue(val)
+             bf
+          }
+        else
+          bf = self.new
+          bf.__setvalue(v)
+          bf
+        end
+      end
+
+      def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+        v =
+          if length
+            length.times.collect { |i|
+              value[i].__get_value
+            }
+          else
+            value.__get_value
+          end
+        @type.dump(v, output, output_big, parent, index, length)
+      end
+    end
+
+    def self.bitfield(field, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+      klass = Class.new(Bitfield) do |c|
+        c.set_type_size(size, signed)
+        c.set_map(map)
       end
       @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset))
       attr_accessor field
