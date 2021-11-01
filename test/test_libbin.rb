@@ -781,7 +781,7 @@ class LibBinTest < Minitest::Test
 
   def test_enum2
     e1 = Class::new(LibBin::DataConverter::Enum) do |c|
-      c.type_size = 16
+      c.type = LibBin::DataConverter::Int16
       c.map = {ONE: 1, TWO: 2, FOOR: 4, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8}
     end
     e2 = Class::new(LibBin::DataConverter::Enum) do
