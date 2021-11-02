@@ -290,25 +290,27 @@ EOF
       attr_accessor field
     end
 
-    class Bifield
+    class Bitfield
       class << self
         attr_reader :map
         attr_reader :signed
         attr_reader :type
 
-        def set_type_size(sz, signed)
+        def set_type_size(sz, signed = false)
           tname = "#{signed ? "" : "U"}Int#{sz}"
           t = eval tname
           raise "unsupported bitfield type #{tname}" unless t
           @type = t
+          @signed = signed
           return sz
         end
 
         def type=(type)
           @type = type
-          @signed = name.split('::').last[0] != "U"
+          @signed = type.name.split('::').last[0] != "U"
           type
         end
+        alias set_type type=
 
         def map=(m)
           raise "map already set" if @map
@@ -321,8 +323,27 @@ EOF
         alias set_map map=
 
         def inherited(subclass)
-          subclass.instance_variable_set(:@type, Int32)
+          subclass.instance_variable_set(:@type, UInt32)
         end
+      end
+
+      attr_reader :__remainder
+
+      def __remainder=(v) # only keep relevant bits of the remainder
+        if v != 0
+          num_bits = self.class.type.size * 8
+          num_used_bits = self.class.map.value.collect { |v, _, _| v }.select { |v| v > 0 }.sum(:+)
+          if num_used_bits < num_bits
+            v &= ((( 1 << (num_bits - num_used_bits)) - 1) << num_used_bits)
+          else
+            v = 0
+          end
+        end
+        @__remainder = v
+      end
+
+      def initialize
+        @__remainder = 0
       end
 
       def __set_value(val)
@@ -330,10 +351,12 @@ EOF
         self.class.map.each { |k, (v, _, s)|
           next if v <= 0
           tmp = (val >> base) & ((1 << v) - 1)
-          tmp -= 1 << v if self.class.signed && tmp >= (1 << (v - 1))
+          val ^= tmp << base #remove bits from val
+          tmp -= (1 << v) if self.class.signed && tmp >= (1 << (v - 1))
           send(s, tmp)
           base += v
         }
+        @__remainder = val
       end
 
       def __get_value
@@ -341,10 +364,10 @@ EOF
         val = 0
         self.class.map.each { |k, (v, g, _)|
           next if v <= 0
-          val |= (send(g) & ((1 << v) - 1) ) << base
+          val |= ((send(g) & ((1 << v) - 1)) << base)
           base += v
         }
-        val
+        val | @__remainder
       end
 
       def self.size(value = nil, previous_offset = 0, parent = nil, index = nil, length = nil)
@@ -360,12 +383,12 @@ EOF
         if length
           v.collect { |val|
              bf = self.new
-             bf.__setvalue(val)
+             bf.__set_value(val)
              bf
           }
         else
           bf = self.new
-          bf.__setvalue(v)
+          bf.__set_value(v)
           bf
         end
       end
@@ -375,12 +398,12 @@ EOF
         if length
           v.collect { |val|
              bf = self.new
-             bf.__setvalue(val)
+             bf.__set_value(val)
              bf
           }
         else
           bf = self.new
-          bf.__setvalue(v)
+          bf.__set_value(v)
           bf
         end
       end

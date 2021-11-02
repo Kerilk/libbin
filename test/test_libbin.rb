@@ -821,4 +821,84 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def bitfield_helper(bitfields)
+    str_le = new_stringio
+    str_be = new_stringio
+    vals = [0b00001001011_011_10,
+            0b10001001011_011_11,
+            0b10001001011_011_11,
+            0xff012345,
+            0xff812345,
+            0xff812345]
+    str_le.write vals.pack("S<3L<3")
+    str_be.write vals.pack("S>3L>3")
+    str_le.rewind
+    str_be.rewind
+    files = { false => str_le, true => str_be }
+    [false, true].each { |big|
+      f = files[big]
+      b = bitfields.load(f, big)
+      assert_equal(2, b.b1[0].a)
+      assert_equal(3, b.b1[0].b)
+      assert_equal(75, b.b1[0].c)
+      assert_equal(3, b.b1[1].a)
+      assert_equal(3, b.b1[1].b)
+      assert_equal(1099, b.b1[1].c)
+      assert_equal(-1, b.b2.a)
+      assert_equal(3, b.b2.b)
+      assert_equal(-949, b.b2.c)
+      assert_equal(0x012345, b.b3[0].a)
+      assert_equal(-8314043, b.b3[1].a)
+      assert_equal(0x812345, b.b4.a)
+      str = new_stringio
+      bitfields.dump(b, str, big)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
+      g = files[!big]
+      str = new_stringio
+      f.rewind
+      t = bitfields.convert(f, str, big, !big)
+      str.rewind
+      assert_equal(g.read, str.read)
+      f.rewind
+      g.rewind
+    }
+  end
+
+  def test_bitfield
+    bitfields = Class::new(LibBin::DataConverter) do
+      bitfield :b1, { a: 2, b: 3, c: 11 }, size: 16, length: 2
+      bitfield :b2, { a: 2, b: 3, c: 11 }, size: 16, signed: true
+      bitfield :b3, { a: 24 }, signed: true, length: 2
+      bitfield :b4, { a: 24 }
+    end
+    bitfield_helper bitfields
+  end
+
+  def test_bitfield2
+    b1 = Class::new(LibBin::DataConverter::Bitfield) do |c|
+      c.type = LibBin::DataConverter::UInt16
+      c.map = { a: 2, b: 3, c: 11 }
+    end
+    b2 = Class::new(LibBin::DataConverter::Bitfield) do
+      set_type_size 16, true
+      set_map({ a: 2, b: 3, c: 11 })
+    end
+    b3 = Class::new(LibBin::DataConverter::Bitfield) do
+      set_type LibBin::DataConverter::Int32
+      set_map({ a: 24 })
+    end
+    b4 = Class::new(LibBin::DataConverter::Bitfield) do
+      set_map({ a: 24 })
+    end
+    bitfields = Class::new(LibBin::DataConverter) do
+      field :b1, b1, length: 2
+      field :b2, b2
+      field :b3, b3, length: 2
+      field :b4, b4
+    end
+    bitfield_helper bitfields
+  end
+
 end
