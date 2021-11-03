@@ -291,6 +291,14 @@ EOF
         c.type_size = size
         c.map = map
       end
+      if klass.always_align
+        al = klass.align
+        if align.kind_of?(Integer)
+          align = align >= al ? align : al
+        else
+          align = al
+        end
+      end
       if align == true
         align = klass.align
       else
@@ -443,6 +451,14 @@ EOF
       klass = Class.new(Bitfield) do |c|
         c.set_type_size(size, signed)
         c.set_map(map)
+      end
+      if klass.always_align
+        al = klass.align
+        if align.kind_of?(Integer)
+          align = align >= al ? align : al
+        else
+          align = al
+        end
       end
       if align == true
         align = klass.align
