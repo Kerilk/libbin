@@ -872,4 +872,52 @@ class LibBinTest < Minitest::Test
     bitfield_helper bitfields
   end
 
+  def test_align
+    a1 = Class::new(LibBin::DataConverter) do
+      int16 :a
+      uint32 :b, align: true
+    end
+    a2 = Class::new(LibBin::DataConverter) do
+      int16 :a
+      uint32 :b, align: true
+      set_always_align(true)
+    end
+    a3 = Class::new(LibBin::DataConverter) do
+      field :a, a1
+      int16 :b
+      field :c, a2
+    end
+
+    str_le = new_stringio
+    str_be = new_stringio
+    vals = [1, 0, 2, 3, 0, 4, 0, 5]
+    str_le.write vals.pack("S<2L<S<4L<")
+    str_be.write vals.pack("S>2L>S>4L>")
+    str_le.rewind
+    str_be.rewind
+    files = { false => str_le, true => str_be }
+    [false, true].each { |big|
+      f = files[big]
+      al = a3.load(f, big)
+      assert_equal(1, al.a.a)
+      assert_equal(2, al.a.b)
+      assert_equal(3, al.b)
+      assert_equal(4, al.c.a)
+      assert_equal(5, al.c.b)
+      str = new_stringio
+      a3.dump(al, str, big)
+      f.rewind
+      str.rewind
+      assert_equal(f.read, str.read)
+      g = files[!big]
+      str = new_stringio
+      f.rewind
+      t = a3.convert(f, str, big, !big)
+      str.rewind
+      assert_equal(g.read, str.read)
+      f.rewind
+      g.rewind
+    }
+  end
+
 end

@@ -79,36 +79,6 @@ module LibBin
 
   end
 
-#  class Field
-#    attr_reader :name,
-#                :type,
-#                :length,
-#                :count,
-#                :offset,
-#                :sequence,
-#                :condition
-#
-#    def sequence?
-#      @sequence
-#    end
-#
-#    def relative_offset?
-#      @relative_offset
-#    end
-#
-#    def initialize(name, type, length, count, offset, sequence, condition, relative_offset)
-#      @name = name
-#      @type = type
-#      @length = length
-#      @count = count
-#      @offset = offset
-#      @sequence = sequence
-#      @condition = condition
-#      @relative_offset = relative_offset
-#    end
-#
-#  end
-
   class DataConverter
 
     SCALAR_TYPES = {
@@ -150,7 +120,7 @@ module LibBin
       :pghalf_be => [:PGHalf_BE, :pghalf_be]
     }
 
-    def self.register_field(field, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+    def self.register_field(field, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
       if type.kind_of?(Symbol)
         if type[0] == 'a'
           real_type = Str
@@ -160,7 +130,24 @@ module LibBin
       else
         real_type = type
       end
-      @fields.push(Field::new(field, real_type, length, count, offset, sequence, condition, relative_offset))
+      if real_type.respond_to?(:always_align) && real_type.always_align
+        al = real_type.align
+        if align.kind_of?(Integer)
+          align = align >= al ? align : al
+        else
+          align = al
+        end
+      end
+      if align == true
+        if real_type.respond_to?(:align) # Automatic alignment not supported for dynamic types
+          align = real_type.align
+        else
+          raise "alignment is unsupported for dynamic types"
+        end
+      else
+        raise "alignement must be a power of 2" if align && (align - 1) & align != 0
+      end
+      @fields.push(Field::new(field, real_type, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
     end
 
@@ -171,8 +158,13 @@ module LibBin
     def self.create_scalar_accessor(symbol)
       klassname, name = SCALAR_TYPES[symbol]
       eval <<EOF
-    def self.#{name}(field, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
-      @fields.push(Field::new(field, #{klassname}, length, count, offset, sequence, condition, relative_offset))
+    def self.#{name}(field, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
+      if align == true
+        align = #{klassname}.align
+      else
+        raise "alignement must be a power of 2" if align && (align - 1) & align != 0
+      end
+      @fields.push(Field::new(field, #{klassname}, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
     end
 EOF
@@ -193,8 +185,13 @@ EOF
       create_scalar_accessor(c)
     }
 
-    def self.string(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
-      @fields.push(Field::new(field, Str, length, count, offset, sequence, condition, relative_offset))
+    def self.string(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
+      if align == true
+        align = Str.align
+      else
+        raise "alignement must be a power of 2" if align && (align - 1) & align != 0
+      end
+      @fields.push(Field::new(field, Str, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
     end
 
@@ -226,6 +223,14 @@ EOF
         def inherited(subclass)
           subclass.instance_variable_set(:@type, Int32)
         end
+      end
+
+      def self.always_align
+        @type.always_align
+      end
+
+      def self.align
+        @type.align
       end
 
       def self.size(value = nil, previous_offset = 0, parent = nil, index = nil, length = nil)
@@ -281,12 +286,17 @@ EOF
       end
     end
 
-    def self.enum(field, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+    def self.enum(field, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
       klass = Class.new(Enum) do |c|
         c.type_size = size
         c.map = map
       end
-      @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset))
+      if align == true
+        align = klass.align
+      else
+        raise "alignement must be a power of 2" if align && (align - 1) & align != 0
+      end
+      @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
     end
 
@@ -370,6 +380,14 @@ EOF
         val | @__remainder
       end
 
+      def self.always_align
+        @type.always_align
+      end
+
+      def self.align
+        @type.align
+      end
+
       def self.size(value = nil, previous_offset = 0, parent = nil, index = nil, length = nil)
         @type.size(value, previous_offset, parent, index, length)
       end
@@ -421,12 +439,17 @@ EOF
       end
     end
 
-    def self.bitfield(field, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false)
+    def self.bitfield(field, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
       klass = Class.new(Bitfield) do |c|
         c.set_type_size(size, signed)
         c.set_map(map)
       end
-      @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset))
+      if align == true
+        align = klass.align
+      else
+        raise "alignement must be a power of 2" if align && (align - 1) & align != 0
+      end
+      @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
     end
 

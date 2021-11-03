@@ -19,6 +19,7 @@ struct cField_data {
   VALUE sequence;
   VALUE condition;
   VALUE relative_offset;
+  VALUE align;
   ID getter;
   ID setter;
 };
@@ -63,6 +64,38 @@ static inline VALUE cField_preprocess_expression(VALUE self, VALUE expression) {
     return expression;
 }
 
+/*  class Field
+      attr_reader :name,
+                  :type,
+                  :length,
+                  :count,
+                  :offset,
+                  :sequence,
+                  :condition,
+                  :align
+
+      def sequence?
+        @sequence
+      end
+
+      def relative_offset?
+        @relative_offset
+      end
+
+      def initialize(name, type, length, count, offset, sequence, condition, relative_offset, align)
+        @name = name
+        @type = type
+        @length = length
+        @count = count
+        @offset = offset
+        @sequence = sequence
+        @condition = condition
+        @relative_offset = relative_offset
+        @align = align
+      end
+
+    end */
+
 static VALUE cField_initialize(
     VALUE self,
     VALUE name,
@@ -72,7 +105,8 @@ static VALUE cField_initialize(
     VALUE offset,
     VALUE sequence,
     VALUE condition,
-    VALUE relative_offset) {
+    VALUE relative_offset,
+    VALUE align) {
   VALUE tmp;
   struct cField_data *data;
   TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
@@ -87,6 +121,7 @@ static VALUE cField_initialize(
   data->sequence = sequence;
   data->condition = cField_preprocess_expression(self, condition);
   data->relative_offset = relative_offset;
+  data->align = align;
   return self;
 }
 
@@ -138,6 +173,12 @@ static VALUE cField_relative_offset(VALUE self) {
   return data->relative_offset;
 }
 
+static VALUE cField_align(VALUE self) {
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  return data->align;
+}
+
 static void define_cField() {
   VALUE ary = rb_ary_new_capa(4);
   id_gsub = rb_intern("gsub");
@@ -154,7 +195,7 @@ static void define_cField() {
   cField = rb_define_class_under(mLibBin, "Field", rb_cObject);
   rb_define_alloc_func(cField, cField_alloc);
   rb_const_set(cField, rb_intern("STRINGS"), ary);
-  rb_define_method(cField, "initialize", cField_initialize, 8);
+  rb_define_method(cField, "initialize", cField_initialize, 9);
   rb_define_method(cField, "name", cField_name, 0);
   rb_define_method(cField, "type", cField_get_type, 0);
   rb_define_method(cField, "length", cField_length, 0);
@@ -164,6 +205,7 @@ static void define_cField() {
   rb_define_method(cField, "sequence?", cField_sequence, 0);
   rb_define_method(cField, "condition", cField_condition, 0);
   rb_define_method(cField, "relative_offset?", cField_relative_offset, 0);
+  rb_define_method(cField, "align", cField_align, 0);
 }
 
 struct cDataConverter_data {
@@ -516,16 +558,39 @@ static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expressio
 
 ID id_seek;
 
-static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset) {
+static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset, VALUE align) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  if (!RTEST(offset))
+  if (!RTEST(offset)) {
+    if (RTEST(align)) {
+      ptrdiff_t cur_pos;
+      if (RTEST(data->__input))
+        cur_pos = NUM2LL(rb_funcall(data->__input, id_tell, 0));
+      else
+        cur_pos = NUM2LL(rb_funcall(data->__output, id_tell, 0));
+      ptrdiff_t al = NUM2LL(align);
+      ptrdiff_t pad;
+      if ((pad = ((-cur_pos) & (al - 1))) != 0) {
+        cur_pos += pad;
+        data->__cur_position = LL2NUM(cur_pos);
+        if (RTEST(data->__input))
+          rb_funcall(data->__input, id_seek, 1, data->__cur_position);
+        if (RTEST(data->__output))
+          rb_funcall(data->__output, id_seek, 1, data->__cur_position);
+      }
+    }
     return Qnil;
+  }
   ptrdiff_t off = NUM2LL(cDataConverter_decode_expression(self, offset));
   if (off == 0)
     return Qfalse;
   if (RTEST(relative_offset))
     off += NUM2LL(data->__position);
+  if (RTEST(align)) {
+    ptrdiff_t al = NUM2LL(align);
+    ptrdiff_t pad;
+    off += (-off) & (al - 1);
+  }
   data->__cur_position = LL2NUM(off);
   if (RTEST(data->__input))
     rb_funcall(data->__input, id_seek, 1, data->__cur_position);
@@ -581,7 +646,7 @@ static inline VALUE cDataConverter_decode_length(VALUE self, VALUE length) {
       @__length = nil
       @__count = nil
       unless field.sequence?
-        @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
+        @__offset = __decode_seek_offset(field.offset, field.relative_offset?, field.align)
         throw :ignored, nil if @__offset == false
         @__condition = __decode_condition(field.condition)
         throw :ignored, nil unless @__condition
@@ -602,7 +667,7 @@ static inline VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE fi
   data->__length = Qnil;
   data->__count = Qnil;
   if (!RTEST(field_data->sequence)) {
-    data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset);
+    data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset, field_data->align);
     if (!data->__offset)
       return Qnil;
     data->__condition = cDataConverter_decode_condition(self, field_data->condition);
@@ -641,7 +706,7 @@ static inline VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE f
   data->__condition = Qnil;
   data->__type = Qnil;
   data->__length = Qnil;
-  data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset);
+  data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset, field_data->align);
   if (!data->__offset)
     return Qfalse;
   data->__condition = cDataConverter_decode_condition(self, field_data->condition);
@@ -1380,7 +1445,7 @@ static void define_cDataConverter() {
   rb_define_method(cDataConverter, "__unset_dump_type", cDataConverter_unset_dump_type, 0);
 
   rb_define_method(cDataConverter, "__decode_expression", cDataConverter_decode_expression, 1);
-  rb_define_method(cDataConverter, "__decode_seek_offset", cDataConverter_decode_seek_offset, 2);
+  rb_define_method(cDataConverter, "__decode_seek_offset", cDataConverter_decode_seek_offset, 3);
   rb_define_method(cDataConverter, "__decode_condition", cDataConverter_decode_condition, 1);
   rb_define_method(cDataConverter, "__decode_count", cDataConverter_decode_count, 1);
   rb_define_method(cDataConverter, "__decode_type", cDataConverter_decode_type, 1);

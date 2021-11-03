@@ -6,7 +6,18 @@ VALUE cScalar;
 
 static ID id_read, id_write;
 
-/* size(value = nil, previous_offset = 0, parent = nil, index = nil, length = nil)*/
+static VALUE cScalar_always_align(VALUE self) {
+  return Qfalse;
+}
+
+/* align() */
+#define MAKE_TYPE_ALIGN(CLASS, MAPPED_TYPE) \
+static VALUE CLASS ## _align(VALUE self) {  \
+  (void)self;                               \
+  return INT2FIX(sizeof(MAPPED_TYPE));      \
+}
+
+/* size(value = nil, previous_offset = 0, parent = nil, index = nil, length = nil) */
 #define MAKE_TYPE_SIZE(CLASS, MAPPED_TYPE)                         \
 static VALUE CLASS ## _size(int argc, VALUE* argv, VALUE self) {   \
   (void)self;                                                      \
@@ -179,28 +190,31 @@ static VALUE CLASS ## _convert(int argc, VALUE* argv, VALUE self) {             
   VALUE str = rb_funcall(input, id_read, 1, ULL2NUM(cnt));                                                 \
   if (NIL_P(str)  || RSTRING_LEN(str) < (long)cnt)                                                         \
     rb_raise(rb_eRuntimeError, "could not read enough data: got %ld needed %zu",                           \
-        NIL_P(str) ? 0 : RSTRING_LEN(str), cnt);                                                            \
+        NIL_P(str) ? 0 : RSTRING_LEN(str), cnt);                                                           \
   MAPPED_TYPE *data = (MAPPED_TYPE *)RSTRING_PTR(str);                                                     \
   CONVERT(MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT, NATIVE_CONVERT);                                         \
   rb_funcall(output, id_write, 1, str);                                                                    \
   return res;                                                                                              \
 }
 
-#define MAKE_CLASS_DEFINE(CLASS_NAME, CLASS)                           \
-static void define_ ## CLASS() {                                       \
-  CLASS = rb_define_class_under(cDataConverter, #CLASS_NAME, cScalar); \
-  rb_define_singleton_method(CLASS, "size", CLASS ## _size, -1);       \
-  rb_define_singleton_method(CLASS, "shape", CLASS ## _shape, -1);     \
-  rb_define_singleton_method(CLASS, "load", CLASS ## _load, -1);       \
-  rb_define_singleton_method(CLASS, "dump", CLASS ## _dump, -1);       \
-  rb_define_singleton_method(CLASS, "convert", CLASS ## _convert, -1); \
+#define MAKE_CLASS_DEFINE(CLASS_NAME, CLASS)                                  \
+static void define_ ## CLASS() {                                              \
+  CLASS = rb_define_class_under(cDataConverter, #CLASS_NAME, cScalar);        \
+  rb_define_singleton_method(CLASS, "always_align", cScalar_always_align, 0); \
+  rb_define_singleton_method(CLASS, "align", CLASS ## _align, 0);             \
+  rb_define_singleton_method(CLASS, "size", CLASS ## _size, -1);              \
+  rb_define_singleton_method(CLASS, "shape", CLASS ## _shape, -1);            \
+  rb_define_singleton_method(CLASS, "load", CLASS ## _load, -1);              \
+  rb_define_singleton_method(CLASS, "dump", CLASS ## _dump, -1);              \
+  rb_define_singleton_method(CLASS, "convert", CLASS ## _convert, -1);        \
 }
 
 #define MAKE_STATIC_OBJECT(CLASS) \
 static VALUE CLASS;
 
 #define MAKE_CLASS_TYPE_ENDIAN_EX(CLASS_NAME, CLASS, MAPPED_TYPE, MAPPED_SWAP, RUBY_CONVERT_TO, RUBY_CONVERT_FROM, NATIVE_CONVERT_TO, NATIVE_CONVERT_FROM, ENDIAN) \
-  MAKE_STATIC_OBJECT(CLASS)                                                                                 \
+  MAKE_STATIC_OBJECT(CLASS)                                                                                      \
+  MAKE_TYPE_ALIGN(CLASS, MAPPED_TYPE)                                                                            \
   MAKE_TYPE_SIZE(CLASS, MAPPED_TYPE)                                                                             \
   MAKE_TYPE_SHAPE(CLASS, MAPPED_TYPE)                                                                            \
   MAKE_TYPE_LOAD(CLASS, MAPPED_TYPE, RUBY_CONVERT_TO, NATIVE_CONVERT_TO, MAKE_LOAD ## ENDIAN)                    \
@@ -344,6 +358,11 @@ MAKE_CLASSES(Double, 64, DBL2NUM, NUM2DBL, unpack_double, pack_double)
 
 static VALUE cStr;
 
+static VALUE cStr_align(VALUE self) {
+  (void)self;
+  return INT2FIX(sizeof(char));
+}
+
 static VALUE cStr_size(int argc, VALUE* argv, VALUE self) {
   (void)self;
   VALUE value;
@@ -437,6 +456,8 @@ static VALUE cStr_convert(int argc, VALUE* argv, VALUE self) {
 
 static void define_cStr() {
   cStr = rb_define_class_under(cDataConverter, "Str", cScalar);
+  rb_define_singleton_method(cStr, "always_align", cScalar_always_align, 0);
+  rb_define_singleton_method(cStr, "align", cStr_align, 0);
   rb_define_singleton_method(cStr, "size", cStr_size, -1);
   rb_define_singleton_method(cStr, "shape", cStr_shape, -1);
   rb_define_singleton_method(cStr, "load", cStr_load, -1);
