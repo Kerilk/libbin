@@ -148,7 +148,7 @@ module LibBin
       alias register_field field
     end
 
-    def self.create_scalar_accessor(klassname, name)
+    def self.define_scalar_constructor(klassname, name)
       eval <<EOF
     def self.#{name}(field, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
       if align == true
@@ -163,7 +163,7 @@ EOF
     end
 
     SCALAR_TYPES.each { |klassname, name|
-      create_scalar_accessor(klassname, name)
+      define_scalar_constructor(klassname, name)
     }
 
     def self.string(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
