@@ -81,57 +81,50 @@ module LibBin
 
   class DataConverter
 
-    SCALAR_TYPES = {
-      :c => [:Int8, :int8],
-      :C => [:UInt8, :uint8],
-      :s => [:Int16, :int16],
-      :"s<" => [:Int16_LE, :int16_le],
-      :"s>" => [:Int16_BE, :int16_be],
-      :S => [:UInt16, :uint16],
-      :"S<" => [:UInt16_LE, :uint16_le],
-      :"S>" => [:UInt16_BE, :uint16_be],
-      :v => [:UInt16_LE, :uint16_le],
-      :n => [:UInt16_BE, :uint16_be],
-      :l => [:Int32, :int32],
-      :"l<" => [:Int32_LE, :int32_le],
-      :"l>" => [:Int32_BE, :int32_be],
-      :L => [:UInt32, :uint32],
-      :"L<" => [:UInt32_LE, :uint32_le],
-      :"L>" => [:UInt32_BE, :uint32_be],
-      :V => [:UInt32_LE, :uint32_le],
-      :N => [:UInt32_BE, :uint32_be],
-      :q => [:Int64, :int64],
-      :"q<" => [:Int64_LE, :int64_le],
-      :"q>" => [:Int64_BE, :int64_be],
-      :Q => [:UInt64, :uint64],
-      :"Q<" => [:UInt64_LE, :uint64_le],
-      :"Q>" => [:UInt64_BE, :uint64_be],
-      :F => [:Flt, :float],
-      :e => [:Flt_LE, :float_le],
-      :g => [:Flt_BE, :float_be],
-      :D => [:Double, :double],
-      :E => [:Double_LE, :double_le],
-      :G => [:Double_BE, :double_be],
-      :half => [:Half, :half],
-      :half_le => [:Half_LE, :half_le],
-      :half_be => [:Half_BE, :half_be],
-      :pghalf => [:PGHalf, :pghalf],
-      :pghalf_le => [:PGHalf_LE, :pghalf_le],
-      :pghalf_be => [:PGHalf_BE, :pghalf_be]
-    }
+    # List of natively supported scalar types
+    SCALAR_TYPES = [
+      [:Int8, :int8],
+      [:UInt8, :uint8],
+      [:Int16, :int16],
+      [:Int16_LE, :int16_le],
+      [:Int16_BE, :int16_be],
+      [:UInt16, :uint16],
+      [:UInt16_LE, :uint16_le],
+      [:UInt16_BE, :uint16_be],
+      [:UInt16_LE, :uint16_le],
+      [:UInt16_BE, :uint16_be],
+      [:Int32, :int32],
+      [:Int32_LE, :int32_le],
+      [:Int32_BE, :int32_be],
+      [:UInt32, :uint32],
+      [:UInt32_LE, :uint32_le],
+      [:UInt32_BE, :uint32_be],
+      [:UInt32_LE, :uint32_le],
+      [:UInt32_BE, :uint32_be],
+      [:Int64, :int64],
+      [:Int64_LE, :int64_le],
+      [:Int64_BE, :int64_be],
+      [:UInt64, :uint64],
+      [:UInt64_LE, :uint64_le],
+      [:UInt64_BE, :uint64_be],
+      [:Flt, :float],
+      [:Flt_LE, :float_le],
+      [:Flt_BE, :float_be],
+      [:Double, :double],
+      [:Double_LE, :double_le],
+      [:Double_BE, :double_be],
+      [:Half, :half],
+      [:Half_LE, :half_le],
+      [:Half_BE, :half_be],
+      [:PGHalf, :pghalf],
+      [:PGHalf_LE, :pghalf_le],
+      [:PGHalf_BE, :pghalf_be]
+    ]
+
 
     def self.register_field(field, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
-      if type.kind_of?(Symbol)
-        if type[0] == 'a'
-          real_type = Str
-        else
-          real_type = const_get(SCALAR_TYPES[type][0])
-        end
-      else
-        real_type = type
-      end
-      if real_type.respond_to?(:always_align) && real_type.always_align
-        al = real_type.align
+      if type.respond_to?(:always_align) && type.always_align
+        al = type.align
         if align.kind_of?(Integer)
           align = align >= al ? align : al
         else
@@ -139,15 +132,15 @@ module LibBin
         end
       end
       if align == true
-        if real_type.respond_to?(:align) # Automatic alignment not supported for dynamic types
-          align = real_type.align
+        if type.respond_to?(:align) # Automatic alignment not supported for dynamic types
+          align = type.align
         else
           raise "alignment is unsupported for dynamic types"
         end
       else
         raise "alignement must be a power of 2" if align && (align - 1) & align != 0
       end
-      @fields.push(Field::new(field, real_type, length, count, offset, sequence, condition, relative_offset, align))
+      @fields.push(Field::new(field, type, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
     end
 
@@ -170,19 +163,8 @@ module LibBin
 EOF
     end
 
-    [:c,
-     :C,
-     :s, :"s<", :"s>",
-     :S, :"S<", :"S>",
-     :l, :"l<", :"l>",
-     :L, :"L<", :"L>",
-     :q, :"q<", :"q>",
-     :Q, :"Q<", :"Q>",
-     :F, :e, :g,
-     :D, :E, :G,
-     :half, :half_le, :half_be,
-     :pghalf, :pghalf_le, :pghalf_be].each { |c|
-      create_scalar_accessor(c)
+    SCALAR_TYPES.each { |klassname, name|
+      create_scalar_accessor(klassname, name)
     }
 
     def self.string(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)

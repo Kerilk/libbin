@@ -20,8 +20,8 @@ class LibBinTest < Minitest::Test
 
   def test_half
     c = Class::new(LibBin::DataConverter) do
-      register_field :a, :half, count: 4
-      register_field :b, :pghalf, length: 4
+      half   :a, count: 4
+      pghalf :b, length: 4
     end
 
     [true, false].each { |big|
@@ -51,8 +51,8 @@ class LibBinTest < Minitest::Test
 
   def test_half_le
     c = Class::new(LibBin::DataConverter) do
-      field :a, :half_le, length: 4
-      field :b, :pghalf_le, count: 4
+      half_le   :a, length: 4
+      pghalf_le :b, count: 4
     end
 
     open_bin("half_le.bin") do |f|
@@ -79,8 +79,8 @@ class LibBinTest < Minitest::Test
 
   def test_half_be
     c = Class::new(LibBin::DataConverter) do
-      register_field :a, :half_be, count: 4
-      register_field :b, :pghalf_be, count: 4
+      half_be   :a, count: 4
+      pghalf_be :b, count: 4
     end
 
     open_bin("half_be.bin") do |f|
@@ -103,11 +103,11 @@ class LibBinTest < Minitest::Test
 
   def test_register_field
     c = Class::new(LibBin::DataConverter) do
-      register_field :a, :c
+      register_field :a, LibBin::DataConverter::Int8
       register_field :b, LibBin::DataConverter::Int8
-      register_field :c, :s
-      register_field :d, :l
-      register_field :e, :F
+      register_field :c, LibBin::DataConverter::Int16
+      register_field :d, LibBin::DataConverter::Int32
+      register_field :e, LibBin::DataConverter::Flt
     end
 
     [true, false].each { |big|
@@ -417,10 +417,10 @@ class LibBinTest < Minitest::Test
 
   def test_class_count
     h = Class::new(LibBin::DataConverter) do
-      register_field :f, :half
+      half :f
     end
     pgh = Class::new(LibBin::DataConverter) do
-      register_field :f, :pghalf
+      pghalf :f
     end
     c = Class::new(LibBin::DataConverter) do
       register_field :a, h, count: 4
