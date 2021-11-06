@@ -1,6 +1,5 @@
 require "libbin_c.so"
 
-require_relative 'libbin/alignment'
 require_relative 'libbin/data_types'
 
 module LibBin
