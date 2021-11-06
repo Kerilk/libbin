@@ -122,7 +122,7 @@ module LibBin
     ]
 
 
-    def self.register_field(field, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
+    def self.field(field, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
       if type.respond_to?(:always_align) && type.always_align
         al = type.align
         if align.kind_of?(Integer)
@@ -145,7 +145,7 @@ module LibBin
     end
 
     class << self
-      alias field register_field
+      alias register_field field
     end
 
     def self.create_scalar_accessor(klassname, name)

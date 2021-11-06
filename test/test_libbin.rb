@@ -101,13 +101,13 @@ class LibBinTest < Minitest::Test
     end
   end
 
-  def test_register_field
+  def test_field
     c = Class::new(LibBin::DataConverter) do
-      register_field :a, LibBin::DataConverter::Int8
-      register_field :b, LibBin::DataConverter::Int8
-      register_field :c, LibBin::DataConverter::Int16
-      register_field :d, LibBin::DataConverter::Int32
-      register_field :e, LibBin::DataConverter::Flt
+      field :a, LibBin::DataConverter::Int8
+      field :b, LibBin::DataConverter::Int8
+      field :c, LibBin::DataConverter::Int16
+      field :d, LibBin::DataConverter::Int32
+      field :e, LibBin::DataConverter::Flt
     end
 
     [true, false].each { |big|
@@ -331,7 +331,7 @@ class LibBinTest < Minitest::Test
     end
 
     c = Class::new(LibBin::DataConverter) do
-      register_field :bs, b, count: 5
+      field :bs, b, count: 5
     end
 
     open_bin("simple_array.bin") do |f|
@@ -351,7 +351,7 @@ class LibBinTest < Minitest::Test
       int32 :count
     end
     b = Class::new(LibBin::DataConverter) do
-      register_field :header, h
+      field :header, h
       int32 :data, length: 'header.count', offset: 'header.offset'
     end
 
@@ -388,8 +388,8 @@ class LibBinTest < Minitest::Test
       int32 :data, count: '..\header.count', offset: '..\header.offset'
     end
     b = Class::new(LibBin::DataConverter) do
-      register_field :header, h
-      register_field :body, d
+      field :header, h
+      field :body, d
     end
     [true, false].each { |big|
       open_bin("offset_#{SUFFIX[big]}.bin") do |f|
@@ -423,8 +423,8 @@ class LibBinTest < Minitest::Test
       pghalf :f
     end
     c = Class::new(LibBin::DataConverter) do
-      register_field :a, h, count: 4
-      register_field :b, pgh, length: lambda { 4 }
+      field :a, h, count: 4
+      field :b, pgh, length: lambda { 4 }
     end
 
     [true, false].each { |big|
@@ -458,8 +458,8 @@ class LibBinTest < Minitest::Test
       int16 :datum2, offset: proc { __parent.header.offset2 }
     end
     s = Class::new(LibBin::DataConverter) do
-      register_field :header, h
-      register_field :body, b
+      field :header, h
+      field :body, b
     end
     [false, true].each { |big|
       open_bin("test_size_#{SUFFIX[big]}.bin") do |f|
@@ -551,8 +551,8 @@ class LibBinTest < Minitest::Test
       int32 :error, length: 4
     end
     s = Class::new(LibBin::DataConverter) do
-      register_field :header, h
-      register_field :body, b
+      field :header, h
+      field :body, b
     end
     begin
       LibBin.__output = nil
@@ -584,8 +584,8 @@ class LibBinTest < Minitest::Test
       int16 :datum2, offset: '..\header.offset2'
     end
     s = Class::new(LibBin::DataConverter) do
-      register_field :header, h
-      register_field :body, b
+      field :header, h
+      field :body, b
     end
     begin
       LibBin.__output = nil
