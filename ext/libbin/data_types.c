@@ -200,7 +200,6 @@ static VALUE CLASS ## _convert(int argc, VALUE* argv, VALUE self) {             
 #define MAKE_CLASS_DEFINE(CLASS_NAME, CLASS)                                  \
 static void define_ ## CLASS() {                                              \
   CLASS = rb_define_class_under(cDataConverter, #CLASS_NAME, cScalar);        \
-  rb_define_singleton_method(CLASS, "always_align", cScalar_always_align, 0); \
   rb_define_singleton_method(CLASS, "align", CLASS ## _align, 0);             \
   rb_define_singleton_method(CLASS, "size", CLASS ## _size, -1);              \
   rb_define_singleton_method(CLASS, "shape", CLASS ## _shape, -1);            \
@@ -456,7 +455,6 @@ static VALUE cStr_convert(int argc, VALUE* argv, VALUE self) {
 
 static void define_cStr() {
   cStr = rb_define_class_under(cDataConverter, "Str", cScalar);
-  rb_define_singleton_method(cStr, "always_align", cScalar_always_align, 0);
   rb_define_singleton_method(cStr, "align", cStr_align, 0);
   rb_define_singleton_method(cStr, "size", cStr_size, -1);
   rb_define_singleton_method(cStr, "shape", cStr_shape, -1);
@@ -469,6 +467,7 @@ void define_cScalar() {
   id_read = rb_intern("read");
   id_write = rb_intern("write");
   cScalar = rb_define_class_under(cDataConverter, "Scalar", rb_cObject);
+  rb_define_singleton_method(cScalar, "always_align", cScalar_always_align, 0);
   MAKE_CALL_DEFINES(Half);
   MAKE_CALL_DEFINES(PGHalf);
   MAKE_CALL_DEFINES(Int8);
