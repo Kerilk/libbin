@@ -158,6 +158,7 @@ module LibBin
       end
       @fields.push(Field::new(field, #{klassname}, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
+      #{klassname}
     end
 EOF
     end
@@ -174,6 +175,7 @@ EOF
       end
       @fields.push(Field::new(field, Str, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
+      Str
     end
 
     class Enum
@@ -287,6 +289,7 @@ EOF
       end
       @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
+      klass
     end
 
     class Bitfield
@@ -448,6 +451,7 @@ EOF
       end
       @fields.push(Field::new(field, klass, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor field
+      klass
     end
 
   end
