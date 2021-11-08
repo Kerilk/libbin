@@ -64,38 +64,6 @@ static inline VALUE cField_preprocess_expression(VALUE self, VALUE expression) {
     return expression;
 }
 
-/*  class Field
-      attr_reader :name,
-                  :type,
-                  :length,
-                  :count,
-                  :offset,
-                  :sequence,
-                  :condition,
-                  :align
-
-      def sequence?
-        @sequence
-      end
-
-      def relative_offset?
-        @relative_offset
-      end
-
-      def initialize(name, type, length, count, offset, sequence, condition, relative_offset, align)
-        @name = name
-        @type = type
-        @length = length
-        @count = count
-        @offset = offset
-        @sequence = sequence
-        @condition = condition
-        @relative_offset = relative_offset
-        @align = align
-      end
-
-    end */
-
 static VALUE cField_initialize(
     VALUE self,
     VALUE name,
@@ -179,35 +147,6 @@ static VALUE cField_align(VALUE self) {
   return data->align;
 }
 
-static void define_cField() {
-  VALUE ary = rb_ary_new_capa(4);
-  id_gsub = rb_intern("gsub");
-
-  rb_str_dot_dot = rb_str_new_cstr("..");
-  rb_ary_store(ary, 0, rb_str_dot_dot);
-  rb_str___parent = rb_str_new_cstr("__parent");
-  rb_ary_store(ary, 1, rb_str___parent);
-  rb_str_backslash = rb_str_new_cstr("\\");
-  rb_ary_store(ary, 2, rb_str_backslash);
-  rb_str_dot = rb_str_new_cstr(".");
-  rb_ary_store(ary, 3, rb_str_dot);
-
-  cField = rb_define_class_under(mLibBin, "Field", rb_cObject);
-  rb_define_alloc_func(cField, cField_alloc);
-  rb_const_set(cField, rb_intern("STRINGS"), ary);
-  rb_define_method(cField, "initialize", cField_initialize, 9);
-  rb_define_method(cField, "name", cField_name, 0);
-  rb_define_method(cField, "type", cField_get_type, 0);
-  rb_define_method(cField, "length", cField_length, 0);
-  rb_define_method(cField, "count", cField_count, 0);
-  rb_define_method(cField, "offset", cField_offset, 0);
-  rb_define_method(cField, "sequence", cField_sequence, 0);
-  rb_define_method(cField, "sequence?", cField_sequence, 0);
-  rb_define_method(cField, "condition", cField_condition, 0);
-  rb_define_method(cField, "relative_offset?", cField_relative_offset, 0);
-  rb_define_method(cField, "align", cField_align, 0);
-}
-
 struct cDataConverter_data {
   VALUE __input;
   VALUE __output;
@@ -274,15 +213,16 @@ static VALUE cDataConverter_initialize(VALUE self) {
   return self;
 }
 
-/*  attr_reader :__parent
-    attr_reader :__index
-    attr_reader :__iterator
-    attr_reader :__position */
-
 static VALUE cDataConverter_parent(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   return data->__parent;
+}
+
+static VALUE cDataConverter_set_parent(VALUE self, VALUE parent) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__parent = parent;
 }
 
 static VALUE cDataConverter_index(VALUE self) {
@@ -291,10 +231,22 @@ static VALUE cDataConverter_index(VALUE self) {
   return data->__index;
 }
 
+static VALUE cDataConverter_set_index(VALUE self, VALUE index) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__index = index;
+}
+
 static VALUE cDataConverter_iterator(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   return data->__iterator;
+}
+
+static VALUE cDataConverter_set_iterator(VALUE self, VALUE iterator) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__iterator = iterator;
 }
 
 static VALUE cDataConverter_position(VALUE self) {
@@ -303,15 +255,34 @@ static VALUE cDataConverter_position(VALUE self) {
   return data->__position;
 }
 
-/*  attr_reader :__input
-    attr_reader :__output
-    attr_reader :__input_big
-    attr_reader :__output_big */
+static VALUE cDataConverter_set_position(VALUE self, VALUE position) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__position = position;
+}
+
+static VALUE cDataConverter_cur_position(VALUE self) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__cur_position;
+}
+
+static VALUE cDataConverter_set_cur_position(VALUE self, VALUE cur_position) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__cur_position = cur_position;
+}
 
 static VALUE cDataConverter_input(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   return data->__input;
+}
+
+static VALUE cDataConverter_set_input(VALUE self, VALUE input) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__input = input;
 }
 
 static VALUE cDataConverter_output(VALUE self) {
@@ -320,10 +291,22 @@ static VALUE cDataConverter_output(VALUE self) {
   return data->__output;
 }
 
+static VALUE cDataConverter_set_output(VALUE self, VALUE output) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__output = output;
+}
+
 static VALUE cDataConverter_input_big(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   return data->__input_big;
+}
+
+static VALUE cDataConverter_set_input_big(VALUE self, VALUE input_big) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__input_big = input_big;
 }
 
 static VALUE cDataConverter_output_big(VALUE self) {
@@ -332,20 +315,17 @@ static VALUE cDataConverter_output_big(VALUE self) {
   return data->__output_big;
 }
 
-ID id_tell;
+static VALUE cDataConverter_set_output_big(VALUE self, VALUE output_big) {
+  struct cDataConverter_data *data;
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  return data->__output_big = output_big;
+}
 
-/*  def __set_convert_type(input, output, input_big, output_big, parent, index)
-      @__input_big = input_big
-      @__output_big = output_big
-      @__input = input
-      @__output = output
-      @__parent = parent
-      @__index = index
-      @__position = input.tell
-      @__cur_position = @__position
-    end */
+static ID id_tell;
 
-static inline VALUE cDataConverter_set_convert_type(
+static ID id___set_convert_state;
+
+static inline VALUE cDataConverter_set_convert_state(
     VALUE self,
     VALUE input,
     VALUE output,
@@ -367,18 +347,9 @@ static inline VALUE cDataConverter_set_convert_type(
   return Qnil;
 }
 
-/*  def __unset_convert_type
-      @__input_big = nil
-      @__output_big = nil
-      @__input = nil
-      @__output = nil
-      @__parent = nil
-      @__index = nil
-      @__position = nil
-      @__cur_position = nil
-    end */
+static ID id___unset_convert_state;
 
-static inline VALUE cDataConverter_unset_convert_type(VALUE self) {
+static inline VALUE cDataConverter_unset_convert_state(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__input = Qnil;
@@ -392,14 +363,9 @@ static inline VALUE cDataConverter_unset_convert_type(VALUE self) {
   return Qnil;
 }
 
-/*  def __set_size_type(position, parent, index)
-      @__parent = parent
-      @__index = index
-      @__position = position
-      @__cur_position = @__position
-    end */
+static ID id___set_size_state;
 
-static inline VALUE cDataConverter_set_size_type(
+static inline VALUE cDataConverter_set_size_state(
     VALUE self,
     VALUE position,
     VALUE parent,
@@ -414,14 +380,9 @@ static inline VALUE cDataConverter_set_size_type(
   return Qnil;
 }
 
-/*  def __unset_size_type
-      @__parent = nil
-      @__index = nil
-      @__position = nil
-      @__cur_position = nil
-    end */
+static ID id___unset_size_state;
 
-static inline VALUE cDataConverter_unset_size_type(VALUE self) {
+static inline VALUE cDataConverter_unset_size_state(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__parent = Qnil;
@@ -431,16 +392,9 @@ static inline VALUE cDataConverter_unset_size_type(VALUE self) {
   return Qnil;
 }
 
-/*  def __set_load_type(input, input_big, parent, index)
-      @__input_big = input_big
-      @__input = input
-      @__parent = parent
-      @__index = index
-      @__position = input.tell
-      @__cur_position = @__position
-    end */
+static ID id___set_load_state;
 
-static inline VALUE cDataConverter_set_load_type(
+static inline VALUE cDataConverter_set_load_state(
     VALUE self,
     VALUE input,
     VALUE input_big,
@@ -458,16 +412,9 @@ static inline VALUE cDataConverter_set_load_type(
   return Qnil;
 }
 
-/*  def __unset_load_type
-      @__input_big = nil
-      @__input = nil
-      @__parent = nil
-      @__index = nil
-      @__position = nil
-      @__cur_position = nil
-    end */
+static ID id___unset_load_state;
 
-static inline VALUE cDataConverter_unset_load_type(VALUE self) {
+static inline VALUE cDataConverter_unset_load_state(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__input = Qnil;
@@ -479,16 +426,9 @@ static inline VALUE cDataConverter_unset_load_type(VALUE self) {
   return Qnil;
 }
 
-/*  def __set_dump_type(output, output_big, parent, index)
-      @__output_big = output_big
-      @__output = output
-      @__parent = parent
-      @__index = index
-      @__position = output.tell
-      @__cur_position = @__position
-    end */
+static ID id___set_dump_state;
 
-static inline VALUE cDataConverter_set_dump_type(
+static inline VALUE cDataConverter_set_dump_state(
     VALUE self,
     VALUE output,
     VALUE output_big,
@@ -506,16 +446,9 @@ static inline VALUE cDataConverter_set_dump_type(
   return Qnil;
 }
 
-/*  def __unset_dump_type
-      @__output_big = nil
-      @__output = nil
-      @__parent = nil
-      @__index = nil
-      @__position = nil
-      @__cur_position = nil
-    end */
+static ID id___unset_dump_state;
 
-static inline VALUE cDataConverter_unset_dump_type(VALUE self) {
+static inline VALUE cDataConverter_unset_dump_state(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__output = Qnil;
@@ -1166,9 +1099,9 @@ static inline VALUE cDataConverter_shape_fields(VALUE self, VALUE kind) {
 }
 
 /* def __load(input, input_big, parent = nil, index = nil)
-      __set_load_type(input, input_big, parent, index)
+      __set_load_state(input, input_big, parent, index)
       __load_fields
-      __unset_load_type
+      __unset_load_state
       self
     end */
 
@@ -1180,16 +1113,16 @@ static inline VALUE cDataConverter_load(int argc, VALUE *argv, VALUE self) {
   VALUE parent;
   VALUE index;
   rb_scan_args(argc, argv, "22", &input, &input_big, &parent, &index);
-  cDataConverter_set_load_type(self, input, input_big, parent, index);
+  rb_funcall(self, id___set_load_state, 4, input, input_big, parent, index);
   rb_funcall(self, id___load_fields, 0);
-  cDataConverter_unset_load_type(self);
+  rb_funcall(self, id___unset_load_state, 0);
   return self;
 }
 
 /* def __dump(output, output_big, parent = nil, index = nil)
-      __set_dump_type(output, output_big, parent, index)
+      __set_dump_state(output, output_big, parent, index)
       __dump_fields
-      __unset_dump_type
+      __unset_dump_state
       self
     end */
 
@@ -1201,16 +1134,16 @@ static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
   VALUE parent;
   VALUE index;
   rb_scan_args(argc, argv, "22", &output, &output_big, &parent, &index);
-  cDataConverter_set_dump_type(self, output, output_big, parent, index);
+  rb_funcall(self, id___set_dump_state, 4, output, output_big, parent, index);
   rb_funcall(self, id___dump_fields, 0);
-  cDataConverter_unset_dump_type(self);
+  rb_funcall(self, id___unset_dump_state, 0);
   return self;
 }
 
 /*  def __convert(input, output, input_big, output_big, parent = nil, index = nil)
-      __set_convert_type(input, output, input_big, output_big, parent, index)
+      __set_convert_state(input, output, input_big, output_big, parent, index)
       __convert_fields
-      __unset_convert_type
+      __unset_convert_state
       self
     end */
 
@@ -1224,16 +1157,16 @@ static inline VALUE cDataConverter_convert(int argc, VALUE *argv, VALUE self) {
   VALUE parent;
   VALUE index;
   rb_scan_args(argc, argv, "42", &input, &output, &input_big, &output_big, &parent, &index);
-  cDataConverter_set_convert_type(self, input, output, input_big, output_big, parent, index);
+  rb_funcall(self, id___set_convert_state, 6, input, output, input_big, output_big, parent, index);
   rb_funcall(self, id___convert_fields, 0);
-  cDataConverter_unset_convert_type(self);
+  rb_funcall(self, id___unset_convert_state, 0);
   return self;
 }
 
 /*  def __shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
-      __set_size_type(previous_offset, parent, index)
+      __set_size_state(previous_offset, parent, index)
       members = __shape_fields(kind)
-      __unset_size_type
+      __unset_size_state
       return nil if members.values.compact.size <= 0
       kind::new(members)
     end */
@@ -1250,25 +1183,15 @@ static inline VALUE cDataConverter_shape(int argc, VALUE *argv, VALUE self) {
     previous_offset = INT2FIX(0);
   if (NIL_P(kind))
     kind = cDataShape;
-  cDataConverter_set_size_type(self, previous_offset, parent, index);
+  rb_funcall(self, id___set_size_state, 3, previous_offset, parent, index);
   VALUE members = rb_funcall(self, id___shape_fields, 1, kind);
-  cDataConverter_unset_size_type(self);
+  rb_funcall(self, id___unset_size_state, 0);
   if (RARRAY_LEN(rb_funcall(rb_funcall(members, rb_intern("values"), 0), rb_intern("compact"), 0)) <= 0)
     return Qnil;
   return rb_class_new_instance(1, &members, kind);
 }
 
-/*  def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
-      if length
-        length.times.collect {
-          h = self::new
-          h.__load(input, input_big, parent, index)
-        }
-      else
-        h = self::new
-        h.__load(input, input_big, parent, index)
-      end
-    end */
+/* */
 
 static inline VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self) {
   VALUE input;
@@ -1296,17 +1219,6 @@ static inline VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self)
   return res;
 }
 
-/*  def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
-      if length
-        length.times.each { |i|
-          value[i].__dump(output, output_big, parent, index)
-        }
-        value
-      else
-        value.__dump(output, output_big, parent, index)
-      end
-    end */
-
 static inline VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self) {
   VALUE value;
   VALUE output;
@@ -1325,18 +1237,6 @@ static inline VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self)
     rb_funcall(value, id___dump, 4, output, output_big, parent, index);
   return value;
 }
-
-/*  def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
-      if length
-        length.times.collect {
-          h = self::new
-          h.__convert(input, output, input_big, output_big, parent, index)
-        }
-      else
-        h = self::new
-        h.__convert(input, output, input_big, output_big, parent, index)
-      end
-    end */
 
 static inline VALUE cDataConverter_singl_convert(int argc, VALUE *argv, VALUE self) {
   VALUE input;
@@ -1366,16 +1266,6 @@ static inline VALUE cDataConverter_singl_convert(int argc, VALUE *argv, VALUE se
   }
   return res;
 }
-
-/*  def self.shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
-      if length
-        kind::new(length.times.collect { |i|
-          value[i].__shape(previous_offset, parent, index, kind)
-        })
-      else
-        value.__shape(previous_offset, parent, index, kind)
-      end
-    end */
 
 static inline VALUE cDataConverter_singl_shape(int argc, VALUE *argv, VALUE self) {
   VALUE value;
@@ -1407,18 +1297,26 @@ static void define_cDataConverter() {
   id_fields = rb_intern("@fields");
   id_instance_exec = rb_intern("instance_exec");
 
+  id___set_load_state = rb_intern("__set_load_state");
+  id___unset_load_state = rb_intern("__unset_load_state");
   id___load_fields = rb_intern("__load_fields");
   id_load = rb_intern("load");
   id___load = rb_intern("__load");
 
+  id___set_dump_state = rb_intern("__set_dump_state");
+  id___unset_dump_state = rb_intern("__unset_dump_state");
   id___dump_fields = rb_intern("__dump_fields");
   id_dump = rb_intern("dump");
   id___dump = rb_intern("__dump");
 
+  id___set_convert_state = rb_intern("__set_convert_state");
+  id___unset_convert_state = rb_intern("__unset_convert_state");
   id___convert_fields = rb_intern("__convert_fields");
   id_convert = rb_intern("convert");
   id___convert = rb_intern("__convert");
 
+  id___set_size_state = rb_intern("__set_size_state");
+  id___unset_size_state = rb_intern("__unset_size_state");
   id___shape_fields = rb_intern("__shape_fields");
   id_shape = rb_intern("shape");
   id___shape = rb_intern("__shape");
@@ -1427,22 +1325,165 @@ static void define_cDataConverter() {
   rb_define_alloc_func(cDataConverter, cDataConverter_alloc);
   rb_define_method(cDataConverter, "initialize", cDataConverter_initialize, 0);
   rb_define_method(cDataConverter, "__parent", cDataConverter_parent, 0);
+  rb_define_method(cDataConverter, "__parent=", cDataConverter_set_parent, 1);
   rb_define_method(cDataConverter, "__index", cDataConverter_index, 0);
+  rb_define_method(cDataConverter, "__index=", cDataConverter_set_index, 1);
   rb_define_method(cDataConverter, "__iterator", cDataConverter_iterator, 0);
+  rb_define_method(cDataConverter, "__iterator=", cDataConverter_set_iterator, 1);
   rb_define_method(cDataConverter, "__position", cDataConverter_position, 0);
+  rb_define_method(cDataConverter, "__position=", cDataConverter_set_position, 1);
+  rb_define_method(cDataConverter, "__cur_position", cDataConverter_cur_position, 0);
+  rb_define_method(cDataConverter, "__cur_position=", cDataConverter_set_cur_position, 1);
   rb_define_method(cDataConverter, "__input", cDataConverter_input, 0);
+  rb_define_method(cDataConverter, "__input=", cDataConverter_set_input, 1);
   rb_define_method(cDataConverter, "__output", cDataConverter_output, 0);
+  rb_define_method(cDataConverter, "__output=", cDataConverter_set_output, 1);
   rb_define_method(cDataConverter, "__input_big", cDataConverter_input_big, 0);
+  rb_define_method(cDataConverter, "__input_big=", cDataConverter_set_input_big, 1);
   rb_define_method(cDataConverter, "__output_big", cDataConverter_output_big, 0);
+  rb_define_method(cDataConverter, "__output_big=", cDataConverter_set_output_big, 1);
 
-  rb_define_method(cDataConverter, "__set_convert_type", cDataConverter_set_convert_type, 6);
-  rb_define_method(cDataConverter, "__unset_convert_type", cDataConverter_unset_convert_type, 0);
-  rb_define_method(cDataConverter, "__set_size_type", cDataConverter_set_size_type, 3);
-  rb_define_method(cDataConverter, "__unset_size_type", cDataConverter_unset_size_type, 0);
-  rb_define_method(cDataConverter, "__set_load_type", cDataConverter_set_load_type, 4);
-  rb_define_method(cDataConverter, "__unset_load_type", cDataConverter_unset_load_type, 0);
-  rb_define_method(cDataConverter, "__set_dump_type", cDataConverter_set_dump_type, 4);
-  rb_define_method(cDataConverter, "__unset_dump_type", cDataConverter_unset_dump_type, 0);
+  /**
+   * @overload __set_convert_state(input, output, input_big, output_big, parent, index)
+   *   Set attributes for conversion
+   *   @param input [IO] the stream to read data from
+   *   @param output [IO] the stream to write data to
+   *   @param input_big [Boolean] str endianness of +input+
+   *   @param output_big [Boolean] str endianness of +output+
+   *   @param parent [nil,DataConverter] the parent if it exists, nil otherwise
+   *   @param index [nil,Integer] the index if the structure is repeated, nil otherwise
+   *   @return [nil]
+   *   @example
+   *     # Orignal Ruby implementation
+   *     def __set_convert_state(input, output, input_big, output_big, parent, index)
+   *       __input_big = input_big
+   *       __output_big = output_big
+   *       __input = input
+   *       __output = output
+   *       __parent = parent
+   *       __index = index
+   *       __position = input.tell
+   *       __cur_position = __position
+   *     end
+   */
+  rb_define_method(cDataConverter, "__set_convert_state", cDataConverter_set_convert_state, 6);
+  /**
+   * Unset attributes after conversion.
+   * @return [nil]
+   * @example
+   *   # Orignal Ruby implementation
+   *   def __unset_convert_state
+   *     __input_big = nil
+   *     __output_big = nil
+   *     __input = nil
+   *     __output = nil
+   *     __parent = nil
+   *     __index = nil
+   *     __position = nil
+   *     __cur_position = nil
+   *   end
+   */
+  rb_define_method(cDataConverter, "__unset_convert_state", cDataConverter_unset_convert_state, 0);
+  /**
+   * @overload __set_size_state(position, parent, index)
+   *   Set attributes for computing size or shape
+   *   @param position [Integer] The position of the field
+   *   @param parent [nil,DataConverter] the parent if it exists, nil otherwise
+   *   @param index [nil,Integer] the index if the structure is repeated, nil otherwise
+   *   @return [nil]
+   *   @example
+   *     # Orignal Ruby implementation
+   *     def __set_size_state(position, parent, index)
+   *       __parent = parent
+   *       __index = index
+   *       __position = position
+   *       __cur_position = __position
+   *     end
+   */
+  rb_define_method(cDataConverter, "__set_size_state", cDataConverter_set_size_state, 3);
+  /**
+   * Unset attributes after size or shape computation
+   * @return [nil]
+   * @example
+   *   # Orignal Ruby implementation
+   *   def __unset_size_state
+   *     __parent = nil
+   *     __index = nil
+   *     __position = nil
+   *     __cur_position = nil
+   *   end
+   */
+  rb_define_method(cDataConverter, "__unset_size_state", cDataConverter_unset_size_state, 0);
+  /**
+   * @overload __set_load_state(input, input_big, parent, index)
+   *   Set attributes for loading
+   *   @param input [IO] the stream to read data from
+   *   @param input_big [Boolean] str endianness of +input+
+   *   @param parent [nil,DataConverter] the parent if it exists, nil otherwise
+   *   @param index [nil,Integer] the index if the structure is repeated, nil otherwise
+   *   @return [nil]
+   *   @example
+   *     # Orignal Ruby implementation
+   *     def __set_load_state(input, input_big, parent, index)
+   *       __input_big = input_big
+   *       __input = input
+   *       __parent = parent
+   *       __index = index
+   *       __position = input.tell
+   *       __cur_position = __position
+   *     end
+   */
+  rb_define_method(cDataConverter, "__set_load_state", cDataConverter_set_load_state, 4);
+  /**
+   * Unset attributes after loading
+   * @return [nil]
+   * @example
+   *   # Orignal Ruby implementation
+   *   def __unset_load_state
+   *     __input_big = nil
+   *     __input = nil
+   *     __parent = nil
+   *     __index = nil
+   *     __position = nil
+   *     __cur_position = nil
+   *   end
+   */
+  rb_define_method(cDataConverter, "__unset_load_state", cDataConverter_unset_load_state, 0);
+  /**
+   * @overload __set_dump_state(output, output_big, parent, index)
+   *   Set attributes for dumping
+   *   @param output [IO] the stream to write data to
+   *   @param output_big [Boolean] str endianness of +output+
+   *   @param parent [nil,DataConverter] the parent if it exists, nil otherwise
+   *   @param index [nil,Integer] the index if the structure is repeated, nil otherwise
+   *   @return [nil]
+   *   @example
+   *     # Orignal Ruby implementation
+   *     def __set_dump_state(output, output_big, parent, index)
+   *       __output_big = output_big
+   *       __output = output
+   *       __parent = parent
+   *       __index = index
+   *       __position = output.tell
+   *       __cur_position = __position
+   *     end
+   */
+  rb_define_method(cDataConverter, "__set_dump_state", cDataConverter_set_dump_state, 4);
+  /**
+   * Unset attributes after dumping
+   * @return [nil]
+   * @example
+   *   # Orignal Ruby implementation
+   *   def __unset_dump_state
+   *     __output_big = nil
+   *     __output = nil
+   *     __parent = nil
+   *     __index = nil
+   *     __position = nil
+   *     __cur_position = nil
+   *   end
+   */
+  rb_define_method(cDataConverter, "__unset_dump_state", cDataConverter_unset_dump_state, 0);
 
   rb_define_method(cDataConverter, "__decode_expression", cDataConverter_decode_expression, 1);
   rb_define_method(cDataConverter, "__decode_seek_offset", cDataConverter_decode_seek_offset, 3);
@@ -1470,9 +1511,100 @@ static void define_cDataConverter() {
   rb_define_method(cDataConverter, "__convert", cDataConverter_convert, -1);
   rb_define_method(cDataConverter, "__shape", cDataConverter_shape, -1);
 
+  /**
+   * @overload load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+   *   Load a structure from +input+.
+   *   @param input [IO] the stream to load the structure from
+   *   @param input_big [Boolean] the endianness of +input+
+   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
+   *   @param length [Integer] if given, the length of the vector of structure
+   *   @return [DataConverter,Array<DataConverter>] a new strcuture, or
+   *     an array of structures if length was specified
+   *   @example
+   *     # Original Ruby implementation
+   *     def self.load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+   *       if length
+   *         length.times.collect {
+   *           self.new.__load(input, input_big, parent, index)
+   *         }
+   *       else
+   *         self.new.__load(input, input_big, parent, index)
+   *       end
+   *     end
+   */
   rb_define_singleton_method(cDataConverter, "load", cDataConverter_singl_load, -1);
+  /**
+   * @overload dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+   *   Dump a structure to +output+.
+   *   @param value [DataConverter,Array<DataConverter>] the value of structure to dump
+   *   @param output [IO] the stream to dump the structure to
+   *   @param output_big [Boolean] the endianness of +output+
+   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
+   *   @param length [Integer] if given, the length of the vector of structure
+   *   @return [DataConverter,Array<DataConverter>] +value+
+   *   @example
+   *     # Original Ruby implementation
+   *     def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+   *       if length
+   *         length.times.each { |i|
+   *           value[i].__dump(output, output_big, parent, index)
+   *         }
+   *         value
+   *       else
+   *         value.__dump(output, output_big, parent, index)
+   *       end
+   *     end   */
   rb_define_singleton_method(cDataConverter, "dump", cDataConverter_singl_dump, -1);
+  /**
+   * @overload convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
+   *   Convert a structure by loading it from +input+ and
+   *   dumping it to +output+. Returns the loaded structure.
+   *   @param input [IO] the stream to load the structure from
+   *   @param output [IO] the stream to dump the structure to
+   *   @param input_big [Boolean] the endianness of +input+
+   *   @param output_big [Boolean] the endianness of +output+
+   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
+   *   @param length [Integer] if given, the length of the vector of structure
+   *   @return [DataConverter,Array<DataConverter>] a new strcuture, or
+   *     an array of structures if length was specified
+   *   @example
+   *     # Original Ruby implementation
+   *     def self.convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
+   *       if length
+   *         length.times.collect {
+   *           self.new.__convert(input, output, input_big, output_big, parent, index)
+   *         }
+   *       else
+   *         self.new.__convert(input, output, input_big, output_big, parent, index)
+   *       end
+   *     end
+   */
   rb_define_singleton_method(cDataConverter, "convert", cDataConverter_singl_convert, -1);
+  /**
+   * @overload shape(value, offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
+   *   Return the shape of the value.
+   *   @param value [DataConverter,Array<DataConverter>] the value of structure to get the shape of
+   *   @param offset [Integer] the base position of the field
+   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
+   *   @param kind [Class] the kind of structure to create
+   *   @param length [Integer] if given, the length of the vector of structure
+   *   @return [kind] the the shape of the structure
+   *   @example
+   *     # Original Ruby implementation
+   *     def self.shape(value, previous_offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
+   *       if length
+   *         kind.new(length.times.collect { |i|
+   *           value[i].__shape(previous_offset, parent, index, kind)
+   *         })
+   *       else
+   *         value.__shape(previous_offset, parent, index, kind)
+   *       end
+   *     end
+   */
   rb_define_singleton_method(cDataConverter, "shape", cDataConverter_singl_shape, -1);
 }
 
@@ -1526,6 +1658,34 @@ static VALUE half_to_string_p(VALUE self, VALUE number, VALUE pack_str) {
   return rb_funcall(arr, rb_intern("pack"), 1, pack_str);
 }
 
+static void define_cField() {
+  VALUE ary = rb_ary_new_capa(4);
+  id_gsub = rb_intern("gsub");
+
+  rb_str_dot_dot = rb_str_new_cstr("..");
+  rb_ary_store(ary, 0, rb_str_dot_dot);
+  rb_str___parent = rb_str_new_cstr("__parent");
+  rb_ary_store(ary, 1, rb_str___parent);
+  rb_str_backslash = rb_str_new_cstr("\\");
+  rb_ary_store(ary, 2, rb_str_backslash);
+  rb_str_dot = rb_str_new_cstr(".");
+  rb_ary_store(ary, 3, rb_str_dot);
+
+  cField = rb_define_class_under(cDataConverter, "Field", rb_cObject);
+  rb_define_alloc_func(cField, cField_alloc);
+  rb_const_set(cField, rb_intern("STRINGS"), ary);
+  rb_define_method(cField, "initialize", cField_initialize, 9);
+  rb_define_method(cField, "name", cField_name, 0);
+  rb_define_method(cField, "type", cField_get_type, 0);
+  rb_define_method(cField, "length", cField_length, 0);
+  rb_define_method(cField, "count", cField_count, 0);
+  rb_define_method(cField, "offset", cField_offset, 0);
+  rb_define_method(cField, "sequence?", cField_sequence, 0);
+  rb_define_method(cField, "condition", cField_condition, 0);
+  rb_define_method(cField, "relative_offset?", cField_relative_offset, 0);
+  rb_define_method(cField, "align", cField_align, 0);
+}
+
 void Init_libbin_c() {
   mLibBin = rb_define_module("LibBin");
   rb_define_module_function(mLibBin, "half_from_string", half_from_string_p, 2);
@@ -1533,7 +1693,7 @@ void Init_libbin_c() {
   rb_define_module_function(mLibBin, "pghalf_from_string", pghalf_from_string_p, 2);
   rb_define_module_function(mLibBin, "pghalf_to_string", pghalf_to_string_p, 2);
   cDataShape = rb_define_class_under(mLibBin, "DataShape", rb_cObject);
-  define_cField();
   define_cDataConverter();
+  define_cField();
   define_cScalar();
 }

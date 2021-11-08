@@ -79,9 +79,58 @@ module LibBin
 
   end
 
-  # This class is used to describe a binary data structure
+  # @abstract This class is used to describe a binary data structure
   # composed of different fields.
   class DataConverter
+
+    # @!parse
+    #   class Field
+    #     attr_reader :name
+    #     attr_reader :type
+    #     attr_reader :length
+    #     attr_reader :count
+    #     attr_reader :offset
+    #     attr_reader :condition
+    #     attr_reader :align
+    #
+    #     # @method initialize(name, type, length, count, offset, sequence, condition, relative_offset, align)
+    #     # @param name [Symbol, String] the name of the field.
+    #     # @param type [Class, String, Proc] the type of the field, as a Class, or
+    #     #   as a String or Proc that will be evaluated in the context of the
+    #     #   {DataConverter} instance.
+    #     # @param length [Integer, String, Proc] if given, consider the field a
+    #     #   vector of the type. The length is either a constant Integer of a
+    #     #   String or Proc that will be evaluated in the context of the
+    #     #   {DataConverter} instance.
+    #     # @param count [Integer, String, Proc] if given, consider the field is
+    #     #   repeated count times. The count is either a constant Integer of a
+    #     #   String or Proc that will be evaluated in the context of the
+    #     #   {DataConverter} instance.
+    #     # @param offset [integer, String, Proc] if given, the absolute offset in
+    #     #   the file, or the offset from the parent position, where the field can
+    #     #   be found. See relative offset. The offset is either a constant
+    #     #   Integer of a String or Proc that will be evaluated in the context
+    #     #   of the {DataConverter} instance.
+    #     # @param sequence [Boolean] if true, +type+, +length+, +offset+, and
+    #     #   +condition+ are evaluated for each repetition.
+    #     # @param condition [String, Proc] if given, the field, or repetition of the
+    #     #   field can be conditionally present. The condition will be evaluated in
+    #     #   the context of the {DataConverter} instance.
+    #     # @param relative_offset [Boolean] consider the +offset+ relative to the field
+    #     #   +parent+.
+    #     # @param align [Integer] if given, align the field. If given as an
+    #     #   Integer it must be a power of 2. Else the field is aligned to the
+    #     #   field's type preferred alignment
+    #     # @return [Field] new Field
+    #
+    #     # @method relative_offset?
+    #     # Returns +true+ if the field offset should be relative to its parent.
+    #     # @return [Boolean] field offset is relative
+    #
+    #     # @method sequence?
+    #     # Returns +true+ if the field is a sequence
+    #     # @return [Boolean] field is a sequence
+    #   end
 
     # Define a new field in the structure
     # @param name [Symbol, String] the name of the field.
@@ -101,13 +150,14 @@ module LibBin
     #   be found. See relative offset. The offset is either a constant
     #   Integer of a String or Proc that will be evaluated in the context
     #   of the {DataConverter} instance.
-    # @param sequence [Boolean] if true, +type+, `length`, `offset`, and
-    #   `condition` are evaluated for each repetition.
+    # @param sequence [Boolean] if true, +type+, +length+, +offset+, and
+    #   +condition+ are evaluated for each repetition.
     # @param condition [String, Proc] if given, the field, or repetition of the
     #   field can be conditionally present. The condition will be evaluated in
     #   the context of the {DataConverter} instance.
-    # @param relative_offset [Boolean] consider the `offset` relative.
-    # @param align [Boolean, integer] if given, align the field. If given as an
+    # @param relative_offset [Boolean] consider the +offset+ relative to the
+    #   field +parent+.
+    # @param align [Boolean,Integer] if given, align the field. If given as an
     #   Integer it must be a power of 2. Else the field is aligned to the
     #   field's type preferred alignment.
     # @return self
@@ -143,12 +193,8 @@ module LibBin
     end
 
     # @!parse
-    #   # Parent class for scalars
+    #   # @abstract Parent class for scalars
     #   class Scalar
-    #     # @method always_align
-    #     #   @scope class
-    #     #   Returns false as scalars are not required to be aligned.
-    #     #   @return [false] return false. 
     #   end
 
     # @!macro attach
@@ -243,6 +289,11 @@ EOF
     end
     private_class_method :define_scalar_constructor
 
+    def self.structure(&block)
+      Class.new(DataConverter, &block)
+    end
+
+    # @!group Scalars
     define_scalar_constructor "Int8", :int8, :int8_t, "A signed 8 bit integer"
     define_scalar_constructor "UInt8", :uint8, :uint8_t, "An unsigned 8 bit integer"
     define_scalar_constructor "Int16", :int16, :int16_t, "A signed 16 bit integer"
@@ -279,66 +330,6 @@ EOF
     # @!parse
     #   # A string type, can be NULL terminated or have an arbitrary length.
     #   class Str < Scalar
-    #     # @method align
-    #     #   @scope class
-    #     #   Returns the alignement of the underlying character type.
-    #     # @method size(value, offset = 0, parent = nil, index = nil, length = nil)
-    #     #   @scope class
-    #     #   Returns the size of a string.
-    #     #   @param value [Object] string to dump.
-    #     #   @param offset [Integer] ignored.
-    #     #   @param parent [DataConverter] ignored.
-    #     #   @param index [Integer] ignored.
-    #     #   @param length [Integer] if given the length of the vector. Else
-    #     #   the size of the string.
-    #     # @return [Integer] the size of the string or <tt>sizeof(char) * length</tt>.
-    #     # @method shape(value, offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
-    #     #   @scope class
-    #     #   Returns the shape of a string field
-    #     #   @param value [Object] ignored.
-    #     #   @param offset [Integer] start of the shape.
-    #     #   @param parent [DataConverter] ignored.
-    #     #   @param index [Integer] ignored.
-    #     #   @param kind [Class] shape class. Will be instantiated through
-    #     #     new with the +offset+ and <tt>offset + sizeof($3) * length - 1</tt>.
-    #     #   @param length [Integer] if given the length of the string to
-    #     #     consider. Else the length is the size of the string.
-    #     #   @return [kind] a new instance of +kind+
-    #     # @method load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
-    #     #   @scope class
-    #     #   Load a string field from +input+, and return it.
-    #     #   @param input [IO] the stream to load the field from.
-    #     #   @param input_big [Boolean] the endianness of +input+
-    #     #   @param parent [DataConverter] ignored.
-    #     #   @param index [Integer] ignored.
-    #     #   @param length [Integer] if given the length of the string. Else
-    #     #     the string is considered NULL terminated.
-    #     #   @return [String] the Ruby representation of the string.
-    #     # @method dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
-    #     #   @scope class
-    #     #   Dump a string field to +output+.
-    #     #   @param value [Numeric, Array<Numeric>] the Ruby representation
-    #     #     of the string.
-    #     #   @param output [IO] the stream to dump the field to.
-    #     #   @param output_big [Boolean] the endianness of +output+.
-    #     #   @param parent [DataConverter] ignored.
-    #     #   @param index [Integer] ignored.
-    #     #   @param length [Integer] if given the length of the string to dump. Else
-    #     #     the length is the size of the string.
-    #     #   @return [nil]
-    #     # @method convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
-    #     #   @scope class
-    #     #   Convert a string field by loading it from +input+ and
-    #     #   dumping it to +output+. Returns the loaded field.
-    #     #   @param input [IO] the stream to load the field from.
-    #     #   @param output [IO] the stream to dump the field to.
-    #     #   @param input_big [Boolean] the endianness of +input+
-    #     #   @param output_big [Boolean] the endianness of +output+.
-    #     #   @param parent [DataConverter] ignored.
-    #     #   @param index [Integer] ignored.
-    #     #   @param length [Integer] if given the length of the string to reqd. Else
-    #     #     the string is considered NULL terminated.
-    #     #   @return [String] the Ruby representation of the string.
     #   end
 
     # Create a new field of type {Str} and name +name+. See {field} for options.
@@ -354,7 +345,7 @@ EOF
       self
     end
 
-    # A parent class representing an enumeration that is loading integers as symbols.
+    # @abstract A parent class representing an enumeration that is loading integers as symbols.
     # Useer should inherit this base class.
     class Enum
       class << self
@@ -519,7 +510,7 @@ EOF
       self
     end
 
-    # A parent class that represent a bitfield that is
+    # @abstract A parent class that represent a bitfield that is
     # loading integers as an instance of itself.
     # User should inherit this base class.
     class Bitfield
@@ -531,7 +522,7 @@ EOF
         # Underlying type
         attr_reader :type
 
-        # Set the size and signedness of the underlying type 
+        # Set the size and signedness of the underlying type
         def set_type_size(sz, signed = false)
           tname = "#{signed ? "" : "U"}Int#{sz}"
           t = eval tname
@@ -738,10 +729,6 @@ EOF
       @fields.push(Field::new(name, klass, length, count, offset, sequence, condition, relative_offset, align))
       attr_accessor name
       self
-    end
-
-    def self.structure(&block)
-      Class.new(DataConverter, &block)
     end
 
   end

@@ -23,6 +23,21 @@ module LibBin
 
   class DataConverter
 
+    # @!parse
+    #   attr_accessor :__parent
+    #   attr_accessor :__index
+    #   attr_accessor :__iterator
+    #   attr_accessor :__position
+    #   attr_accessor :__cur_position
+    #   attr_accessor :__input
+    #   attr_accessor :__output
+    #   attr_accessor :__input_big
+    #   attr_accessor :__output_big
+    #
+    #   # @method __dump_fields
+    #   # Dump fields according to the internal state of +self+
+    #   # @return [DataConverter] self
+
     # @!visibility private
     def inspect
       to_s

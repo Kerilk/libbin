@@ -455,11 +455,77 @@ static VALUE cStr_convert(int argc, VALUE* argv, VALUE self) {
 
 static void define_cStr() {
   cStr = rb_define_class_under(cDataConverter, "Str", cScalar);
+  /**
+   * Returns the alignement of the underlying character type.
+   * @return [Integer]
+   */
   rb_define_singleton_method(cStr, "align", cStr_align, 0);
+  /**
+   * @overload size(value, offset = 0, parent = nil, index = nil, length = nil)
+   *   Returns the size of a string.
+   *   @param value [Object] string to dump.
+   *   @param offset [Integer] ignored.
+   *   @param parent [DataConverter] ignored.
+   *   @param index [Integer] ignored.
+   *   @param length [Integer] if given the length of the vector. Else
+   *   the size of the string.
+   *   @return [Integer] the size of the string or <tt>sizeof(char) * length</tt>.
+   */
   rb_define_singleton_method(cStr, "size", cStr_size, -1);
+  /**
+   * @overload shape(value, offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
+   *   Returns the shape of a string field
+   *   @param value [Object] ignored.
+   *   @param offset [Integer] start of the shape.
+   *   @param parent [DataConverter] ignored.
+   *   @param index [Integer] ignored.
+   *   @param kind [Class] shape class. Will be instantiated through
+   *     new with the +offset+ and <tt>offset + sizeof($3) * length - 1</tt>.
+   *   @param length [Integer] if given the length of the string to
+   *     consider. Else the length is the size of the string.
+   *   @return [kind] a new instance of +kind+
+   */
   rb_define_singleton_method(cStr, "shape", cStr_shape, -1);
+  /**
+   * @overload load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+   *   Load a string field from +input+, and return it.
+   *   @param input [IO] the stream to load the field from.
+   *   @param input_big [Boolean] the endianness of +input+
+   *   @param parent [DataConverter] ignored.
+   *   @param index [Integer] ignored.
+   *   @param length [Integer] if given the length of the string. Else
+   *     the string is considered NULL terminated.
+   *   @return [String] the Ruby representation of the string.
+   */
   rb_define_singleton_method(cStr, "load", cStr_load, -1);
+  /**
+   * @overload dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
+   *   Dump a string field to +output+.
+   *   @param value [Numeric, Array<Numeric>] the Ruby representation
+   *     of the string.
+   *   @param output [IO] the stream to dump the field to.
+   *   @param output_big [Boolean] the endianness of +output+.
+   *   @param parent [DataConverter] ignored.
+   *   @param index [Integer] ignored.
+   *   @param length [Integer] if given the length of the string to dump. Else
+   *     the length is the size of the string.
+   *   @return [nil]
+   */
   rb_define_singleton_method(cStr, "dump", cStr_dump, -1);
+  /**
+   * @overload convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
+   *   Convert a string field by loading it from +input+,
+   *   dumping it to +output+, and returning the loaded field.
+   *   @param input [IO] the stream to load the field from.
+   *   @param output [IO] the stream to dump the field to.
+   *   @param input_big [Boolean] the endianness of +input+
+   *   @param output_big [Boolean] the endianness of +output+.
+   *   @param parent [DataConverter] ignored.
+   *   @param index [Integer] ignored.
+   *   @param length [Integer] if given the length of the string to reqd. Else
+   *     the string is considered NULL terminated.
+   *   @return [String] the Ruby representation of the string.
+   */
   rb_define_singleton_method(cStr, "convert", cStr_convert, -1);
 }
 
@@ -467,6 +533,10 @@ void define_cScalar() {
   id_read = rb_intern("read");
   id_write = rb_intern("write");
   cScalar = rb_define_class_under(cDataConverter, "Scalar", rb_cObject);
+  /**
+   * Returns false as scalars are not required to be aligned.
+   * @return [false] return false.
+   */
   rb_define_singleton_method(cScalar, "always_align", cScalar_always_align, 0);
   MAKE_CALL_DEFINES(Half);
   MAKE_CALL_DEFINES(PGHalf);
