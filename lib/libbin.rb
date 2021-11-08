@@ -5,19 +5,19 @@ require_relative 'libbin/data_types'
 module LibBin
 
   BIG_ARCHITECTURE = [0x12345678].pack("i") == "\x12\x34\x56\x78"
-  @__big = nil
-  @__output = $stderr
+  @big = nil
+  @output = $stderr
 
   class << self
-    attr_accessor :__output
+    attr_accessor :output
   end
 
   # Returns true the default endianness is big
   def self.default_big?
-    if @__big.nil?
+    if @big.nil?
       BIG_ARCHITECTURE
     else
-      @__big
+      @big
     end
   end
 
@@ -26,13 +26,19 @@ module LibBin
     # @!parse
     #   attr_accessor :__parent
     #   attr_accessor :__index
-    #   attr_accessor :__iterator
     #   attr_accessor :__position
     #   attr_accessor :__cur_position
     #   attr_accessor :__input
     #   attr_accessor :__output
     #   attr_accessor :__input_big
     #   attr_accessor :__output_big
+    #
+    #   attr_accessor :__offset
+    #   attr_accessor :__condition
+    #   attr_accessor :__type
+    #   attr_accessor :__length
+    #   attr_accessor :__count
+    #   attr_accessor :__iterator
     #
     #   # @method __dump_fields
     #   # Dump fields according to the internal state of +self+
@@ -83,6 +89,7 @@ module LibBin
     class << self
       alias always_align= set_always_align
       attr_reader :always_align
+      attr_reader :fields
     end
 
     # Returns the size of a structure
@@ -97,6 +104,10 @@ module LibBin
       else
         value.__shape(offset, parent, index).size
       end
+    end
+
+    def __fields
+      return self.class.fields
     end
 
   end

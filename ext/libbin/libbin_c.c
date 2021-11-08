@@ -213,119 +213,48 @@ static VALUE cDataConverter_initialize(VALUE self) {
   return self;
 }
 
-static VALUE cDataConverter_parent(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__parent;
+#define STRUCT_STATE_GETTER(propname) cDataConverter_get_ ## propname
+#define STRUCT_STATE_SETTER(propname) cDataConverter_set_ ## propname
+
+#define CREATE_STRUCT_STATE_ACCESSORS(propname)                                       \
+static VALUE STRUCT_STATE_GETTER(propname) (VALUE self) {                             \
+  struct cDataConverter_data *data;                                                   \
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data); \
+  return data->__ ## propname ;                                                       \
+}                                                                                     \
+static VALUE STRUCT_STATE_SETTER(propname) (VALUE self, VALUE propname) {             \
+  struct cDataConverter_data *data;                                                   \
+  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data); \
+  return data->__ ## propname = propname;                                             \
 }
 
-static VALUE cDataConverter_set_parent(VALUE self, VALUE parent) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__parent = parent;
-}
+#define DEFINE_STRUCT_STATE_ACCESSORS(propname)                                           \
+do {                                                                                      \
+  rb_define_method(cDataConverter, "__" #propname, STRUCT_STATE_GETTER(propname), 0);     \
+  rb_define_method(cDataConverter, "__" #propname "=", STRUCT_STATE_SETTER(propname), 1); \
+} while(0)
 
-static VALUE cDataConverter_index(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__index;
-}
+CREATE_STRUCT_STATE_ACCESSORS(parent)
+CREATE_STRUCT_STATE_ACCESSORS(index)
+CREATE_STRUCT_STATE_ACCESSORS(position)
+CREATE_STRUCT_STATE_ACCESSORS(cur_position)
+CREATE_STRUCT_STATE_ACCESSORS(input)
+CREATE_STRUCT_STATE_ACCESSORS(output)
+CREATE_STRUCT_STATE_ACCESSORS(input_big)
+CREATE_STRUCT_STATE_ACCESSORS(output_big)
 
-static VALUE cDataConverter_set_index(VALUE self, VALUE index) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__index = index;
-}
-
-static VALUE cDataConverter_iterator(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__iterator;
-}
-
-static VALUE cDataConverter_set_iterator(VALUE self, VALUE iterator) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__iterator = iterator;
-}
-
-static VALUE cDataConverter_position(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__position;
-}
-
-static VALUE cDataConverter_set_position(VALUE self, VALUE position) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__position = position;
-}
-
-static VALUE cDataConverter_cur_position(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__cur_position;
-}
-
-static VALUE cDataConverter_set_cur_position(VALUE self, VALUE cur_position) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__cur_position = cur_position;
-}
-
-static VALUE cDataConverter_input(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__input;
-}
-
-static VALUE cDataConverter_set_input(VALUE self, VALUE input) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__input = input;
-}
-
-static VALUE cDataConverter_output(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__output;
-}
-
-static VALUE cDataConverter_set_output(VALUE self, VALUE output) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__output = output;
-}
-
-static VALUE cDataConverter_input_big(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__input_big;
-}
-
-static VALUE cDataConverter_set_input_big(VALUE self, VALUE input_big) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__input_big = input_big;
-}
-
-static VALUE cDataConverter_output_big(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__output_big;
-}
-
-static VALUE cDataConverter_set_output_big(VALUE self, VALUE output_big) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
-  return data->__output_big = output_big;
-}
+CREATE_STRUCT_STATE_ACCESSORS(offset)
+CREATE_STRUCT_STATE_ACCESSORS(condition)
+CREATE_STRUCT_STATE_ACCESSORS(type)
+CREATE_STRUCT_STATE_ACCESSORS(length)
+CREATE_STRUCT_STATE_ACCESSORS(count)
+CREATE_STRUCT_STATE_ACCESSORS(iterator)
 
 static ID id_tell;
 
 static ID id___set_convert_state;
 
-static inline VALUE cDataConverter_set_convert_state(
+static VALUE cDataConverter_set_convert_state(
     VALUE self,
     VALUE input,
     VALUE output,
@@ -349,7 +278,7 @@ static inline VALUE cDataConverter_set_convert_state(
 
 static ID id___unset_convert_state;
 
-static inline VALUE cDataConverter_unset_convert_state(VALUE self) {
+static VALUE cDataConverter_unset_convert_state(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__input = Qnil;
@@ -365,7 +294,7 @@ static inline VALUE cDataConverter_unset_convert_state(VALUE self) {
 
 static ID id___set_size_state;
 
-static inline VALUE cDataConverter_set_size_state(
+static VALUE cDataConverter_set_size_state(
     VALUE self,
     VALUE position,
     VALUE parent,
@@ -382,7 +311,7 @@ static inline VALUE cDataConverter_set_size_state(
 
 static ID id___unset_size_state;
 
-static inline VALUE cDataConverter_unset_size_state(VALUE self) {
+static VALUE cDataConverter_unset_size_state(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__parent = Qnil;
@@ -394,7 +323,7 @@ static inline VALUE cDataConverter_unset_size_state(VALUE self) {
 
 static ID id___set_load_state;
 
-static inline VALUE cDataConverter_set_load_state(
+static VALUE cDataConverter_set_load_state(
     VALUE self,
     VALUE input,
     VALUE input_big,
@@ -414,7 +343,7 @@ static inline VALUE cDataConverter_set_load_state(
 
 static ID id___unset_load_state;
 
-static inline VALUE cDataConverter_unset_load_state(VALUE self) {
+static VALUE cDataConverter_unset_load_state(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__input = Qnil;
@@ -428,7 +357,7 @@ static inline VALUE cDataConverter_unset_load_state(VALUE self) {
 
 static ID id___set_dump_state;
 
-static inline VALUE cDataConverter_set_dump_state(
+static VALUE cDataConverter_set_dump_state(
     VALUE self,
     VALUE output,
     VALUE output_big,
@@ -448,7 +377,7 @@ static inline VALUE cDataConverter_set_dump_state(
 
 static ID id___unset_dump_state;
 
-static inline VALUE cDataConverter_unset_dump_state(VALUE self) {
+static VALUE cDataConverter_unset_dump_state(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
   data->__output = Qnil;
@@ -460,15 +389,6 @@ static inline VALUE cDataConverter_unset_dump_state(VALUE self) {
   return Qnil;
 }
 
-/*  def __decode_expression(sym)
-      case sym
-      when Proc
-        return sym.call
-      else
-        return sym
-      end
-    end */
-
 static ID id_instance_exec;
 
 static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expression) {
@@ -478,53 +398,38 @@ static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expressio
     return expression;
 }
 
-/*  def __decode_seek_offset(offset, relative_offset)
-      return nil unless offset
-      offset = __decode_expression(offset)
-      return false if offset == 0x0
-      offset += @__position if relative_offset
-      @__cur_position = offset
-      @__input.seek(offset) if @__input
-      @__output.seek(offset) if @__output
-      offset
-    end */
-
 ID id_seek;
 
 static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset, VALUE align) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  ptrdiff_t cur_pos;
   if (!RTEST(offset)) {
-    if (RTEST(align)) {
-      ptrdiff_t cur_pos;
-      if (RTEST(data->__input))
-        cur_pos = NUM2LL(rb_funcall(data->__input, id_tell, 0));
-      else
-        cur_pos = NUM2LL(rb_funcall(data->__output, id_tell, 0));
-      ptrdiff_t al = NUM2LL(align);
-      ptrdiff_t pad;
-      if ((pad = ((-cur_pos) & (al - 1))) != 0) {
-        cur_pos += pad;
-        data->__cur_position = LL2NUM(cur_pos);
-        if (RTEST(data->__input))
-          rb_funcall(data->__input, id_seek, 1, data->__cur_position);
-        if (RTEST(data->__output))
-          rb_funcall(data->__output, id_seek, 1, data->__cur_position);
-      }
-    }
-    return Qnil;
-  }
-  ptrdiff_t off = NUM2LL(cDataConverter_decode_expression(self, offset));
-  if (off == 0)
-    return Qfalse;
-  if (RTEST(relative_offset))
-    off += NUM2LL(data->__position);
-  if (RTEST(align)) {
+    if (!RTEST(align))
+      return Qnil;
+    if (RTEST(data->__input))
+      cur_pos = NUM2LL(rb_funcall(data->__input, id_tell, 0));
+    else if (RTEST(data->__output))
+      cur_pos = NUM2LL(rb_funcall(data->__output, id_tell, 0));
+    else
+      cur_pos = NUM2LL(data->__cur_position);
     ptrdiff_t al = NUM2LL(align);
     ptrdiff_t pad;
-    off += (-off) & (al - 1);
+    if ((pad = ((-cur_pos) & (al - 1))) == 0)
+      return Qnil;
+    cur_pos += pad;
+  } else {
+    cur_pos = NUM2LL(cDataConverter_decode_expression(self, offset));
+    if (cur_pos == 0)
+      return Qfalse;
+    if (RTEST(relative_offset))
+      cur_pos += NUM2LL(data->__position);
+    if (RTEST(align)) {
+      ptrdiff_t al = NUM2LL(align);
+      cur_pos += (-cur_pos) & (al - 1);
+    }
   }
-  data->__cur_position = LL2NUM(off);
+  data->__cur_position = LL2NUM(cur_pos);
   if (RTEST(data->__input))
     rb_funcall(data->__input, id_seek, 1, data->__cur_position);
   if (RTEST(data->__output))
@@ -532,21 +437,11 @@ static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, 
   return data->__cur_position;
 }
 
-/*  def __decode_condition(condition)
-      return true unless condition
-      __decode_expression(condition)
-    end */
-
 static inline VALUE cDataConverter_decode_condition(VALUE self, VALUE condition) {
   if (!RTEST(condition))
     return Qtrue;
   return cDataConverter_decode_expression(self, condition);
 }
-
-/*  def __decode_count(count)
-      return 1 unless count
-      __decode_expression(count)
-    end */
 
 static inline VALUE cDataConverter_decode_count(VALUE self, VALUE count) {
   if (!RTEST(count))
@@ -554,40 +449,15 @@ static inline VALUE cDataConverter_decode_count(VALUE self, VALUE count) {
   return cDataConverter_decode_expression(self, count);
 }
 
-/*  def __decode_type(type)
-      __decode_expression(type)
-    end */
-
 static inline VALUE cDataConverter_decode_type(VALUE self, VALUE type) {
   return cDataConverter_decode_expression(self, type);
 }
-
-/*  def __decode_length(length)
-      __decode_expression(length)
-    end */
 
 static inline VALUE cDataConverter_decode_length(VALUE self, VALUE length) {
   if (NIL_P(length))
     return Qnil;
   return cDataConverter_decode_expression(self, length);
 }
-
-/*  def __decode_static_conditions(field)
-      @__offset = nil
-      @__condition = nil
-      @__type = nil
-      @__length = nil
-      @__count = nil
-      unless field.sequence?
-        @__offset = __decode_seek_offset(field.offset, field.relative_offset?, field.align)
-        throw :ignored, nil if @__offset == false
-        @__condition = __decode_condition(field.condition)
-        throw :ignored, nil unless @__condition
-        @__type = __decode_type(field.type)
-        @__length = __decode_length(field.length)
-      end
-      @__count = __decode_count(field.count)
-    end */
 
 static inline VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
   struct cDataConverter_data *data;
@@ -613,21 +483,6 @@ static inline VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE fi
   return Qtrue;
 }
 
-/*  def __decode_dynamic_conditions(field)
-      return true unless field.sequence?
-      @__offset = nil
-      @__condition = nil
-      @__type = nil
-      @__length = nil
-      @__offset = __decode_seek_offset(field.offset, field.relative_offset?)
-      return false if @__offset == false
-      @__condition = __decode_condition(field.condition)
-      return false unless @__condition
-      @__type = __decode_type(field.type)
-      @__length = __decode_length(field.length)
-      return true
-    end */
-
 static inline VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE field) {
   struct cDataConverter_data *data;
   struct cField_data *field_data;
@@ -650,15 +505,6 @@ static inline VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE f
   return Qtrue;
 }
 
-/*  def __restore_context
-      @__iterator = nil
-      @__type = nil
-      @__length = nil
-      @__count = nil
-      @__offset = nil
-      @__condition = nil
-    end */
-
 static inline VALUE cDataConverter_restore_context(VALUE self) {
   struct cDataConverter_data *data;
   TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
@@ -671,22 +517,8 @@ static inline VALUE cDataConverter_restore_context(VALUE self) {
   return Qnil;
 }
 
-/*  def __convert_field(field)
-      __decode_static_conditions(field)
-      vs = @__count.times.collect do |it|
-        @__iterator = it
-        if __decode_dynamic_conditions(field)
-          @__type::convert(@__input, @__output, @__input_big, @__output_big, self, it, @__length)
-        else
-          nil
-        end
-      end
-      __restore_context
-      vs = vs.first unless field.count
-      vs
-    end */
-
 static ID id_convert;
+static ID id___convert_field;
 
 static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   VALUE res;
@@ -734,22 +566,8 @@ static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
   return res;
 }
 
-/*  def __load_field(field)
-      __decode_static_conditions(field)
-      vs = @__count.times.collect do |it|
-        @__iterator = it
-        if __decode_dynamic_conditions(field)
-          @__type::load(@__input, @__input_big, self, it, @__length)
-        else
-          nil
-        end
-      end
-      __restore_context
-      vs = vs.first unless field.count
-      vs
-    end */
-
 static ID id_load;
+static ID id___load_field;
 
 static inline VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   VALUE res;
@@ -792,19 +610,8 @@ static inline VALUE cDataConverter_load_field(VALUE self, VALUE field) {
   return res;
 }
 
-/*  def __dump_field(vs, field)
-      __decode_static_conditions(field)
-      vs = [vs] unless field.count
-      vs.each_with_index do |v, it|
-        @__iterator = it
-        if __decode_dynamic_conditions(field)
-          @__type::dump(v, @__output, @__output_big, self, it, @__length)
-        end
-      end
-      __restore_context
-    end */
-
 static ID id_dump;
+static ID id___dump_field;
 
 static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE field) {
   struct cDataConverter_data *data;
@@ -843,23 +650,8 @@ static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE fi
   return Qnil;
 }
 
-/*  def __shape_field(vs, kind, field)
-      __decode_static_conditions(field)
-      vs = [vs] unless field.count
-      vs = vs.each_with_index.collect do |v, it|
-        @__iterator = it
-        if __decode_dynamic_conditions(field)
-          sh = @__type::shape(v, @__cur_position, self, it, kind, @__length)
-          @__cur_position = sh.last + 1 if sh.last && sh.last >= 0
-          sh
-        end
-      end
-      __restore_context
-      vs = field.count ? kind.new(vs) : vs.first
-      vs
-    end */
-
 static ID id_shape;
+static ID id___shape_field;
 
 static inline VALUE cDataConverter_shape_field(
     VALUE self,
@@ -921,18 +713,6 @@ static inline VALUE cDataConverter_shape_field(
   return res;
 }
 
-/*  def __load_fields
-      self.class.instance_variable_get(:@fields).each { |field|
-        begin
-          send("#{field.name}=", __load_field(field))
-        rescue
-          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-          raise
-        end
-      }
-      self
-    end */
-
 static ID id_fields;
 
 struct fields_state {
@@ -946,8 +726,8 @@ static inline VALUE cDataConverter_fields_rescue(VALUE state_p, VALUE exception)
   if (NIL_P(state->field)) {
     struct cDataConverter_data *data;
     TypedData_Get_Struct(state->self, struct cDataConverter_data, &cDataConverter_type, data);
-    if (!NIL_P(rb_ivar_get(mLibBin, rb_intern("@__output"))))
-      rb_funcall(rb_ivar_get(mLibBin, rb_intern("@__output")), rb_intern("print"), 6,
+    if (!NIL_P(rb_funcall(mLibBin, rb_intern("output"), 0)))
+      rb_funcall(rb_funcall(mLibBin, rb_intern("output"), 0), rb_intern("print"), 6,
         rb_obj_class(state->self),
         rb_str_new_cstr(": could not load fields, index: "),
         data->__index,
@@ -957,8 +737,8 @@ static inline VALUE cDataConverter_fields_rescue(VALUE state_p, VALUE exception)
   } else {
     struct cField_data *field_data;
     TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
-    if (!NIL_P(rb_ivar_get(mLibBin, rb_intern("@__output"))))
-      rb_funcall(rb_ivar_get(mLibBin, rb_intern("@__output")), rb_intern("print"), 6,
+    if (!NIL_P(rb_funcall(mLibBin, rb_intern("output"), 0)))
+      rb_funcall(rb_funcall(mLibBin, rb_intern("output"), 0), rb_intern("print"), 6,
         rb_obj_class(state->self),
         rb_str_new_cstr(": "),
         field_data->name,
@@ -977,31 +757,19 @@ static inline VALUE cDataConverter_load_fields_wrapper(VALUE state_p) {
     state->field = rb_ary_entry(state->fields, i);
     struct cField_data *field_data;
     TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
-    rb_funcall(state->self, field_data->setter, 1, cDataConverter_load_field(state->self, state->field));
+    rb_funcall(state->self, field_data->setter, 1, rb_funcall(state->self, id___load_field, 1, state->field));
   }
   return state->self;
 }
 
 static ID id___load_fields;
 
-static inline VALUE cDataConverter_load_fields(VALUE self) {
+static VALUE cDataConverter_load_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
   rb_rescue(&cDataConverter_load_fields_wrapper, (VALUE)&state,
             &cDataConverter_fields_rescue, (VALUE)&state);
   return self;
 }
-
-/*  def __dump_fields
-      self.class.instance_variable_get(:@fields).each { |field|
-        begin
-          __dump_field(send(field.name), field)
-        rescue
-          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-          raise
-        end
-      }
-      self
-    end */
 
 static inline VALUE cDataConverter_dump_fields_wrapper(VALUE state_p) {
   struct fields_state *state = (struct fields_state *)state_p;
@@ -1010,31 +778,19 @@ static inline VALUE cDataConverter_dump_fields_wrapper(VALUE state_p) {
     state->field = rb_ary_entry(state->fields, i);
     struct cField_data *field_data;
     TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
-    cDataConverter_dump_field(state->self, rb_funcall(state->self, field_data->getter, 0), state->field);
+    rb_funcall(state->self, id___dump_field, 2, rb_funcall(state->self, field_data->getter, 0), state->field);
   }
   return state->self;
 }
 
 static ID id___dump_fields;
 
-static inline VALUE cDataConverter_dump_fields(VALUE self) {
+static VALUE cDataConverter_dump_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
   rb_rescue(&cDataConverter_dump_fields_wrapper, (VALUE)&state,
             &cDataConverter_fields_rescue, (VALUE)&state);
   return self;
 }
-
-/*  def __convert_fields
-      self.class.instance_variable_get(:@fields).each { |field|
-        begin
-          send("#{field.name}=", __convert_field(field))
-        rescue
-          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-          raise
-        end
-      }
-      self
-    end */
 
 static inline VALUE cDataConverter_convert_fields_wrapper(VALUE state_p) {
   struct fields_state *state = (struct fields_state *)state_p;
@@ -1043,32 +799,19 @@ static inline VALUE cDataConverter_convert_fields_wrapper(VALUE state_p) {
     state->field = rb_ary_entry(state->fields, i);
     struct cField_data *field_data;
     TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
-    rb_funcall(state->self, field_data->setter, 1, cDataConverter_convert_field(state->self, state->field));
+    rb_funcall(state->self, field_data->setter, 1, rb_funcall(state->self, id___convert_field, 1, state->field));
   }
   return state->self;
 }
 
 static ID id___convert_fields;
 
-static inline VALUE cDataConverter_convert_fields(VALUE self) {
+static VALUE cDataConverter_convert_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
   rb_rescue(&cDataConverter_convert_fields_wrapper, (VALUE)&state,
             &cDataConverter_fields_rescue, (VALUE)&state);
   return self;
 }
-
-/*  def __shape_fields
-      members = {}
-      self.class.instance_variable_get(:@fields).each { |field|
-        begin
-          members[field.name] = __shape_field(send(field.name), kind, field)
-        rescue
-          STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
-          raise
-        end
-      }
-      return members
-    end */
 
 struct shape_fields_state {
   VALUE self;
@@ -1085,25 +828,19 @@ static inline VALUE cDataConverter_shape_fields_wrapper(VALUE state_p) {
     state->field = rb_ary_entry(state->fields, i);
     struct cField_data *field_data;
     TypedData_Get_Struct(state->field, struct cField_data, &cField_type, field_data);
-    rb_hash_aset(members, ID2SYM(field_data->getter), cDataConverter_shape_field(state->self, rb_funcall(state->self, field_data->getter, 0), state->kind, state->field));
+    rb_hash_aset(members, ID2SYM(field_data->getter),
+        rb_funcall(state->self, id___shape_field, 3, rb_funcall(state->self, field_data->getter, 0), state->kind, state->field));
   }
   return members;
 }
 
 static ID id___shape_fields;
 
-static inline VALUE cDataConverter_shape_fields(VALUE self, VALUE kind) {
+static VALUE cDataConverter_shape_fields(VALUE self, VALUE kind) {
   struct shape_fields_state state = {self, Qnil, Qnil, kind};
   return rb_rescue(&cDataConverter_shape_fields_wrapper, (VALUE)&state,
                    &cDataConverter_fields_rescue, (VALUE)&state);
 }
-
-/* def __load(input, input_big, parent = nil, index = nil)
-      __set_load_state(input, input_big, parent, index)
-      __load_fields
-      __unset_load_state
-      self
-    end */
 
 static ID id___load;
 
@@ -1119,13 +856,6 @@ static inline VALUE cDataConverter_load(int argc, VALUE *argv, VALUE self) {
   return self;
 }
 
-/* def __dump(output, output_big, parent = nil, index = nil)
-      __set_dump_state(output, output_big, parent, index)
-      __dump_fields
-      __unset_dump_state
-      self
-    end */
-
 static ID id___dump;
 
 static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
@@ -1140,16 +870,9 @@ static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
   return self;
 }
 
-/*  def __convert(input, output, input_big, output_big, parent = nil, index = nil)
-      __set_convert_state(input, output, input_big, output_big, parent, index)
-      __convert_fields
-      __unset_convert_state
-      self
-    end */
-
 static ID id___convert;
 
-static inline VALUE cDataConverter_convert(int argc, VALUE *argv, VALUE self) {
+static VALUE cDataConverter_convert(int argc, VALUE *argv, VALUE self) {
   VALUE input;
   VALUE output;
   VALUE input_big;
@@ -1163,17 +886,9 @@ static inline VALUE cDataConverter_convert(int argc, VALUE *argv, VALUE self) {
   return self;
 }
 
-/*  def __shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
-      __set_size_state(previous_offset, parent, index)
-      members = __shape_fields(kind)
-      __unset_size_state
-      return nil if members.values.compact.size <= 0
-      kind::new(members)
-    end */
-
 static ID id___shape;
 
-static inline VALUE cDataConverter_shape(int argc, VALUE *argv, VALUE self) {
+static VALUE cDataConverter_shape(int argc, VALUE *argv, VALUE self) {
   VALUE previous_offset;
   VALUE parent;
   VALUE index;
@@ -1191,9 +906,7 @@ static inline VALUE cDataConverter_shape(int argc, VALUE *argv, VALUE self) {
   return rb_class_new_instance(1, &members, kind);
 }
 
-/* */
-
-static inline VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self) {
+static VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self) {
   VALUE input;
   VALUE input_big;
   VALUE parent;
@@ -1219,7 +932,7 @@ static inline VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self)
   return res;
 }
 
-static inline VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self) {
+static VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self) {
   VALUE value;
   VALUE output;
   VALUE output_big;
@@ -1238,7 +951,7 @@ static inline VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self)
   return value;
 }
 
-static inline VALUE cDataConverter_singl_convert(int argc, VALUE *argv, VALUE self) {
+static VALUE cDataConverter_singl_convert(int argc, VALUE *argv, VALUE self) {
   VALUE input;
   VALUE output;
   VALUE input_big;
@@ -1267,7 +980,7 @@ static inline VALUE cDataConverter_singl_convert(int argc, VALUE *argv, VALUE se
   return res;
 }
 
-static inline VALUE cDataConverter_singl_shape(int argc, VALUE *argv, VALUE self) {
+static VALUE cDataConverter_singl_shape(int argc, VALUE *argv, VALUE self) {
   VALUE value;
   VALUE previous_offset;
   VALUE parent;
@@ -1299,49 +1012,55 @@ static void define_cDataConverter() {
 
   id___set_load_state = rb_intern("__set_load_state");
   id___unset_load_state = rb_intern("__unset_load_state");
+  id___load_field = rb_intern("__load_field");
   id___load_fields = rb_intern("__load_fields");
   id_load = rb_intern("load");
   id___load = rb_intern("__load");
 
   id___set_dump_state = rb_intern("__set_dump_state");
   id___unset_dump_state = rb_intern("__unset_dump_state");
+  id___dump_field = rb_intern("__dump_field");
   id___dump_fields = rb_intern("__dump_fields");
   id_dump = rb_intern("dump");
   id___dump = rb_intern("__dump");
 
   id___set_convert_state = rb_intern("__set_convert_state");
   id___unset_convert_state = rb_intern("__unset_convert_state");
+  id___convert_field = rb_intern("__convert_field");
   id___convert_fields = rb_intern("__convert_fields");
   id_convert = rb_intern("convert");
   id___convert = rb_intern("__convert");
 
   id___set_size_state = rb_intern("__set_size_state");
   id___unset_size_state = rb_intern("__unset_size_state");
+  id___shape_field = rb_intern("__shape_field");
   id___shape_fields = rb_intern("__shape_fields");
   id_shape = rb_intern("shape");
   id___shape = rb_intern("__shape");
 
   cDataConverter = rb_define_class_under(mLibBin, "DataConverter", rb_cObject);
   rb_define_alloc_func(cDataConverter, cDataConverter_alloc);
+  /**
+   * Create new DataConverter object.
+   * @return [DataConverter] a new DataConverter instance with state set to nil.
+   */
   rb_define_method(cDataConverter, "initialize", cDataConverter_initialize, 0);
-  rb_define_method(cDataConverter, "__parent", cDataConverter_parent, 0);
-  rb_define_method(cDataConverter, "__parent=", cDataConverter_set_parent, 1);
-  rb_define_method(cDataConverter, "__index", cDataConverter_index, 0);
-  rb_define_method(cDataConverter, "__index=", cDataConverter_set_index, 1);
-  rb_define_method(cDataConverter, "__iterator", cDataConverter_iterator, 0);
-  rb_define_method(cDataConverter, "__iterator=", cDataConverter_set_iterator, 1);
-  rb_define_method(cDataConverter, "__position", cDataConverter_position, 0);
-  rb_define_method(cDataConverter, "__position=", cDataConverter_set_position, 1);
-  rb_define_method(cDataConverter, "__cur_position", cDataConverter_cur_position, 0);
-  rb_define_method(cDataConverter, "__cur_position=", cDataConverter_set_cur_position, 1);
-  rb_define_method(cDataConverter, "__input", cDataConverter_input, 0);
-  rb_define_method(cDataConverter, "__input=", cDataConverter_set_input, 1);
-  rb_define_method(cDataConverter, "__output", cDataConverter_output, 0);
-  rb_define_method(cDataConverter, "__output=", cDataConverter_set_output, 1);
-  rb_define_method(cDataConverter, "__input_big", cDataConverter_input_big, 0);
-  rb_define_method(cDataConverter, "__input_big=", cDataConverter_set_input_big, 1);
-  rb_define_method(cDataConverter, "__output_big", cDataConverter_output_big, 0);
-  rb_define_method(cDataConverter, "__output_big=", cDataConverter_set_output_big, 1);
+
+  DEFINE_STRUCT_STATE_ACCESSORS(parent);
+  DEFINE_STRUCT_STATE_ACCESSORS(index);
+  DEFINE_STRUCT_STATE_ACCESSORS(position);
+  DEFINE_STRUCT_STATE_ACCESSORS(cur_position);
+  DEFINE_STRUCT_STATE_ACCESSORS(input);
+  DEFINE_STRUCT_STATE_ACCESSORS(output);
+  DEFINE_STRUCT_STATE_ACCESSORS(input_big);
+  DEFINE_STRUCT_STATE_ACCESSORS(output_big);
+
+  DEFINE_STRUCT_STATE_ACCESSORS(offset);
+  DEFINE_STRUCT_STATE_ACCESSORS(condition);
+  DEFINE_STRUCT_STATE_ACCESSORS(type);
+  DEFINE_STRUCT_STATE_ACCESSORS(length);
+  DEFINE_STRUCT_STATE_ACCESSORS(iterator);
+  DEFINE_STRUCT_STATE_ACCESSORS(count);
 
   /**
    * @overload __set_convert_state(input, output, input_big, output_big, parent, index)
@@ -1485,30 +1204,442 @@ static void define_cDataConverter() {
    */
   rb_define_method(cDataConverter, "__unset_dump_state", cDataConverter_unset_dump_state, 0);
 
+  /**
+   * @overload __decode_expression(expression)
+   *   Decode the given expression in the context of the receiver.
+   *   @param expression [Proc,Object] the expression to decode
+   *   @return [Object] the decoded value
+   *   @note Do not overload, this is not called through the usual ruby dispatch for performance reasons
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_expression(expression)
+   *       if expression.is_a?(Proc)
+   *         instance_exec &expression
+   *       else
+   *         expression
+   *       end
+   *     end
+   */
   rb_define_method(cDataConverter, "__decode_expression", cDataConverter_decode_expression, 1);
+  /**
+   * @overload __decode_seek_offset(offset, relative_offset, align)
+   *   Decode the offset and seek to this position in the active streams.
+   *   @param offset [Proc,Integer,nil] the expression to decode
+   *   @param relative_offset [Boolean] the offset should be relative to the structure base (+__position+)
+   *   @param align [false,Integer] the required alignement of the field
+   *   @return [nil,false,Integer] return nil if no offset was specified, an Integer if the active streams
+   *     had to seek, or false if a zero offset was computed.
+   *   @note Do not overload, this is not called through the usual ruby dispatch for performance reasons
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_seek_offset(offset, relative_offset, align)
+   *       cur_pos = nil
+   *       if !offset
+   *         return nil unless align
+   *         cur_pos =
+   *           if __input
+   *             __input.tell
+   *           elsif __output
+   *             __output.tell
+   *           else
+   *             __cur_position
+   *           end
+   *         pad = cur_pos % align
+   *         return nil if pad == 0
+   *         cur_pos += align - pad
+   *       else
+   *         cur_pos = __decode_expression(offset)
+   *         return false if cur_pos == 0x0
+   *         cur_pos += __position if relative_offset
+   *         cur_pos +=  align - (cur_pos % align) if align && cur_pos % align > 0
+   *       end
+   *       __cur_position = cur_pos
+   *       __input.seek(cur_pos) if __input
+   *       __output.seek(cur_pos) if __output
+   *       cur_pos
+   *     end
+   */
   rb_define_method(cDataConverter, "__decode_seek_offset", cDataConverter_decode_seek_offset, 3);
+  /**
+   * @overload __decode_condition(condition)
+   *   Decode the condition expression
+   *   @param condition [Proc,Boolean,nil] the expression to decode
+   *   @return [Boolean] the field is active
+   *   @note Do not overload, this is not called through the usual ruby dispatch for performance reasons
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_condition(condition)
+   *       return true unless condition
+   *       __decode_expression(condition)
+   *     end
+   */
   rb_define_method(cDataConverter, "__decode_condition", cDataConverter_decode_condition, 1);
+  /**
+   * @overload __decode_count(count)
+   *   Decode the count expression.
+   *   @param count [Proc,Integer,nil] the expression to decode
+   *   @return [Integer] 1 if +count+ is nil, the decoded count otherwise
+   *   @note Do not overload, this is not called through the usual ruby dispatch for performance reasons
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_count(count)
+   *       return 1 unless count
+   *       __decode_expression(count)
+   *     end
+   */
   rb_define_method(cDataConverter, "__decode_count", cDataConverter_decode_count, 1);
+  /**
+   * @overload __decode_type(type)
+   *   Decode the type expression.
+   *   @param type [Proc,Class] the expression to decode
+   *   @return [Class] the decoded type
+   *   @note Do not overload, this is not called through the usual ruby dispatch for performance reasons
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_type(type)
+   *       __decode_expression(type)
+   *     end
+   */
   rb_define_method(cDataConverter, "__decode_type", cDataConverter_decode_type, 1);
+  /**
+   * @overload __decode_length(length)
+   *   Decode the length expression.
+   *   @param length [Proc,Integer,nil] the expression to decode
+   *   @return [Integer,nil] nil if the field is not a vector, or the
+   *     length of the vector
+   *   @note Do not overload, this is not called through the usual ruby dispatch for performance reasons
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_length(length)
+   *       __decode_expression(length)
+   *     end
+   */
   rb_define_method(cDataConverter, "__decode_length", cDataConverter_decode_length, 1);
+  /**
+   * @overload __decode_static_conditions(field)
+   *   Sets field specific context. Return nil if the field is inactive.
+   *   If the field is a sequence, only +__count+ is set, if not,
+   *   +__offset+, +__condition+, +__type+, and +__count+ are
+   *   also set.
+   *   @param field [Field] the field descriptor
+   *   @return [Integer,nil] nil if the field is inactive, the repetition count otherwise
+   *   @note Do not overload, this is not called through the usual ruby dispatch for performance reasons
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_static_conditions(field)
+   *       __offset = nil
+   *       __condition = nil
+   *       __type = nil
+   *       __length = nil
+   *       __count = nil
+   *       unless field.sequence?
+   *         __offset = __decode_seek_offset(field.offset, field.relative_offset?, field.align)
+   *         return nil if __offset == false
+   *         __condition = __decode_condition(field.condition)
+   *         return nil unless __condition
+   *         __type = __decode_type(field.type)
+   *         __length = __decode_length(field.length)
+   *       end
+   *       __count = __decode_count(field.count)
+   *     end
+   */
   rb_define_method(cDataConverter, "__decode_static_conditions", cDataConverter_decode_static_conditions, 1);
+  /**
+   * @overload __decode_dynamic_conditions(field)
+   *   Sets field repetition specific context.
+   *   Namely +__offset+, +__condition+, +__type+, and +__length+
+   *   should be set if the field repetition is active.
+   *   @param field [Field] the field descriptor
+   *   @return [Boolean] field repetition is active
+   *   @note Do not overload, this is not called through the usual ruby dispatch for performance reasons.
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_dynamic_conditions(field)
+   *       return true unless field.sequence?
+   *       __offset = nil
+   *       __condition = nil
+   *       __type = nil
+   *       __length = nil
+   *       __offset = __decode_seek_offset(field.offset, field.relative_offset?, field.align)
+   *       return false if __offset == false
+   *       __condition = __decode_condition(field.condition)
+   *       return false unless __condition
+   *       __type = __decode_type(field.type)
+   *       __length = __decode_length(field.length)
+   *       return true
+   *     end
+   */
   rb_define_method(cDataConverter, "__decode_dynamic_conditions", cDataConverter_decode_dynamic_conditions, 1);
 
+  /**
+   * Restore the field specific context.
+   * @return nil
+   * @example
+   *   # Original Ruby implementation
+   *   def __restore_context
+   *     __iterator = nil
+   *     __type = nil
+   *     __length = nil
+   *     __count = nil
+   *     __offset = nil
+   *     __condition = nil
+   *   end
+   */
   rb_define_method(cDataConverter, "__restore_context", cDataConverter_restore_context, 0);
 
+  /**
+   * @overload __convert_field(field)
+   *   Load and dump the value of a structure field.
+   *   @param field [Field] the field descriptor
+   *   @return the field value or nil if the field was inactive
+   *   @example
+   *     # Original Ruby implementation
+   *     def __convert_field(field)
+   *       return nil if __decode_static_conditions(field).nil?
+   *       vs = __count.times.collect do |it|
+   *         __iterator = it
+   *         if __decode_dynamic_conditions(field)
+   *           __type::convert(__input, __output, __input_big, __output_big, self, it, __length)
+   *         else
+   *           nil
+   *         end
+   *       end
+   *       __restore_context
+   *       vs = vs.first unless field.count
+   *       vs
+   *     end
+   */
   rb_define_method(cDataConverter, "__convert_field", cDataConverter_convert_field, 1);
+  /**
+   * @overload __load_field(field)
+   *   Load the value of a structure field.
+   *   @param field [Field] the field descriptor
+   *   @return the field value or nil if the field was inactive
+   *   @example
+   *     # Original Ruby implementation
+   *     def __load_field(field)
+   *       return nil if __decode_static_conditions(field).nil?
+   *       vs = __count.times.collect do |it|
+   *         __iterator = it
+   *         if __decode_dynamic_conditions(field)
+   *           __type::load(__input, __input_big, self, it, __length)
+   *         else
+   *           nil
+   *         end
+   *       end
+   *       __restore_context
+   *       vs = vs.first unless field.count
+   *       vs
+   *     end
+   */
   rb_define_method(cDataConverter, "__load_field", cDataConverter_load_field, 1);
+  /**
+   * @overload __dump_field(value, field)
+   *   Dump the value of a structure field.
+   *   @param value the field value
+   *   @param field [Field] the field descriptor
+   *   @return nil
+   *   @example
+   *     # Original Ruby implementation
+   *     def __dump_field(vs, field)
+   *       return nil if __decode_static_conditions(field).nil?
+   *       vs = [vs] unless field.count
+   *       __count.times do |it|
+   *         __iterator = it
+   *         if __decode_dynamic_conditions(field)
+   *           __type::dump(vs[it], __output, __output_big, self, it, __length)
+   *         end
+   *       end
+   *       __restore_context
+   *     end
+   */
   rb_define_method(cDataConverter, "__dump_field", cDataConverter_dump_field, 2);
+  /**
+   * @overload __shape_field(value, kind, field)
+   *   Return the shape of the structure field.
+   *   @param value the field value
+   *   @param kind [Class] the class of the shape required
+   *   @param field [Field] the field descriptor
+   *   @return [nil,kind,Array<kind>] the field shape, or nil if the field was inactive
+   *   @example
+   *     # Original Ruby implementation
+   *     def __shape_field(vs, kind, field)
+   *       return nil if __decode_static_conditions(field).nil?
+   *       vs = [vs] unless field.count
+   *       vs = vs.each_with_index.collect do |v, it|
+   *         __iterator = it
+   *         if __decode_dynamic_conditions(field)
+   *           sh = __type::shape(v, __cur_position, self, it, kind, __length)
+   *           __cur_position = sh.last + 1 if sh.last && sh.last >= 0
+   *           sh
+   *         end
+   *       end
+   *       __restore_context
+   *       vs = field.count ? kind.new(vs) : vs.first
+   *       vs
+   *     end
+   */
   rb_define_method(cDataConverter, "__shape_field", cDataConverter_shape_field, 3);
 
+  /**
+   * Load the fields of the structure. The load state must
+   * have been set beforehand.
+   * @return [DataConverter] self
+   * @example
+   *   # Original Ruby implementation
+   *   def __load_fields
+   *     field = nil
+   *     begin
+   *       __fields.each { |field|
+   *         send("#{field.name}=", __load_field(field))
+   *       }
+   *     rescue
+   *       STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
+   *       raise
+   *     end
+   *     self
+   *   end
+   */
   rb_define_method(cDataConverter, "__load_fields", cDataConverter_load_fields, 0);
+  /**
+   * Dump the fields of the structure. The dump state must
+   * have been set beforehand.
+   * @return [DataConverter] self
+   * @example
+   *   # Original Ruby implementation
+   *   def __dump_fields
+   *     field = nil
+   *     begin
+   *       __fields.each { |field|
+   *         __dump_field(send(field.name), field)
+   *       }
+   *     rescue
+   *       STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
+   *       raise
+   *     end
+   *     self
+   *   end
+   */
   rb_define_method(cDataConverter, "__dump_fields", cDataConverter_dump_fields, 0);
+  /**
+   * Convert the fields of the structure. The conversion
+   * state must have been set beforehand.
+   * @return [DataConverter] self
+   * @example
+   *   # Original Ruby implementation
+   *   def __convert_fields
+   *     field = nil
+   *     begin
+   *       __fields.each { |field|
+   *         send("#{field.name}=", __convert_field(field))
+   *       }
+   *     rescue
+   *       STDERR.puts "#{self.class}: #{field.name}(#{field.type})"
+   *       raise
+   *     end
+   *     self
+   *   end
+   */
   rb_define_method(cDataConverter, "__convert_fields", cDataConverter_convert_fields, 0);
+  /**
+   * @overload __shape_fields(kind)
+   *   Return the shape of the structure fields in a Hash, indexed by the fields' names.
+   *   The size state must have been set beforehand.
+   *   @param kind [Class] the kind of structure to create
+   *   @return [Hash{Symbol=>kind}] the fields shape
+   *   @example
+   *     # Original Ruby implementation
+   *     def __shape_fields(kind)
+   *       members = {}
+   *       field = nil
+   *       begin
+   *         __fields.each { |field|
+   *           members[field.name] = __shape_field(send(field.name), kind, field)
+   *         }
+   *       rescue
+   *         LibBin.output.puts "#{self.class}: #{field.name}(#{field.type})" if LibBin.output
+   *         raise
+   *       end
+   *       return members
+   *     end
+   */
   rb_define_method(cDataConverter, "__shape_fields", cDataConverter_shape_fields, 1);
 
+  /**
+   * @overload __load(input, input_big, parent = nil, index = nil)
+   *   Fill in the structure by loading it from +input+.
+   *   @param input [IO] the stream to load the structure from
+   *   @param input_big [Boolean] the endianness of +input+
+   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
+   *   @return [DataConverter] self
+   *   @example
+   *     # Original Ruby implementation
+   *     def __load(input, input_big, parent = nil, index = nil)
+   *       __set_load_state(input, input_big, parent, index)
+   *       __load_fields
+   *       __unset_load_state
+   *       self
+   *     end
+   */
   rb_define_method(cDataConverter, "__load", cDataConverter_load, -1);
+  /**
+   * @overload __dump(output, output_big, parent = nil, index = nil)
+   *   Dump the structure to +output+.
+   *   @param output [IO] the stream to dump the structure to
+   *   @param output_big [Boolean] the endianness of +output+
+   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
+   *   @return [DataConverter] self
+   *   @example
+   *     # Original Ruby implementation
+   *     def __dump(output, output_big, parent = nil, index = nil)
+   *       __set_dump_state(output, output_big, parent, index)
+   *       __dump_fields
+   *       __unset_dump_state
+   *       self
+   *     end
+   */
   rb_define_method(cDataConverter, "__dump", cDataConverter_dump, -1);
+  /**
+   * @overload __convert(input, output, input_big, output_big, parent = nil, index = nil)
+   *   Fill in the structure by loading it from +input+ and
+   *   dumping it to +output+.
+   *   @param input [IO] the stream to load the structure from
+   *   @param output [IO] the stream to dump the structure to
+   *   @param input_big [Boolean] the endianness of +input+
+   *   @param output_big [Boolean] the endianness of +output+
+   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
+   *   @return [DataConverter] self
+   *   @example
+   *     # Original Ruby implementation
+   *     def __convert(input, output, input_big, output_big, parent = nil, index = nil)
+   *       __set_convert_state(input, output, input_big, output_big, parent, index)
+   *       __convert_fields
+   *       __unset_convert_state
+   *       self
+   *     end
+   */
   rb_define_method(cDataConverter, "__convert", cDataConverter_convert, -1);
+  /**
+   * @overload __shape(offset = 0, parent = nil, index = nil, kind = DataShape)
+   *   Return the shape of the structure.
+   *   @param offset [Integer] the base position of the field
+   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
+   *   @param kind [Class] the kind of structure to create
+   *   @return [kind] the the shape of the structure
+   *   @example
+   *     # Original Ruby implementation
+   *     def __shape(previous_offset = 0, parent = nil, index = nil, kind = DataShape)
+   *       __set_size_state(previous_offset, parent, index)
+   *       members = __shape_fields(kind)
+   *       __unset_size_state
+   *       return nil if members.values.compact.size <= 0
+   *       kind::new(members)
+   *     end
+   */
   rb_define_method(cDataConverter, "__shape", cDataConverter_shape, -1);
 
   /**
@@ -1688,9 +1819,49 @@ static void define_cField() {
 
 void Init_libbin_c() {
   mLibBin = rb_define_module("LibBin");
+  /**
+   * @overload half_from_string(str, unpack_str)
+   *   Load (unpacks) a half precision floating point.
+   *   @param str [String] the strin to read the  number from
+   *   @param unpack_str [String] the unpack format of the underlying 16bit integer
+   *   @return [Float] the ruby representation of the value
+   *   @example
+   *     # Read a half precision floating point value stored in 'str' in little endian fashion
+   *     value = half_from_string(str, "S<")
+   */
   rb_define_module_function(mLibBin, "half_from_string", half_from_string_p, 2);
+  /**
+   * @overload half_to_string(value, pack_str)
+   *   Convert a Numeric value to a half precision floating point and pack it into a string.
+   *   @param value [Numeric] the number to convert
+   *   @parampack_str [String] the pack format to store the underlying 16 bit integer representation of the value
+   *   @return [String] the packed half precision value
+   *   @example
+   *     # Stores a number as a half precision floating point value in a big endian fashion
+   *     str = half_to_string(value, "S>")
+   */
   rb_define_module_function(mLibBin, "half_to_string", half_to_string_p, 2);
+  /**
+   * @overload pghalf_from_string(str, unpack_str)
+   *   Load (unpacks) a half precision floating point as used by PlatinumGames in some formats.
+   *   @param str [String] the strin to read the  number from
+   *   @param unpack_str [String] the unpack format of the underlying 16bit integer
+   *   @return [Float] the ruby representation of the value
+   *   @example
+   *     # Read a half precision floating point value stored in 'str' in little endian fashion
+   *     half_from_string(str, "S<")
+   */
   rb_define_module_function(mLibBin, "pghalf_from_string", pghalf_from_string_p, 2);
+  /**
+   * @overload pghalf_to_string(value, pack_str)
+   *   Convert a Numeric value to a half precision floating point as used by PlatinumGames in some formats, and pack it into a string.
+   *   @param value [Numeric] the number to convert
+   *   @parampack_str [String] the pack format to store the underlying 16 bit integer representation of the value
+   *   @return [String] the packed half precision value
+   *   @example
+   *     # Stores a number as a half precision floating point value in a big endian fashion
+   *     str = half_to_string(value, "S>")
+   */
   rb_define_module_function(mLibBin, "pghalf_to_string", pghalf_to_string_p, 2);
   cDataShape = rb_define_class_under(mLibBin, "DataShape", rb_cObject);
   define_cDataConverter();

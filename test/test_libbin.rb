@@ -555,7 +555,7 @@ class LibBinTest < Minitest::Test
       field :body, b
     end
     begin
-      LibBin.__output = nil
+      LibBin.output = nil
       [false, true].each { |big|
         open_bin("test_size_#{SUFFIX[big]}.bin") do |f|
           struct = nil
@@ -570,7 +570,7 @@ class LibBinTest < Minitest::Test
         end
       }
     ensure
-      LibBin.__output = $stderr
+      LibBin.output = $stderr
     end
   end
 
@@ -588,7 +588,7 @@ class LibBinTest < Minitest::Test
       field :body, b
     end
     begin
-      LibBin.__output = nil
+      LibBin.output = nil
       [false, true].each { |big|
         open_bin("test_size_#{SUFFIX[big]}.bin") do |f|
           struct = s::load(f, big)
@@ -600,7 +600,7 @@ class LibBinTest < Minitest::Test
         end
       }
     ensure
-      LibBin.__output = $stderr
+      LibBin.output = $stderr
     end
   end
 
