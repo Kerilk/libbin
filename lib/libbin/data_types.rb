@@ -1,6 +1,6 @@
 module LibBin
 
-  # Refinement to range to allow reducing range through the + operator
+  # Refinement to Range allowing  reducing ranges through the + operator
   module RangeRefinement
     refine Range do
       # Union of two ranges
