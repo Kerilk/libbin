@@ -1,7 +1,10 @@
 module LibBin
 
+  # Refinement to range to allow reducing range through the + operator
   module RangeRefinement
     refine Range do
+      # Union of two ranges
+      # @return [Range]
       def +(other)
         return other.dup unless min
         return self.dup unless other.min
@@ -11,48 +14,21 @@ module LibBin
     end
   end
 
-  class DataShape
-    using RangeRefinement
-    attr_reader :range
-    attr_reader :members
-
-    def method_missing(m, *arg, &block)
-      return @members[m] if @members && @members[m]
-      super
-    end
-
-    def initialize(*args)
-      if args.length == 2
-        @range = Range::new(args[0], args[1])
-        @members = nil
-      else
-        @members = args[0]
-        if @members.kind_of?(Hash)
-          @range = @members.values.compact.collect(&:range).reduce(:+)
-        else
-          @range = @members.compact.collect(&:range).reduce(:+)
-        end
-      end
-    end
-
-    def first
-      @range.first
-    end
-
-    def last
-      @range.last
-    end
-
-    def size
-      @range.size
-    end
-
-  end
-
+  # Classs that can be used to get the shape of a {Structure} or of a {Structure::Scalar}.
   class DataRange
     using RangeRefinement
     attr_reader :range
 
+    # @overload initialize(min, max)
+    #   Create a new shape starting and +min+ and ending at max.
+    #   This shape has no members.
+    #   @param min [Integer] start of the shape
+    #   @param max [Integer] end of the shape
+    #   @return [DataShape] a new DataShape
+    # @overload initialize(members)
+    #   Creates a new shape by reducing the shape of it's memebers.
+    #   @param members [DataShape] the members composing the shape
+    #   @return [DataShape] a new DataShape
     def initialize(*args)
       if args.length == 2
         @range = Range::new(args[0], args[1])
@@ -65,16 +41,54 @@ module LibBin
       end
     end
 
+    # Return the beginning of the shape
+    # @return [Integer]
     def first
       @range.first
     end
 
+    # Return the end of the shape
+    # @return [Integer]
     def last
       @range.last
     end
 
+    # Return the size of the shape
+    # @return [Integer]
     def size
       @range.size
+    end
+
+  end
+
+  # Default class used to get the shape of a {Structure} or of a {Structure::Scalar}.
+  # It maintains a memory of it's members
+  class DataShape # < DataRange
+    using RangeRefinement
+    attr_reader :members
+
+    # Add method readers for members
+    def method_missing(m, *arg, &block)
+      return @members[m] if @members && @members[m]
+      super
+    end
+
+    # @overload initialize(min, max)
+    #   Create a new shape starting and +min+ and ending at max.
+    #   This shape has no members.
+    #   @param min [Integer] start of the shape
+    #   @param max [Integer] end of the shape
+    #   @return [DataShape] a new DataShape
+    # @overload initialize(members)
+    #   Creates a new shape by reducing the shape of it's memeber.
+    #   Members can be accessed through {members}.
+    #   @param members [DataShape] the members composing the shape
+    #   @return [DataShape] a new DataShape
+    def initialize(*args)
+      if args.length == 1
+        @members = args[0]
+      end
+      super
     end
 
   end

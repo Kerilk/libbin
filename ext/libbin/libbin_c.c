@@ -1863,7 +1863,8 @@ void Init_libbin_c() {
    *     str = half_to_string(value, "S>")
    */
   rb_define_module_function(mLibBin, "pghalf_to_string", pghalf_to_string_p, 2);
-  cDataShape = rb_define_class_under(mLibBin, "DataShape", rb_cObject);
+  cDataRange = rb_define_class_under(mLibBin, "DataRange", rb_cObject);
+  cDataShape = rb_define_class_under(mLibBin, "DataShape", cDataRange);
   define_cStructure();
   define_cField();
   define_cScalar();

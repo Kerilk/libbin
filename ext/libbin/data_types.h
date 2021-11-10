@@ -8,6 +8,7 @@ union float_u {
 
 extern VALUE cScalar;
 extern VALUE cDataShape;
+extern VALUE cDataRange;
 extern VALUE cStructure;
 
 void define_cScalar();

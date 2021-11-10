@@ -2,6 +2,7 @@
 #include "./libbin_c.h"
 
 VALUE cDataShape;
+VALUE cDataRange;
 VALUE cScalar;
 
 static ID id_read, id_write;
