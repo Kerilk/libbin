@@ -1834,7 +1834,7 @@ void Init_libbin_c() {
    * @overload half_to_string(value, pack_str)
    *   Convert a Numeric value to a half precision floating point and pack it into a string.
    *   @param value [Numeric] the number to convert
-   *   @parampack_str [String] the pack format to store the underlying 16 bit integer representation of the value
+   *   @param pack_str [String] the pack format to store the underlying 16 bit integer representation of the value
    *   @return [String] the packed half precision value
    *   @example
    *     # Stores a number as a half precision floating point value in a big endian fashion
@@ -1856,7 +1856,7 @@ void Init_libbin_c() {
    * @overload pghalf_to_string(value, pack_str)
    *   Convert a Numeric value to a half precision floating point as used by PlatinumGames in some formats, and pack it into a string.
    *   @param value [Numeric] the number to convert
-   *   @parampack_str [String] the pack format to store the underlying 16 bit integer representation of the value
+   *   @param pack_str [String] the pack format to store the underlying 16 bit integer representation of the value
    *   @return [String] the packed half precision value
    *   @example
    *     # Stores a number as a half precision floating point value in a big endian fashion

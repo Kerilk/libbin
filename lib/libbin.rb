@@ -2,23 +2,20 @@ require "libbin_c.so"
 
 require_relative 'libbin/data_types'
 
+# Container module, handles the global state default endianness and error output.
 module LibBin
 
-  BIG_ARCHITECTURE = [0x12345678].pack("i") == "\x12\x34\x56\x78"
-  @big = nil
+  @big = [0x12345678].pack("i") == "\x12\x34\x56\x78"
   @output = $stderr
 
   class << self
+    attr_accessor :big
     attr_accessor :output
   end
 
   # Returns true the default endianness is big
   def self.default_big?
-    if @big.nil?
-      BIG_ARCHITECTURE
-    else
-      @big
-    end
+    @big
   end
 
   class Structure
@@ -106,6 +103,8 @@ module LibBin
       end
     end
 
+    # Return the structure class fields
+    # @return [Array<Field>]
     def __fields
       return self.class.fields
     end

@@ -98,6 +98,8 @@ module LibBin
   class Structure
 
     # @!parse
+    #   # Field class that is instantiated to describe a structure field.
+    #   # Instances are immutable.
     #   class Field
     #     attr_reader :name
     #     attr_reader :type
@@ -302,10 +304,6 @@ module LibBin
 EOF
     end
     private_class_method :define_scalar_constructor
-
-    def self.structure(&block)
-      Class.new(DataConverter, &block)
-    end
 
     # @!group Scalars
     define_scalar_constructor "Int8", :int8, :int8_t, "A signed 8 bit integer"
@@ -745,10 +743,6 @@ EOF
       self
     end
 
-  end
-
-  def self.structure(&block)
-    Class.new(DataConverter, &block)
   end
 
 end
