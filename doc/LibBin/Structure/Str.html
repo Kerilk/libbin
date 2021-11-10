@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: LibBin::Structure::Str
+  
+    &mdash; Documentation by YARD 0.9.26
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "LibBin::Structure::Str";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (S)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../LibBin.html" title="LibBin (module)">LibBin</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Structure.html" title="LibBin::Structure (class)">Structure</a></span></span>
+     &raquo; 
+    <span class="title">Str</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: LibBin::Structure::Str
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Scalar</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">Scalar</li>
+          
+            <li class="next">LibBin::Structure::Str</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/libbin/data_types.rb<span class="defines">,<br />
+  ext/libbin/data_types.c</span>
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>A string type, can be NULL terminated or have an arbitrary length.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#align-class_method" title="align (class method)">.<strong>align</strong>  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the alignement of the underlying character type.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#convert-class_method" title="convert (class method)">.<strong>convert</strong>(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Convert a string field by loading it from <code>input</code>, dumping it to <code>output</code>, and returning the loaded field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dump-class_method" title="dump (class method)">.<strong>dump</strong>(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)  &#x21d2; nil </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Dump a string field to <code>output</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#load-class_method" title="load (class method)">.<strong>load</strong>(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Load a string field from <code>input</code>, and return it.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#shape-class_method" title="shape (class method)">.<strong>shape</strong>(value, offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)  &#x21d2; kind </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the shape of a string field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#size-class_method" title="size (class method)">.<strong>size</strong>(value, offset = 0, parent = nil, index = nil, length = nil)  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the size of a string.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="align-class_method">
+  
+    .<strong>align</strong>  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the alignement of the underlying character type.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+361
+362
+363
+364</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'ext/libbin/data_types.c', line 361</span>
+
+static VALUE cStr_align(VALUE self) {
+  (void)self;
+  return INT2FIX(sizeof(char));
+}</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="convert-class_method">
+  
+    .<strong>convert</strong>(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
+  <div class="discussion">
+    
+<p>Convert a string field by loading it from <code>input</code>, dumping it to <code>output</code>, and returning the loaded field.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>input</span>
+      
+      
+        <span class='type'>(<tt>IO</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the stream to load the field from.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>output</span>
+      
+      
+        <span class='type'>(<tt>IO</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the stream to dump the field to.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>input_big</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>LibBin::default_big?</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the endianness of <code>input</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>output_big</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>!input_big</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the endianness of <code>output</code>.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>parent</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Structure.html" title="LibBin::Structure (class)">Structure</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>index</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>length</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if given the length of the string to reqd. Else the string is considered NULL terminated.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the Ruby representation of the string.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'ext/libbin/data_types.c', line 438</span>
+
+static VALUE cStr_convert(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE input;
+  VALUE output;
+  VALUE length;
+  rb_scan_args(argc, argv, &quot;25&quot;, &amp;input, &amp;output, NULL, NULL, NULL, NULL, &amp;length);
+  VALUE str;
+  if (NIL_P(length))
+    str = rb_funcall(input, rb_intern(&quot;readline&quot;), 1, rb_str_new_static(&quot;&quot;, 1));
+  else {
+    str = rb_funcall(input, id_read, 1, length);
+    if (NIL_P(str) || RSTRING_LEN(str) &lt; NUM2LONG(length))
+      rb_raise(rb_eRuntimeError,
+        &quot;could not read enough data: got %ld needed %zu&quot;, RSTRING_LEN(str), NUM2LONG(length));
+  }
+  rb_funcall(output, id_write, 1, str);
+  return str;
+}</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dump-class_method">
+  
+    .<strong>dump</strong>(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)  &#x21d2; <tt>nil</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
+  <div class="discussion">
+    
+<p>Dump a string field to <code>output</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>, <tt>Array&lt;Numeric&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the Ruby representation of the string.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>output</span>
+      
+      
+        <span class='type'>(<tt>IO</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the stream to dump the field to.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>output_big</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>LibBin::default_big?</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the endianness of <code>output</code>.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>parent</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Structure.html" title="LibBin::Structure (class)">Structure</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>index</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>length</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if given the length of the string to dump. Else the length is the size of the string.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'ext/libbin/data_types.c', line 413</span>
+
+static VALUE cStr_dump(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE value;
+  VALUE output;
+  VALUE length;
+  rb_scan_args(argc, argv, &quot;24&quot;, &amp;value, &amp;output, NULL, NULL, NULL, &amp;length);
+  if (NIL_P(length))
+    rb_funcall(output, id_write, 1, value);
+  else {
+    long l = NUM2LONG(length);
+    long vl = RSTRING_LEN(value);
+    VALUE str;
+    if (vl &gt; l)
+      str = rb_str_new(RSTRING_PTR(value), l);
+    else {
+      str = rb_str_buf_new(l);
+      rb_str_cat(str, RSTRING_PTR(value), vl);
+      for (long i = 0; i &lt; l - vl; i++)
+        rb_str_cat(str, &quot;&quot;, 1);
+    }
+    rb_funcall(output, id_write, 1, str);
+  }
+  return Qnil;
+}</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="load-class_method">
+  
+    .<strong>load</strong>(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
+  <div class="discussion">
+    
+<p>Load a string field from <code>input</code>, and return it.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>input</span>
+      
+      
+        <span class='type'>(<tt>IO</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the stream to load the field from.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>input_big</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>LibBin::default_big?</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the endianness of <code>input</code></p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>parent</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Structure.html" title="LibBin::Structure (class)">Structure</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>index</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>length</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if given the length of the string. Else the string is considered NULL terminated.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the Ruby representation of the string.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'ext/libbin/data_types.c', line 397</span>
+
+static VALUE cStr_load(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE input;
+  VALUE length;
+  rb_scan_args(argc, argv, &quot;14&quot;, &amp;input, NULL, NULL, NULL, &amp;length);
+  if (NIL_P(length))
+    return rb_funcall(input, rb_intern(&quot;readline&quot;), 1, rb_str_new_static(&quot;&quot;, 1));
+  else {
+    VALUE str = rb_funcall(input, id_read, 1, length);
+    if (NIL_P(str) || RSTRING_LEN(str) &lt; NUM2LONG(length))
+      rb_raise(rb_eRuntimeError,
+        &quot;could not read enough data: got %ld needed %zu&quot;, RSTRING_LEN(str), NUM2LONG(length));
+    return str;
+  }
+}</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="shape-class_method">
+  
+    .<strong>shape</strong>(value, offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)  &#x21d2; <tt>kind</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the shape of a string field</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>offset</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>0</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>start of the shape.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>parent</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Structure.html" title="LibBin::Structure (class)">Structure</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>index</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>kind</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>DataShape</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>shape class. Will be instantiated through new with the <code>offset</code> and <code>offset + sizeof($3) * length - 1</code>.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>length</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if given the length of the string to consider. Else the length is the size of the string.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>kind</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>a new instance of <code>kind</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'ext/libbin/data_types.c', line 377</span>
+
+static VALUE cStr_shape(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE value;
+  VALUE previous_offset;
+  VALUE kind;
+  VALUE length;
+  rb_scan_args(argc, argv, &quot;15&quot;, &amp;value, &amp;previous_offset, NULL, NULL, &amp;kind, &amp;length);
+  if (NIL_P(previous_offset))
+    previous_offset = INT2FIX(0);
+  if (NIL_P(kind))
+    kind = cDataShape;
+  if (NIL_P(length)) {
+    VALUE args[] = { previous_offset, LL2NUM(NUM2LL(previous_offset) - 1 + RSTRING_LEN(value)) };
+    return rb_class_new_instance(2, args, kind);
+  } else {
+    VALUE args[] = { previous_offset, LL2NUM(NUM2LL(previous_offset) - 1 + NUM2LL(length)) };
+    return rb_class_new_instance(2, args, kind);
+  }
+}</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="size-class_method">
+  
+    .<strong>size</strong>(value, offset = 0, parent = nil, index = nil, length = nil)  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the size of a string. the size of the string.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>string to dump.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>offset</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>0</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>parent</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Structure.html" title="LibBin::Structure (class)">Structure</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>index</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>length</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if given the length of the vector. Else</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the size of the string or <code>sizeof(char) * length</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'ext/libbin/data_types.c', line 366</span>
+
+static VALUE cStr_size(int argc, VALUE* argv, VALUE self) {
+  (void)self;
+  VALUE value;
+  VALUE length;
+  rb_scan_args(argc, argv, &quot;14&quot;, &amp;value, NULL, NULL, NULL, &amp;length);
+  if (RTEST(length))
+    return length;
+  else
+    return rb_funcall(value, rb_intern(&quot;bytesize&quot;), 0);
+}</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Nov  9 22:50:56 2021 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.26 (ruby-2.7.0).
+</div>
+
+    </div>
+  </body>
+</html>
