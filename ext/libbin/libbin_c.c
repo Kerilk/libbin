@@ -3,7 +3,7 @@
 
 VALUE cField;
 VALUE mLibBin;
-VALUE cDataConverter;
+VALUE cStructure;
 
 static VALUE rb_str_dot_dot;
 static VALUE rb_str___parent;
@@ -147,7 +147,7 @@ static VALUE cField_align(VALUE self) {
   return data->align;
 }
 
-struct cDataConverter_data {
+struct cStructure_data {
   VALUE __input;
   VALUE __output;
   VALUE __input_big;
@@ -165,37 +165,37 @@ struct cDataConverter_data {
   VALUE __iterator;
 };
 
-static void cDataConverter_mark(void* data) {
+static void cStructure_mark(void* data) {
   void *start = data;
-  void *end = (char *)data + sizeof(struct cDataConverter_data);
+  void *end = (char *)data + sizeof(struct cStructure_data);
   rb_gc_mark_locations((VALUE *)start, (VALUE *)end);
 }
 
-static size_t cDataConverter_size(const void* data) {
+static size_t cStructure_size(const void* data) {
   (void)data;
-  return sizeof(struct cDataConverter_data);
+  return sizeof(struct cStructure_data);
 }
 
-static const rb_data_type_t cDataConverter_type = {
-  .wrap_struct_name = "cDataConverter_data",
+static const rb_data_type_t cStructure_type = {
+  .wrap_struct_name = "cStructure_data",
   .function = {
-    .dmark = cDataConverter_mark,
+    .dmark = cStructure_mark,
     .dfree = RUBY_DEFAULT_FREE,
-    .dsize = cDataConverter_size,
+    .dsize = cStructure_size,
   },
   .data = NULL,
   .flags = RUBY_TYPED_FREE_IMMEDIATELY
 };
 
-static VALUE cDataConverter_alloc(VALUE self) {
-  struct cDataConverter_data *data;
-  VALUE res = TypedData_Make_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+static VALUE cStructure_alloc(VALUE self) {
+  struct cStructure_data *data;
+  VALUE res = TypedData_Make_Struct(self, struct cStructure_data, &cStructure_type, data);
   return res;
 }
 
-static VALUE cDataConverter_initialize(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+static VALUE cStructure_initialize(VALUE self) {
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__input = Qnil;
   data->__output = Qnil;
   data->__input_big = Qnil;
@@ -213,25 +213,25 @@ static VALUE cDataConverter_initialize(VALUE self) {
   return self;
 }
 
-#define STRUCT_STATE_GETTER(propname) cDataConverter_get_ ## propname
-#define STRUCT_STATE_SETTER(propname) cDataConverter_set_ ## propname
+#define STRUCT_STATE_GETTER(propname) cStructure_get_ ## propname
+#define STRUCT_STATE_SETTER(propname) cStructure_set_ ## propname
 
 #define CREATE_STRUCT_STATE_ACCESSORS(propname)                                       \
 static VALUE STRUCT_STATE_GETTER(propname) (VALUE self) {                             \
-  struct cDataConverter_data *data;                                                   \
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data); \
+  struct cStructure_data *data;                                                   \
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data); \
   return data->__ ## propname ;                                                       \
 }                                                                                     \
 static VALUE STRUCT_STATE_SETTER(propname) (VALUE self, VALUE propname) {             \
-  struct cDataConverter_data *data;                                                   \
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data); \
+  struct cStructure_data *data;                                                   \
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data); \
   return data->__ ## propname = propname;                                             \
 }
 
 #define DEFINE_STRUCT_STATE_ACCESSORS(propname)                                           \
 do {                                                                                      \
-  rb_define_method(cDataConverter, "__" #propname, STRUCT_STATE_GETTER(propname), 0);     \
-  rb_define_method(cDataConverter, "__" #propname "=", STRUCT_STATE_SETTER(propname), 1); \
+  rb_define_method(cStructure, "__" #propname, STRUCT_STATE_GETTER(propname), 0);     \
+  rb_define_method(cStructure, "__" #propname "=", STRUCT_STATE_SETTER(propname), 1); \
 } while(0)
 
 CREATE_STRUCT_STATE_ACCESSORS(parent)
@@ -254,7 +254,7 @@ static ID id_tell;
 
 static ID id___set_convert_state;
 
-static VALUE cDataConverter_set_convert_state(
+static VALUE cStructure_set_convert_state(
     VALUE self,
     VALUE input,
     VALUE output,
@@ -263,8 +263,8 @@ static VALUE cDataConverter_set_convert_state(
     VALUE parent,
     VALUE index)
 {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__input = input;
   data->__output = output;
   data->__input_big = input_big;
@@ -278,9 +278,9 @@ static VALUE cDataConverter_set_convert_state(
 
 static ID id___unset_convert_state;
 
-static VALUE cDataConverter_unset_convert_state(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+static VALUE cStructure_unset_convert_state(VALUE self) {
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__input = Qnil;
   data->__output = Qnil;
   data->__input_big = Qnil;
@@ -294,14 +294,14 @@ static VALUE cDataConverter_unset_convert_state(VALUE self) {
 
 static ID id___set_size_state;
 
-static VALUE cDataConverter_set_size_state(
+static VALUE cStructure_set_size_state(
     VALUE self,
     VALUE position,
     VALUE parent,
     VALUE index)
 {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__parent = parent;
   data->__index = index;
   data->__position = position;
@@ -311,9 +311,9 @@ static VALUE cDataConverter_set_size_state(
 
 static ID id___unset_size_state;
 
-static VALUE cDataConverter_unset_size_state(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+static VALUE cStructure_unset_size_state(VALUE self) {
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__parent = Qnil;
   data->__index = Qnil;
   data->__position = Qnil;
@@ -323,15 +323,15 @@ static VALUE cDataConverter_unset_size_state(VALUE self) {
 
 static ID id___set_load_state;
 
-static VALUE cDataConverter_set_load_state(
+static VALUE cStructure_set_load_state(
     VALUE self,
     VALUE input,
     VALUE input_big,
     VALUE parent,
     VALUE index)
 {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__input = input;
   data->__input_big = input_big;
   data->__parent = parent;
@@ -343,9 +343,9 @@ static VALUE cDataConverter_set_load_state(
 
 static ID id___unset_load_state;
 
-static VALUE cDataConverter_unset_load_state(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+static VALUE cStructure_unset_load_state(VALUE self) {
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__input = Qnil;
   data->__input_big = Qnil;
   data->__parent = Qnil;
@@ -357,15 +357,15 @@ static VALUE cDataConverter_unset_load_state(VALUE self) {
 
 static ID id___set_dump_state;
 
-static VALUE cDataConverter_set_dump_state(
+static VALUE cStructure_set_dump_state(
     VALUE self,
     VALUE output,
     VALUE output_big,
     VALUE parent,
     VALUE index)
 {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__output = output;
   data->__output_big = output_big;
   data->__parent = parent;
@@ -377,9 +377,9 @@ static VALUE cDataConverter_set_dump_state(
 
 static ID id___unset_dump_state;
 
-static VALUE cDataConverter_unset_dump_state(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+static VALUE cStructure_unset_dump_state(VALUE self) {
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__output = Qnil;
   data->__output_big = Qnil;
   data->__parent = Qnil;
@@ -391,7 +391,7 @@ static VALUE cDataConverter_unset_dump_state(VALUE self) {
 
 static ID id_instance_exec;
 
-static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expression) {
+static inline VALUE cStructure_decode_expression(VALUE self, VALUE expression) {
   if (rb_obj_is_proc(expression))
     return rb_funcall_with_block(self, id_instance_exec, 0, NULL, expression);
   else
@@ -400,9 +400,9 @@ static inline VALUE cDataConverter_decode_expression(VALUE self, VALUE expressio
 
 ID id_seek;
 
-static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset, VALUE align) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+static inline VALUE cStructure_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset, VALUE align) {
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   ptrdiff_t cur_pos;
   if (!RTEST(offset)) {
     if (!RTEST(align))
@@ -419,7 +419,7 @@ static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, 
       return Qnil;
     cur_pos += pad;
   } else {
-    cur_pos = NUM2LL(cDataConverter_decode_expression(self, offset));
+    cur_pos = NUM2LL(cStructure_decode_expression(self, offset));
     if (cur_pos == 0)
       return Qfalse;
     if (RTEST(relative_offset))
@@ -437,32 +437,32 @@ static inline VALUE cDataConverter_decode_seek_offset(VALUE self, VALUE offset, 
   return data->__cur_position;
 }
 
-static inline VALUE cDataConverter_decode_condition(VALUE self, VALUE condition) {
+static inline VALUE cStructure_decode_condition(VALUE self, VALUE condition) {
   if (!RTEST(condition))
     return Qtrue;
-  return cDataConverter_decode_expression(self, condition);
+  return cStructure_decode_expression(self, condition);
 }
 
-static inline VALUE cDataConverter_decode_count(VALUE self, VALUE count) {
+static inline VALUE cStructure_decode_count(VALUE self, VALUE count) {
   if (!RTEST(count))
     return INT2FIX(1);
-  return cDataConverter_decode_expression(self, count);
+  return cStructure_decode_expression(self, count);
 }
 
-static inline VALUE cDataConverter_decode_type(VALUE self, VALUE type) {
-  return cDataConverter_decode_expression(self, type);
+static inline VALUE cStructure_decode_type(VALUE self, VALUE type) {
+  return cStructure_decode_expression(self, type);
 }
 
-static inline VALUE cDataConverter_decode_length(VALUE self, VALUE length) {
+static inline VALUE cStructure_decode_length(VALUE self, VALUE length) {
   if (NIL_P(length))
     return Qnil;
-  return cDataConverter_decode_expression(self, length);
+  return cStructure_decode_expression(self, length);
 }
 
-static inline VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE field) {
-  struct cDataConverter_data *data;
+static inline VALUE cStructure_decode_static_conditions(VALUE self, VALUE field) {
+  struct cStructure_data *data;
   struct cField_data *field_data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
   data->__offset = Qnil;
   data->__condition = Qnil;
@@ -470,44 +470,44 @@ static inline VALUE cDataConverter_decode_static_conditions(VALUE self, VALUE fi
   data->__length = Qnil;
   data->__count = Qnil;
   if (!RTEST(field_data->sequence)) {
-    data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset, field_data->align);
+    data->__offset = cStructure_decode_seek_offset(self, field_data->offset, field_data->relative_offset, field_data->align);
     if (!data->__offset)
       return Qnil;
-    data->__condition = cDataConverter_decode_condition(self, field_data->condition);
+    data->__condition = cStructure_decode_condition(self, field_data->condition);
     if (!RTEST(data->__condition))
       return Qnil;
-    data->__type = cDataConverter_decode_type(self, field_data->type);
-    data->__length = cDataConverter_decode_length(self, field_data->length);
+    data->__type = cStructure_decode_type(self, field_data->type);
+    data->__length = cStructure_decode_length(self, field_data->length);
   }
-  data->__count = cDataConverter_decode_count(self, field_data->count);
+  data->__count = cStructure_decode_count(self, field_data->count);
   return Qtrue;
 }
 
-static inline VALUE cDataConverter_decode_dynamic_conditions(VALUE self, VALUE field) {
-  struct cDataConverter_data *data;
+static inline VALUE cStructure_decode_dynamic_conditions(VALUE self, VALUE field) {
+  struct cStructure_data *data;
   struct cField_data *field_data;
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
   if (!RTEST(field_data->sequence))
     return Qtrue;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__offset = Qnil;
   data->__condition = Qnil;
   data->__type = Qnil;
   data->__length = Qnil;
-  data->__offset = cDataConverter_decode_seek_offset(self, field_data->offset, field_data->relative_offset, field_data->align);
+  data->__offset = cStructure_decode_seek_offset(self, field_data->offset, field_data->relative_offset, field_data->align);
   if (!data->__offset)
     return Qfalse;
-  data->__condition = cDataConverter_decode_condition(self, field_data->condition);
+  data->__condition = cStructure_decode_condition(self, field_data->condition);
   if (!RTEST(data->__condition))
     return Qfalse;
-  data->__type = cDataConverter_decode_type(self, field_data->type);
-  data->__length = cDataConverter_decode_length(self, field_data->length);
+  data->__type = cStructure_decode_type(self, field_data->type);
+  data->__length = cStructure_decode_length(self, field_data->length);
   return Qtrue;
 }
 
-static inline VALUE cDataConverter_restore_context(VALUE self) {
-  struct cDataConverter_data *data;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+static inline VALUE cStructure_restore_context(VALUE self) {
+  struct cStructure_data *data;
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   data->__iterator = Qnil;
   data->__type = Qnil;
   data->__length = Qnil;
@@ -520,13 +520,13 @@ static inline VALUE cDataConverter_restore_context(VALUE self) {
 static ID id_convert;
 static ID id___convert_field;
 
-static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
+static inline VALUE cStructure_convert_field(VALUE self, VALUE field) {
   VALUE res;
-  struct cDataConverter_data *data;
+  struct cStructure_data *data;
   struct cField_data *field_data;
-  if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
+  if (NIL_P(cStructure_decode_static_conditions(self, field)))
     return Qnil;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
   if (RTEST(field_data->count)) {
@@ -535,7 +535,7 @@ static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
 
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
-      if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
+      if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
         rb_ary_store(res, i, rb_funcall(data->__type, id_convert, 7,
           data->__input,
           data->__output,
@@ -549,7 +549,7 @@ static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
     }
   } else {
     data->__iterator = INT2FIX(0);
-    if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
+    if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
       res = rb_funcall(data->__type, id_convert, 7,
         data->__input,
         data->__output,
@@ -562,20 +562,20 @@ static inline VALUE cDataConverter_convert_field(VALUE self, VALUE field) {
       res = Qnil;
   }
 
-  cDataConverter_restore_context(self);
+  cStructure_restore_context(self);
   return res;
 }
 
 static ID id_load;
 static ID id___load_field;
 
-static inline VALUE cDataConverter_load_field(VALUE self, VALUE field) {
+static inline VALUE cStructure_load_field(VALUE self, VALUE field) {
   VALUE res;
-  struct cDataConverter_data *data;
+  struct cStructure_data *data;
   struct cField_data *field_data;
-  if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
+  if (NIL_P(cStructure_decode_static_conditions(self, field)))
     return Qnil;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
   if (RTEST(field_data->count)) {
@@ -584,7 +584,7 @@ static inline VALUE cDataConverter_load_field(VALUE self, VALUE field) {
 
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
-      if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
+      if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
         rb_ary_store(res, i, rb_funcall(data->__type, id_load, 5,
           data->__input,
           data->__input_big,
@@ -596,7 +596,7 @@ static inline VALUE cDataConverter_load_field(VALUE self, VALUE field) {
     }
   } else {
     data->__iterator = INT2FIX(0);
-    if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
+    if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
       res = rb_funcall(data->__type, id_load, 5,
         data->__input,
         data->__input_big,
@@ -606,19 +606,19 @@ static inline VALUE cDataConverter_load_field(VALUE self, VALUE field) {
     else
       res = Qnil;
   }
-  cDataConverter_restore_context(self);
+  cStructure_restore_context(self);
   return res;
 }
 
 static ID id_dump;
 static ID id___dump_field;
 
-static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE field) {
-  struct cDataConverter_data *data;
+static inline VALUE cStructure_dump_field(VALUE self, VALUE values, VALUE field) {
+  struct cStructure_data *data;
   struct cField_data *field_data;
-  if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
+  if (NIL_P(cStructure_decode_static_conditions(self, field)))
     return Qnil;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
   if (RTEST(field_data->count)) {
@@ -626,7 +626,7 @@ static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE fi
 
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
-      if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
+      if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
         rb_funcall(data->__type, id_dump, 6,
           rb_ary_entry(values, i),
           data->__output,
@@ -637,7 +637,7 @@ static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE fi
     }
   } else {
     data->__iterator = INT2FIX(0);
-    if (RTEST(cDataConverter_decode_dynamic_conditions(self, field)))
+    if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
       rb_funcall(data->__type, id_dump, 6,
         values,
         data->__output,
@@ -646,25 +646,25 @@ static inline VALUE cDataConverter_dump_field(VALUE self, VALUE values, VALUE fi
         data->__iterator,
         data->__length);
   }
-  cDataConverter_restore_context(self);
+  cStructure_restore_context(self);
   return Qnil;
 }
 
 static ID id_shape;
 static ID id___shape_field;
 
-static inline VALUE cDataConverter_shape_field(
+static inline VALUE cStructure_shape_field(
     VALUE self,
     VALUE values,
     VALUE kind,
     VALUE field)
 {
   VALUE res = Qnil;
-  struct cDataConverter_data *data;
+  struct cStructure_data *data;
   struct cField_data *field_data;
-  if (NIL_P(cDataConverter_decode_static_conditions(self, field)))
+  if (NIL_P(cStructure_decode_static_conditions(self, field)))
     return Qnil;
-  TypedData_Get_Struct(self, struct cDataConverter_data, &cDataConverter_type, data);
+  TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data);
   TypedData_Get_Struct(field, struct cField_data, &cField_type, field_data);
 
   if (RTEST(field_data->count)) {
@@ -673,7 +673,7 @@ static inline VALUE cDataConverter_shape_field(
 
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
-      if (RTEST(cDataConverter_decode_dynamic_conditions(self, field))) {
+      if (RTEST(cStructure_decode_dynamic_conditions(self, field))) {
         VALUE shape = rb_funcall(data->__type, id_shape, 6,
           rb_ary_entry(values, i),
           data->__cur_position,
@@ -693,7 +693,7 @@ static inline VALUE cDataConverter_shape_field(
     res = rb_class_new_instance(1, &res, kind);
   } else {
     data->__iterator = INT2FIX(0);
-    if (RTEST(cDataConverter_decode_dynamic_conditions(self, field))) {
+    if (RTEST(cStructure_decode_dynamic_conditions(self, field))) {
       res = rb_funcall(data->__type, id_shape, 6,
         values,
         data->__cur_position,
@@ -709,7 +709,7 @@ static inline VALUE cDataConverter_shape_field(
       }
     }
   }
-  cDataConverter_restore_context(self);
+  cStructure_restore_context(self);
   return res;
 }
 
@@ -721,11 +721,11 @@ struct fields_state {
   VALUE field;
 };
 
-static inline VALUE cDataConverter_fields_rescue(VALUE state_p, VALUE exception) {
+static inline VALUE cStructure_fields_rescue(VALUE state_p, VALUE exception) {
   struct fields_state *state = (struct fields_state *)state_p;
   if (NIL_P(state->field)) {
-    struct cDataConverter_data *data;
-    TypedData_Get_Struct(state->self, struct cDataConverter_data, &cDataConverter_type, data);
+    struct cStructure_data *data;
+    TypedData_Get_Struct(state->self, struct cStructure_data, &cStructure_type, data);
     if (!NIL_P(rb_funcall(mLibBin, rb_intern("output"), 0)))
       rb_funcall(rb_funcall(mLibBin, rb_intern("output"), 0), rb_intern("print"), 6,
         rb_obj_class(state->self),
@@ -750,7 +750,7 @@ static inline VALUE cDataConverter_fields_rescue(VALUE state_p, VALUE exception)
   return state->self;
 }
 
-static inline VALUE cDataConverter_load_fields_wrapper(VALUE state_p) {
+static inline VALUE cStructure_load_fields_wrapper(VALUE state_p) {
   struct fields_state *state = (struct fields_state *)state_p;
   state->fields = rb_ivar_get(rb_obj_class(state->self), id_fields);
   for (long i = 0; i < RARRAY_LEN(state->fields); i++) {
@@ -764,14 +764,14 @@ static inline VALUE cDataConverter_load_fields_wrapper(VALUE state_p) {
 
 static ID id___load_fields;
 
-static VALUE cDataConverter_load_fields(VALUE self) {
+static VALUE cStructure_load_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
-  rb_rescue(&cDataConverter_load_fields_wrapper, (VALUE)&state,
-            &cDataConverter_fields_rescue, (VALUE)&state);
+  rb_rescue(&cStructure_load_fields_wrapper, (VALUE)&state,
+            &cStructure_fields_rescue, (VALUE)&state);
   return self;
 }
 
-static inline VALUE cDataConverter_dump_fields_wrapper(VALUE state_p) {
+static inline VALUE cStructure_dump_fields_wrapper(VALUE state_p) {
   struct fields_state *state = (struct fields_state *)state_p;
   state->fields = rb_ivar_get(rb_obj_class(state->self), id_fields);
   for (long i = 0; i < RARRAY_LEN(state->fields); i++) {
@@ -785,14 +785,14 @@ static inline VALUE cDataConverter_dump_fields_wrapper(VALUE state_p) {
 
 static ID id___dump_fields;
 
-static VALUE cDataConverter_dump_fields(VALUE self) {
+static VALUE cStructure_dump_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
-  rb_rescue(&cDataConverter_dump_fields_wrapper, (VALUE)&state,
-            &cDataConverter_fields_rescue, (VALUE)&state);
+  rb_rescue(&cStructure_dump_fields_wrapper, (VALUE)&state,
+            &cStructure_fields_rescue, (VALUE)&state);
   return self;
 }
 
-static inline VALUE cDataConverter_convert_fields_wrapper(VALUE state_p) {
+static inline VALUE cStructure_convert_fields_wrapper(VALUE state_p) {
   struct fields_state *state = (struct fields_state *)state_p;
   state->fields = rb_ivar_get(rb_obj_class(state->self), id_fields);
   for (long i = 0; i < RARRAY_LEN(state->fields); i++) {
@@ -806,10 +806,10 @@ static inline VALUE cDataConverter_convert_fields_wrapper(VALUE state_p) {
 
 static ID id___convert_fields;
 
-static VALUE cDataConverter_convert_fields(VALUE self) {
+static VALUE cStructure_convert_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
-  rb_rescue(&cDataConverter_convert_fields_wrapper, (VALUE)&state,
-            &cDataConverter_fields_rescue, (VALUE)&state);
+  rb_rescue(&cStructure_convert_fields_wrapper, (VALUE)&state,
+            &cStructure_fields_rescue, (VALUE)&state);
   return self;
 }
 
@@ -820,7 +820,7 @@ struct shape_fields_state {
   VALUE kind;
 };
 
-static inline VALUE cDataConverter_shape_fields_wrapper(VALUE state_p) {
+static inline VALUE cStructure_shape_fields_wrapper(VALUE state_p) {
   struct shape_fields_state *state = (struct shape_fields_state *)state_p;
   state->fields = rb_ivar_get(rb_obj_class(state->self), id_fields);
   VALUE members = rb_hash_new();
@@ -836,15 +836,15 @@ static inline VALUE cDataConverter_shape_fields_wrapper(VALUE state_p) {
 
 static ID id___shape_fields;
 
-static VALUE cDataConverter_shape_fields(VALUE self, VALUE kind) {
+static VALUE cStructure_shape_fields(VALUE self, VALUE kind) {
   struct shape_fields_state state = {self, Qnil, Qnil, kind};
-  return rb_rescue(&cDataConverter_shape_fields_wrapper, (VALUE)&state,
-                   &cDataConverter_fields_rescue, (VALUE)&state);
+  return rb_rescue(&cStructure_shape_fields_wrapper, (VALUE)&state,
+                   &cStructure_fields_rescue, (VALUE)&state);
 }
 
 static ID id___load;
 
-static inline VALUE cDataConverter_load(int argc, VALUE *argv, VALUE self) {
+static inline VALUE cStructure_load(int argc, VALUE *argv, VALUE self) {
   VALUE input;
   VALUE input_big;
   VALUE parent;
@@ -858,7 +858,7 @@ static inline VALUE cDataConverter_load(int argc, VALUE *argv, VALUE self) {
 
 static ID id___dump;
 
-static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
+static inline VALUE cStructure_dump(int argc, VALUE *argv, VALUE self) {
   VALUE output;
   VALUE output_big;
   VALUE parent;
@@ -872,7 +872,7 @@ static inline VALUE cDataConverter_dump(int argc, VALUE *argv, VALUE self) {
 
 static ID id___convert;
 
-static VALUE cDataConverter_convert(int argc, VALUE *argv, VALUE self) {
+static VALUE cStructure_convert(int argc, VALUE *argv, VALUE self) {
   VALUE input;
   VALUE output;
   VALUE input_big;
@@ -888,7 +888,7 @@ static VALUE cDataConverter_convert(int argc, VALUE *argv, VALUE self) {
 
 static ID id___shape;
 
-static VALUE cDataConverter_shape(int argc, VALUE *argv, VALUE self) {
+static VALUE cStructure_shape(int argc, VALUE *argv, VALUE self) {
   VALUE previous_offset;
   VALUE parent;
   VALUE index;
@@ -906,7 +906,7 @@ static VALUE cDataConverter_shape(int argc, VALUE *argv, VALUE self) {
   return rb_class_new_instance(1, &members, kind);
 }
 
-static VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self) {
+static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
   VALUE input;
   VALUE input_big;
   VALUE parent;
@@ -932,7 +932,7 @@ static VALUE cDataConverter_singl_load(int argc, VALUE *argv, VALUE self) {
   return res;
 }
 
-static VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self) {
+static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
   VALUE value;
   VALUE output;
   VALUE output_big;
@@ -951,7 +951,7 @@ static VALUE cDataConverter_singl_dump(int argc, VALUE *argv, VALUE self) {
   return value;
 }
 
-static VALUE cDataConverter_singl_convert(int argc, VALUE *argv, VALUE self) {
+static VALUE cStructure_singl_convert(int argc, VALUE *argv, VALUE self) {
   VALUE input;
   VALUE output;
   VALUE input_big;
@@ -980,7 +980,7 @@ static VALUE cDataConverter_singl_convert(int argc, VALUE *argv, VALUE self) {
   return res;
 }
 
-static VALUE cDataConverter_singl_shape(int argc, VALUE *argv, VALUE self) {
+static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
   VALUE value;
   VALUE previous_offset;
   VALUE parent;
@@ -1004,7 +1004,7 @@ static VALUE cDataConverter_singl_shape(int argc, VALUE *argv, VALUE self) {
   return res;
 }
 
-static void define_cDataConverter() {
+static void define_cStructure() {
   id_tell = rb_intern("tell");
   id_seek = rb_intern("seek");
   id_fields = rb_intern("@fields");
@@ -1038,13 +1038,13 @@ static void define_cDataConverter() {
   id_shape = rb_intern("shape");
   id___shape = rb_intern("__shape");
 
-  cDataConverter = rb_define_class_under(mLibBin, "DataConverter", rb_cObject);
-  rb_define_alloc_func(cDataConverter, cDataConverter_alloc);
+  cStructure = rb_define_class_under(mLibBin, "Structure", rb_cObject);
+  rb_define_alloc_func(cStructure, cStructure_alloc);
   /**
-   * Create new DataConverter object.
-   * @return [DataConverter] a new DataConverter instance with state set to nil.
+   * Create new Structure object.
+   * @return [Structure] a new Structure instance with state set to nil.
    */
-  rb_define_method(cDataConverter, "initialize", cDataConverter_initialize, 0);
+  rb_define_method(cStructure, "initialize", cStructure_initialize, 0);
 
   DEFINE_STRUCT_STATE_ACCESSORS(parent);
   DEFINE_STRUCT_STATE_ACCESSORS(index);
@@ -1069,7 +1069,7 @@ static void define_cDataConverter() {
    *   @param output [IO] the stream to write data to
    *   @param input_big [Boolean] str endianness of +input+
    *   @param output_big [Boolean] str endianness of +output+
-   *   @param parent [nil,DataConverter] the parent if it exists, nil otherwise
+   *   @param parent [nil,Structure] the parent if it exists, nil otherwise
    *   @param index [nil,Integer] the index if the structure is repeated, nil otherwise
    *   @return [nil]
    *   @example
@@ -1085,7 +1085,7 @@ static void define_cDataConverter() {
    *       __cur_position = __position
    *     end
    */
-  rb_define_method(cDataConverter, "__set_convert_state", cDataConverter_set_convert_state, 6);
+  rb_define_method(cStructure, "__set_convert_state", cStructure_set_convert_state, 6);
   /**
    * Unset attributes after conversion.
    * @return [nil]
@@ -1102,12 +1102,12 @@ static void define_cDataConverter() {
    *     __cur_position = nil
    *   end
    */
-  rb_define_method(cDataConverter, "__unset_convert_state", cDataConverter_unset_convert_state, 0);
+  rb_define_method(cStructure, "__unset_convert_state", cStructure_unset_convert_state, 0);
   /**
    * @overload __set_size_state(position, parent, index)
    *   Set attributes for computing size or shape
    *   @param position [Integer] The position of the field
-   *   @param parent [nil,DataConverter] the parent if it exists, nil otherwise
+   *   @param parent [nil,Structure] the parent if it exists, nil otherwise
    *   @param index [nil,Integer] the index if the structure is repeated, nil otherwise
    *   @return [nil]
    *   @example
@@ -1119,7 +1119,7 @@ static void define_cDataConverter() {
    *       __cur_position = __position
    *     end
    */
-  rb_define_method(cDataConverter, "__set_size_state", cDataConverter_set_size_state, 3);
+  rb_define_method(cStructure, "__set_size_state", cStructure_set_size_state, 3);
   /**
    * Unset attributes after size or shape computation
    * @return [nil]
@@ -1132,13 +1132,13 @@ static void define_cDataConverter() {
    *     __cur_position = nil
    *   end
    */
-  rb_define_method(cDataConverter, "__unset_size_state", cDataConverter_unset_size_state, 0);
+  rb_define_method(cStructure, "__unset_size_state", cStructure_unset_size_state, 0);
   /**
    * @overload __set_load_state(input, input_big, parent, index)
    *   Set attributes for loading
    *   @param input [IO] the stream to read data from
    *   @param input_big [Boolean] str endianness of +input+
-   *   @param parent [nil,DataConverter] the parent if it exists, nil otherwise
+   *   @param parent [nil,Structure] the parent if it exists, nil otherwise
    *   @param index [nil,Integer] the index if the structure is repeated, nil otherwise
    *   @return [nil]
    *   @example
@@ -1152,7 +1152,7 @@ static void define_cDataConverter() {
    *       __cur_position = __position
    *     end
    */
-  rb_define_method(cDataConverter, "__set_load_state", cDataConverter_set_load_state, 4);
+  rb_define_method(cStructure, "__set_load_state", cStructure_set_load_state, 4);
   /**
    * Unset attributes after loading
    * @return [nil]
@@ -1167,13 +1167,13 @@ static void define_cDataConverter() {
    *     __cur_position = nil
    *   end
    */
-  rb_define_method(cDataConverter, "__unset_load_state", cDataConverter_unset_load_state, 0);
+  rb_define_method(cStructure, "__unset_load_state", cStructure_unset_load_state, 0);
   /**
    * @overload __set_dump_state(output, output_big, parent, index)
    *   Set attributes for dumping
    *   @param output [IO] the stream to write data to
    *   @param output_big [Boolean] str endianness of +output+
-   *   @param parent [nil,DataConverter] the parent if it exists, nil otherwise
+   *   @param parent [nil,Structure] the parent if it exists, nil otherwise
    *   @param index [nil,Integer] the index if the structure is repeated, nil otherwise
    *   @return [nil]
    *   @example
@@ -1187,7 +1187,7 @@ static void define_cDataConverter() {
    *       __cur_position = __position
    *     end
    */
-  rb_define_method(cDataConverter, "__set_dump_state", cDataConverter_set_dump_state, 4);
+  rb_define_method(cStructure, "__set_dump_state", cStructure_set_dump_state, 4);
   /**
    * Unset attributes after dumping
    * @return [nil]
@@ -1202,7 +1202,7 @@ static void define_cDataConverter() {
    *     __cur_position = nil
    *   end
    */
-  rb_define_method(cDataConverter, "__unset_dump_state", cDataConverter_unset_dump_state, 0);
+  rb_define_method(cStructure, "__unset_dump_state", cStructure_unset_dump_state, 0);
 
   /**
    * @overload __decode_expression(expression)
@@ -1220,7 +1220,7 @@ static void define_cDataConverter() {
    *       end
    *     end
    */
-  rb_define_method(cDataConverter, "__decode_expression", cDataConverter_decode_expression, 1);
+  rb_define_method(cStructure, "__decode_expression", cStructure_decode_expression, 1);
   /**
    * @overload __decode_seek_offset(offset, relative_offset, align)
    *   Decode the offset and seek to this position in the active streams.
@@ -1259,7 +1259,7 @@ static void define_cDataConverter() {
    *       cur_pos
    *     end
    */
-  rb_define_method(cDataConverter, "__decode_seek_offset", cDataConverter_decode_seek_offset, 3);
+  rb_define_method(cStructure, "__decode_seek_offset", cStructure_decode_seek_offset, 3);
   /**
    * @overload __decode_condition(condition)
    *   Decode the condition expression
@@ -1273,7 +1273,7 @@ static void define_cDataConverter() {
    *       __decode_expression(condition)
    *     end
    */
-  rb_define_method(cDataConverter, "__decode_condition", cDataConverter_decode_condition, 1);
+  rb_define_method(cStructure, "__decode_condition", cStructure_decode_condition, 1);
   /**
    * @overload __decode_count(count)
    *   Decode the count expression.
@@ -1287,7 +1287,7 @@ static void define_cDataConverter() {
    *       __decode_expression(count)
    *     end
    */
-  rb_define_method(cDataConverter, "__decode_count", cDataConverter_decode_count, 1);
+  rb_define_method(cStructure, "__decode_count", cStructure_decode_count, 1);
   /**
    * @overload __decode_type(type)
    *   Decode the type expression.
@@ -1300,7 +1300,7 @@ static void define_cDataConverter() {
    *       __decode_expression(type)
    *     end
    */
-  rb_define_method(cDataConverter, "__decode_type", cDataConverter_decode_type, 1);
+  rb_define_method(cStructure, "__decode_type", cStructure_decode_type, 1);
   /**
    * @overload __decode_length(length)
    *   Decode the length expression.
@@ -1314,7 +1314,7 @@ static void define_cDataConverter() {
    *       __decode_expression(length)
    *     end
    */
-  rb_define_method(cDataConverter, "__decode_length", cDataConverter_decode_length, 1);
+  rb_define_method(cStructure, "__decode_length", cStructure_decode_length, 1);
   /**
    * @overload __decode_static_conditions(field)
    *   Sets field specific context. Return nil if the field is inactive.
@@ -1343,7 +1343,7 @@ static void define_cDataConverter() {
    *       __count = __decode_count(field.count)
    *     end
    */
-  rb_define_method(cDataConverter, "__decode_static_conditions", cDataConverter_decode_static_conditions, 1);
+  rb_define_method(cStructure, "__decode_static_conditions", cStructure_decode_static_conditions, 1);
   /**
    * @overload __decode_dynamic_conditions(field)
    *   Sets field repetition specific context.
@@ -1369,7 +1369,7 @@ static void define_cDataConverter() {
    *       return true
    *     end
    */
-  rb_define_method(cDataConverter, "__decode_dynamic_conditions", cDataConverter_decode_dynamic_conditions, 1);
+  rb_define_method(cStructure, "__decode_dynamic_conditions", cStructure_decode_dynamic_conditions, 1);
 
   /**
    * Restore the field specific context.
@@ -1385,7 +1385,7 @@ static void define_cDataConverter() {
    *     __condition = nil
    *   end
    */
-  rb_define_method(cDataConverter, "__restore_context", cDataConverter_restore_context, 0);
+  rb_define_method(cStructure, "__restore_context", cStructure_restore_context, 0);
 
   /**
    * @overload __convert_field(field)
@@ -1409,7 +1409,7 @@ static void define_cDataConverter() {
    *       vs
    *     end
    */
-  rb_define_method(cDataConverter, "__convert_field", cDataConverter_convert_field, 1);
+  rb_define_method(cStructure, "__convert_field", cStructure_convert_field, 1);
   /**
    * @overload __load_field(field)
    *   Load the value of a structure field.
@@ -1432,7 +1432,7 @@ static void define_cDataConverter() {
    *       vs
    *     end
    */
-  rb_define_method(cDataConverter, "__load_field", cDataConverter_load_field, 1);
+  rb_define_method(cStructure, "__load_field", cStructure_load_field, 1);
   /**
    * @overload __dump_field(value, field)
    *   Dump the value of a structure field.
@@ -1453,7 +1453,7 @@ static void define_cDataConverter() {
    *       __restore_context
    *     end
    */
-  rb_define_method(cDataConverter, "__dump_field", cDataConverter_dump_field, 2);
+  rb_define_method(cStructure, "__dump_field", cStructure_dump_field, 2);
   /**
    * @overload __shape_field(value, kind, field)
    *   Return the shape of the structure field.
@@ -1479,12 +1479,12 @@ static void define_cDataConverter() {
    *       vs
    *     end
    */
-  rb_define_method(cDataConverter, "__shape_field", cDataConverter_shape_field, 3);
+  rb_define_method(cStructure, "__shape_field", cStructure_shape_field, 3);
 
   /**
    * Load the fields of the structure. The load state must
    * have been set beforehand.
-   * @return [DataConverter] self
+   * @return [Structure] self
    * @example
    *   # Original Ruby implementation
    *   def __load_fields
@@ -1500,11 +1500,11 @@ static void define_cDataConverter() {
    *     self
    *   end
    */
-  rb_define_method(cDataConverter, "__load_fields", cDataConverter_load_fields, 0);
+  rb_define_method(cStructure, "__load_fields", cStructure_load_fields, 0);
   /**
    * Dump the fields of the structure. The dump state must
    * have been set beforehand.
-   * @return [DataConverter] self
+   * @return [Structure] self
    * @example
    *   # Original Ruby implementation
    *   def __dump_fields
@@ -1520,11 +1520,11 @@ static void define_cDataConverter() {
    *     self
    *   end
    */
-  rb_define_method(cDataConverter, "__dump_fields", cDataConverter_dump_fields, 0);
+  rb_define_method(cStructure, "__dump_fields", cStructure_dump_fields, 0);
   /**
    * Convert the fields of the structure. The conversion
    * state must have been set beforehand.
-   * @return [DataConverter] self
+   * @return [Structure] self
    * @example
    *   # Original Ruby implementation
    *   def __convert_fields
@@ -1540,7 +1540,7 @@ static void define_cDataConverter() {
    *     self
    *   end
    */
-  rb_define_method(cDataConverter, "__convert_fields", cDataConverter_convert_fields, 0);
+  rb_define_method(cStructure, "__convert_fields", cStructure_convert_fields, 0);
   /**
    * @overload __shape_fields(kind)
    *   Return the shape of the structure fields in a Hash, indexed by the fields' names.
@@ -1563,16 +1563,16 @@ static void define_cDataConverter() {
    *       return members
    *     end
    */
-  rb_define_method(cDataConverter, "__shape_fields", cDataConverter_shape_fields, 1);
+  rb_define_method(cStructure, "__shape_fields", cStructure_shape_fields, 1);
 
   /**
    * @overload __load(input, input_big, parent = nil, index = nil)
    *   Fill in the structure by loading it from +input+.
    *   @param input [IO] the stream to load the structure from
    *   @param input_big [Boolean] the endianness of +input+
-   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param parent [Structure] if given, the parent of the structure
    *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
-   *   @return [DataConverter] self
+   *   @return [Structure] self
    *   @example
    *     # Original Ruby implementation
    *     def __load(input, input_big, parent = nil, index = nil)
@@ -1582,15 +1582,15 @@ static void define_cDataConverter() {
    *       self
    *     end
    */
-  rb_define_method(cDataConverter, "__load", cDataConverter_load, -1);
+  rb_define_method(cStructure, "__load", cStructure_load, -1);
   /**
    * @overload __dump(output, output_big, parent = nil, index = nil)
    *   Dump the structure to +output+.
    *   @param output [IO] the stream to dump the structure to
    *   @param output_big [Boolean] the endianness of +output+
-   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param parent [Structure] if given, the parent of the structure
    *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
-   *   @return [DataConverter] self
+   *   @return [Structure] self
    *   @example
    *     # Original Ruby implementation
    *     def __dump(output, output_big, parent = nil, index = nil)
@@ -1600,7 +1600,7 @@ static void define_cDataConverter() {
    *       self
    *     end
    */
-  rb_define_method(cDataConverter, "__dump", cDataConverter_dump, -1);
+  rb_define_method(cStructure, "__dump", cStructure_dump, -1);
   /**
    * @overload __convert(input, output, input_big, output_big, parent = nil, index = nil)
    *   Fill in the structure by loading it from +input+ and
@@ -1609,9 +1609,9 @@ static void define_cDataConverter() {
    *   @param output [IO] the stream to dump the structure to
    *   @param input_big [Boolean] the endianness of +input+
    *   @param output_big [Boolean] the endianness of +output+
-   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param parent [Structure] if given, the parent of the structure
    *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
-   *   @return [DataConverter] self
+   *   @return [Structure] self
    *   @example
    *     # Original Ruby implementation
    *     def __convert(input, output, input_big, output_big, parent = nil, index = nil)
@@ -1621,12 +1621,12 @@ static void define_cDataConverter() {
    *       self
    *     end
    */
-  rb_define_method(cDataConverter, "__convert", cDataConverter_convert, -1);
+  rb_define_method(cStructure, "__convert", cStructure_convert, -1);
   /**
    * @overload __shape(offset = 0, parent = nil, index = nil, kind = DataShape)
    *   Return the shape of the structure.
    *   @param offset [Integer] the base position of the field
-   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param parent [Structure] if given, the parent of the structure
    *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
    *   @param kind [Class] the kind of structure to create
    *   @return [kind] the the shape of the structure
@@ -1640,17 +1640,17 @@ static void define_cDataConverter() {
    *       kind::new(members)
    *     end
    */
-  rb_define_method(cDataConverter, "__shape", cDataConverter_shape, -1);
+  rb_define_method(cStructure, "__shape", cStructure_shape, -1);
 
   /**
    * @overload load(input, input_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
    *   Load a structure from +input+.
    *   @param input [IO] the stream to load the structure from
    *   @param input_big [Boolean] the endianness of +input+
-   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param parent [Structure] if given, the parent of the structure
    *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
    *   @param length [Integer] if given, the length of the vector of structure
-   *   @return [DataConverter,Array<DataConverter>] a new strcuture, or
+   *   @return [Structure,Array<Structure>] a new strcuture, or
    *     an array of structures if length was specified
    *   @example
    *     # Original Ruby implementation
@@ -1664,17 +1664,17 @@ static void define_cDataConverter() {
    *       end
    *     end
    */
-  rb_define_singleton_method(cDataConverter, "load", cDataConverter_singl_load, -1);
+  rb_define_singleton_method(cStructure, "load", cStructure_singl_load, -1);
   /**
    * @overload dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
    *   Dump a structure to +output+.
-   *   @param value [DataConverter,Array<DataConverter>] the value of structure to dump
+   *   @param value [Structure,Array<Structure>] the value of structure to dump
    *   @param output [IO] the stream to dump the structure to
    *   @param output_big [Boolean] the endianness of +output+
-   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param parent [Structure] if given, the parent of the structure
    *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
    *   @param length [Integer] if given, the length of the vector of structure
-   *   @return [DataConverter,Array<DataConverter>] +value+
+   *   @return [Structure,Array<Structure>] +value+
    *   @example
    *     # Original Ruby implementation
    *     def self.dump(value, output, output_big = LibBin::default_big?, parent = nil, index = nil, length = nil)
@@ -1687,7 +1687,7 @@ static void define_cDataConverter() {
    *         value.__dump(output, output_big, parent, index)
    *       end
    *     end   */
-  rb_define_singleton_method(cDataConverter, "dump", cDataConverter_singl_dump, -1);
+  rb_define_singleton_method(cStructure, "dump", cStructure_singl_dump, -1);
   /**
    * @overload convert(input, output, input_big = LibBin::default_big?, output_big = !input_big, parent = nil, index = nil, length = nil)
    *   Convert a structure by loading it from +input+ and
@@ -1696,10 +1696,10 @@ static void define_cDataConverter() {
    *   @param output [IO] the stream to dump the structure to
    *   @param input_big [Boolean] the endianness of +input+
    *   @param output_big [Boolean] the endianness of +output+
-   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param parent [Structure] if given, the parent of the structure
    *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
    *   @param length [Integer] if given, the length of the vector of structure
-   *   @return [DataConverter,Array<DataConverter>] a new strcuture, or
+   *   @return [Structure,Array<Structure>] a new strcuture, or
    *     an array of structures if length was specified
    *   @example
    *     # Original Ruby implementation
@@ -1713,13 +1713,13 @@ static void define_cDataConverter() {
    *       end
    *     end
    */
-  rb_define_singleton_method(cDataConverter, "convert", cDataConverter_singl_convert, -1);
+  rb_define_singleton_method(cStructure, "convert", cStructure_singl_convert, -1);
   /**
    * @overload shape(value, offset = 0, parent = nil, index = nil, kind = DataShape, length = nil)
    *   Return the shape of the value.
-   *   @param value [DataConverter,Array<DataConverter>] the value of structure to get the shape of
+   *   @param value [Structure,Array<Structure>] the value of structure to get the shape of
    *   @param offset [Integer] the base position of the field
-   *   @param parent [DataConverter] if given, the parent of the structure
+   *   @param parent [Structure] if given, the parent of the structure
    *   @param index [Integer] if given, the structure is repeated and +index+ is the rank this structure
    *   @param kind [Class] the kind of structure to create
    *   @param length [Integer] if given, the length of the vector of structure
@@ -1736,7 +1736,7 @@ static void define_cDataConverter() {
    *       end
    *     end
    */
-  rb_define_singleton_method(cDataConverter, "shape", cDataConverter_singl_shape, -1);
+  rb_define_singleton_method(cStructure, "shape", cStructure_singl_shape, -1);
 }
 
 static VALUE pghalf_from_string_p(VALUE self, VALUE str, VALUE pack_str) {
@@ -1802,7 +1802,7 @@ static void define_cField() {
   rb_str_dot = rb_str_new_cstr(".");
   rb_ary_store(ary, 3, rb_str_dot);
 
-  cField = rb_define_class_under(cDataConverter, "Field", rb_cObject);
+  cField = rb_define_class_under(cStructure, "Field", rb_cObject);
   rb_define_alloc_func(cField, cField_alloc);
   rb_const_set(cField, rb_intern("STRINGS"), ary);
   rb_define_method(cField, "initialize", cField_initialize, 9);
@@ -1864,7 +1864,7 @@ void Init_libbin_c() {
    */
   rb_define_module_function(mLibBin, "pghalf_to_string", pghalf_to_string_p, 2);
   cDataShape = rb_define_class_under(mLibBin, "DataShape", rb_cObject);
-  define_cDataConverter();
+  define_cStructure();
   define_cField();
   define_cScalar();
 }

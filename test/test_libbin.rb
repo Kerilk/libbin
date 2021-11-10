@@ -19,7 +19,7 @@ class LibBinTest < Minitest::Test
   SUFFIX = { true => "be", false => "le" }
 
   def test_half
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       half   :a, count: 4
       pghalf :b, length: 4
     end
@@ -50,7 +50,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_half_le
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       half_le   :a, length: 4
       pghalf_le :b, count: 4
     end
@@ -78,7 +78,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_half_be
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       half_be   :a, count: 4
       pghalf_be :b, count: 4
     end
@@ -102,12 +102,12 @@ class LibBinTest < Minitest::Test
   end
 
   def test_field
-    c = Class::new(LibBin::DataConverter) do
-      field :a, LibBin::DataConverter::Int8
-      field :b, LibBin::DataConverter::Int8
-      field :c, LibBin::DataConverter::Int16
-      field :d, LibBin::DataConverter::Int32
-      field :e, LibBin::DataConverter::Flt
+    c = Class::new(LibBin::Structure) do
+      field :a, LibBin::Structure::Int8
+      field :b, LibBin::Structure::Int8
+      field :c, LibBin::Structure::Int16
+      field :d, LibBin::Structure::Int32
+      field :e, LibBin::Structure::Flt
     end
 
     [true, false].each { |big|
@@ -135,7 +135,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_forced_byte_order
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int8 :a
       int8 :b
       int16_le :c
@@ -159,7 +159,7 @@ class LibBinTest < Minitest::Test
       end
     }
 
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int8 :a
       int8 :b
       int16_be :c
@@ -185,7 +185,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_simple_layout
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int8 :a
       int8 :b
       int16 :c
@@ -218,7 +218,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_array
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int8 :num
       int8 :a, count: 'num'
     end
@@ -239,7 +239,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_offset
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int8 :b, offset: 1
       int32 :d, offset: 4
     end
@@ -254,7 +254,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_offset_relative
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int8 :b, offset: 1, relative_offset: true
       int32 :d, offset: 4, relative_offset: true
     end
@@ -269,7 +269,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_sequence
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int16 :offsets, count: 6
       int16 :data, count: 6, sequence: true, offset: 'offsets[__iterator]'
     end
@@ -295,7 +295,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_sequence_condition
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int16 :offsets, count: 6
       int16 :data, count: 6, sequence: true,
             offset: 'offsets[__iterator]',
@@ -311,7 +311,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_sequence_null
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int16 :offsets, count: 6
       int16 :data, count: 6, sequence: true, offset: 'offsets[__iterator]'
     end
@@ -325,12 +325,12 @@ class LibBinTest < Minitest::Test
   end
 
   def test_datatypes
-    b = Class::new(LibBin::DataConverter) do
+    b = Class::new(LibBin::Structure) do
       int8 :a
       int8 :b
     end
 
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       field :bs, b, count: 5
     end
 
@@ -346,11 +346,11 @@ class LibBinTest < Minitest::Test
   end
 
   def test_local_reference
-    h = Class::new(LibBin::DataConverter) do
+    h = Class::new(LibBin::Structure) do
       int32 :offset
       int32 :count
     end
-    b = Class::new(LibBin::DataConverter) do
+    b = Class::new(LibBin::Structure) do
       field :header, h
       int32 :data, length: 'header.count', offset: 'header.offset'
     end
@@ -380,14 +380,14 @@ class LibBinTest < Minitest::Test
   end
 
   def test_remote_reference
-    h = Class::new(LibBin::DataConverter) do
+    h = Class::new(LibBin::Structure) do
       int32 :offset
       int32 :count
     end
-    d = Class::new(LibBin::DataConverter) do
+    d = Class::new(LibBin::Structure) do
       int32 :data, count: '..\header.count', offset: '..\header.offset'
     end
-    b = Class::new(LibBin::DataConverter) do
+    b = Class::new(LibBin::Structure) do
       field :header, h
       field :body, d
     end
@@ -416,13 +416,13 @@ class LibBinTest < Minitest::Test
   end
 
   def test_class_count
-    h = Class::new(LibBin::DataConverter) do
+    h = Class::new(LibBin::Structure) do
       half :f
     end
-    pgh = Class::new(LibBin::DataConverter) do
+    pgh = Class::new(LibBin::Structure) do
       pghalf :f
     end
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       field :a, h, count: 4
       field :b, pgh, length: lambda { 4 }
     end
@@ -449,15 +449,15 @@ class LibBinTest < Minitest::Test
   end
 
   def test_size
-    h = Class::new(LibBin::DataConverter) do
+    h = Class::new(LibBin::Structure) do
       int32 :offset1
       int16 :offset2
     end
-    b = Class::new(LibBin::DataConverter) do
+    b = Class::new(LibBin::Structure) do
       int32 :datum1, offset: '..\header\offset1'
       int16 :datum2, offset: proc { __parent.header.offset2 }
     end
-    s = Class::new(LibBin::DataConverter) do
+    s = Class::new(LibBin::Structure) do
       field :header, h
       field :body, b
     end
@@ -483,7 +483,7 @@ class LibBinTest < Minitest::Test
       end
     }
 
-    c = Class::new(LibBin::DataConverter) do
+    c = Class::new(LibBin::Structure) do
       int8 :num
       int8 :a, count: 'num'
     end
@@ -499,7 +499,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_strings
-    b = Class::new(LibBin::DataConverter) do
+    b = Class::new(LibBin::Structure) do
       string :h, 5
       string :w, offset: 0x10
     end
@@ -517,7 +517,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_strings2
-    b = Class::new(LibBin::DataConverter) do
+    b = Class::new(LibBin::Structure) do
       string :h, 32
       float :f
     end
@@ -541,16 +541,16 @@ class LibBinTest < Minitest::Test
   end
 
   def test_exception
-    h = Class::new(LibBin::DataConverter) do
+    h = Class::new(LibBin::Structure) do
       int32 :offset1
       int16 :offset2
     end
-    b = Class::new(LibBin::DataConverter) do
+    b = Class::new(LibBin::Structure) do
       int32 :datum1, offset: '..\header.offset1'
       int16 :datum2, offset: '..\header.offset2'
       int32 :error, length: 4
     end
-    s = Class::new(LibBin::DataConverter) do
+    s = Class::new(LibBin::Structure) do
       field :header, h
       field :body, b
     end
@@ -575,15 +575,15 @@ class LibBinTest < Minitest::Test
   end
 
   def test_exception2
-    h = Class::new(LibBin::DataConverter) do
+    h = Class::new(LibBin::Structure) do
       int32 :offset1
       int16 :offset2
     end
-    b = Class::new(LibBin::DataConverter) do
+    b = Class::new(LibBin::Structure) do
       int32 :datum1, offset: '..\header.offset1'
       int16 :datum2, offset: '..\header.offset2'
     end
-    s = Class::new(LibBin::DataConverter) do
+    s = Class::new(LibBin::Structure) do
       field :header, h
       field :body, b
     end
@@ -625,7 +625,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_bone_index_translate_table
-    bitt = Class::new(LibBin::DataConverter) do
+    bitt = Class::new(LibBin::Structure) do
       int16 :first_level, length: 16
       int16 :second_level, length: 16, sequence: true, count: 16, condition: "first_level[__iterator] != -1"
       int16 :third_level, length: 16, sequence: true, count: "second_level.length * 16",
@@ -636,7 +636,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_bone_index_translate_table2
-    bitt = Class::new(LibBin::DataConverter) do
+    bitt = Class::new(LibBin::Structure) do
       int16 :offsets, length: 16
 
       def __size(position = 0, parent = nil, index = nil)
@@ -760,7 +760,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_enum
-    enums = Class::new(LibBin::DataConverter) do
+    enums = Class::new(LibBin::Structure) do
       enum :short, {ONE: 1, TWO: 2, FOOR: 4, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8}, size: 16, length: 7
       enum :short2, {ONE: 1, TWO: 2, FOOR: 4, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8}, size: 16
       enum :def, {ONE: 1, TWO: 2}, length: 2
@@ -771,18 +771,18 @@ class LibBinTest < Minitest::Test
   end
 
   def test_enum2
-    e1 = Class::new(LibBin::DataConverter::Enum) do |c|
-      c.type = LibBin::DataConverter::Int16
+    e1 = Class::new(LibBin::Structure::Enum) do |c|
+      c.type = LibBin::Structure::Int16
       c.map = {ONE: 1, TWO: 2, FOOR: 4, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8}
     end
-    e2 = Class::new(LibBin::DataConverter::Enum) do
+    e2 = Class::new(LibBin::Structure::Enum) do
       set_map({ONE: 1, TWO: 2})
     end
-    e3 = Class::new(LibBin::DataConverter::Enum) do
+    e3 = Class::new(LibBin::Structure::Enum) do
       set_type_size 8
       set_map({ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8})
     end
-    enums = Class::new(LibBin::DataConverter) do
+    enums = Class::new(LibBin::Structure) do
       field :short, e1, length: 7
       field :short2, e1
       field :def, e2, length: 2
@@ -838,7 +838,7 @@ class LibBinTest < Minitest::Test
   end
 
   def test_bitfield
-    bitfields = Class::new(LibBin::DataConverter) do
+    bitfields = Class::new(LibBin::Structure) do
       bitfield :b1, { a: 2, b: 3, c: 11 }, size: 16, length: 2
       bitfield :b2, { a: 2, b: 3, c: 11 }, size: 16, signed: true
       bitfield :b3, { a: 24 }, signed: true, length: 2
@@ -848,22 +848,22 @@ class LibBinTest < Minitest::Test
   end
 
   def test_bitfield2
-    b1 = Class::new(LibBin::DataConverter::Bitfield) do |c|
-      c.type = LibBin::DataConverter::UInt16
+    b1 = Class::new(LibBin::Structure::Bitfield) do |c|
+      c.type = LibBin::Structure::UInt16
       c.map = { a: 2, b: 3, c: 11 }
     end
-    b2 = Class::new(LibBin::DataConverter::Bitfield) do
+    b2 = Class::new(LibBin::Structure::Bitfield) do
       set_type_size 16, true
       set_map({ a: 2, b: 3, c: 11 })
     end
-    b3 = Class::new(LibBin::DataConverter::Bitfield) do
-      set_type LibBin::DataConverter::Int32
+    b3 = Class::new(LibBin::Structure::Bitfield) do
+      set_type LibBin::Structure::Int32
       set_map({ a: 24 })
     end
-    b4 = Class::new(LibBin::DataConverter::Bitfield) do
+    b4 = Class::new(LibBin::Structure::Bitfield) do
       set_map({ a: 24 })
     end
-    bitfields = Class::new(LibBin::DataConverter) do
+    bitfields = Class::new(LibBin::Structure) do
       field :b1, b1, length: 2
       field :b2, b2
       field :b3, b3, length: 2
@@ -873,16 +873,16 @@ class LibBinTest < Minitest::Test
   end
 
   def test_align
-    a1 = Class::new(LibBin::DataConverter) do
+    a1 = Class::new(LibBin::Structure) do
       int16 :a
       uint32 :b, align: true
     end
-    a2 = Class::new(LibBin::DataConverter) do
+    a2 = Class::new(LibBin::Structure) do
       int16 :a
       uint32 :b, align: true
       set_always_align(true)
     end
-    a3 = Class::new(LibBin::DataConverter) do
+    a3 = Class::new(LibBin::Structure) do
       field :a, a1
       int16 :b
       field :c, a2

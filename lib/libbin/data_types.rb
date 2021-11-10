@@ -81,7 +81,7 @@ module LibBin
 
   # @abstract This class is used to describe a binary data structure
   # composed of different fields.
-  class DataConverter
+  class Structure
 
     # @!parse
     #   class Field
@@ -97,27 +97,27 @@ module LibBin
     #     # @param name [Symbol, String] the name of the field.
     #     # @param type [Class, String, Proc] the type of the field, as a Class, or
     #     #   as a String or Proc that will be evaluated in the context of the
-    #     #   {DataConverter} instance.
+    #     #   {Structure} instance.
     #     # @param length [Integer, String, Proc] if given, consider the field a
     #     #   vector of the type. The length is either a constant Integer of a
     #     #   String or Proc that will be evaluated in the context of the
-    #     #   {DataConverter} instance.
+    #     #   {Structure} instance.
     #     # @param count [Integer, String, Proc] if given, consider the field is
     #     #   repeated count times. The count is either a constant Integer of a
     #     #   String or Proc that will be evaluated in the context of the
-    #     #   {DataConverter} instance.
+    #     #   {Structure} instance.
     #     # @param offset [integer, String, Proc] if given, the absolute offset in
     #     #   the file, or the offset from the parent position, where the field can
     #     #   be found. See relative offset. The offset is either a constant
     #     #   Integer of a String or Proc that will be evaluated in the context
-    #     #   of the {DataConverter} instance.
+    #     #   of the {Structure} instance.
     #     # @param sequence [Boolean] if true, +type+, +length+, +offset+, and
     #     #   +condition+ are evaluated for each repetition.
     #     # @param condition [String, Proc] if given, the field, or repetition of the
     #     #   field can be conditionally present. The condition will be evaluated in
-    #     #   the context of the {DataConverter} instance.
-    #     # @param relative_offset [Boolean] consider the +offset+ relative to the field
-    #     #   +parent+.
+    #     #   the context of the {Structure} instance.
+    #     # @param relative_offset [Boolean] consider the +offset+ relative to
+    #     #   the field +parent+.
     #     # @param align [Integer] if given, align the field. If given as an
     #     #   Integer it must be a power of 2. Else the field is aligned to the
     #     #   field's type preferred alignment
@@ -136,25 +136,25 @@ module LibBin
     # @param name [Symbol, String] the name of the field.
     # @param type [Class, String, Proc] the type of the field, as a Class, or
     #   as a String or Proc that will be evaluated in the context of the
-    #   {DataConverter} instance.
+    #   {Structure} instance.
     # @param length [Integer, String, Proc] if given, consider the field a
     #   vector of the type. The length is either a constant Integer of a
     #   String or Proc that will be evaluated in the context of the
-    #   {DataConverter} instance.
+    #   {Structure} instance.
     # @param count [Integer, String, Proc] if given, consider the field is
     #   repeated count times. The count is either a constant Integer of a
     #   String or Proc that will be evaluated in the context of the
-    #   {DataConverter} instance.
+    #   {Structure} instance.
     # @param offset [integer, String, Proc] if given, the absolute offset in
     #   the file, or the offset from the parent position, where the field can
     #   be found. See relative offset. The offset is either a constant
     #   Integer of a String or Proc that will be evaluated in the context
-    #   of the {DataConverter} instance.
+    #   of the {Structure} instance.
     # @param sequence [Boolean] if true, +type+, +length+, +offset+, and
     #   +condition+ are evaluated for each repetition.
     # @param condition [String, Proc] if given, the field, or repetition of the
     #   field can be conditionally present. The condition will be evaluated in
-    #   the context of the {DataConverter} instance.
+    #   the context of the {Structure} instance.
     # @param relative_offset [Boolean] consider the +offset+ relative to the
     #   field +parent+.
     # @param align [Boolean,Integer] if given, align the field. If given as an
@@ -210,7 +210,7 @@ module LibBin
     #       #   Returns the shape of a field of type {$1}
     #       #   @param value [Object] ignored.
     #       #   @param offset [Integer] start of the shape.
-    #       #   @param parent [DataConverter] ignored.
+    #       #   @param parent [Structure] ignored.
     #       #   @param index [Integer] ignored.
     #       #   @param kind [Class] shape class. Will be instantiated through
     #       #     new with the +offset+ and <tt>offset + sizeof($3) * length - 1</tt>.
@@ -222,7 +222,7 @@ module LibBin
     #       #   Returns the size of a field of type {$1}.
     #       #   @param value [Object] ignored.
     #       #   @param offset [Integer] ignored.
-    #       #   @param parent [DataConverter] ignored.
+    #       #   @param parent [Structure] ignored.
     #       #   @param index [Integer] ignored.
     #       #   @param length [Integer] if given the length of the vector. Else
     #       #     the length is considered to be 1.
@@ -232,7 +232,7 @@ module LibBin
     #       #   Load a field of type {$1} from +input+, and return it.
     #       #   @param input [IO] the stream to load the field from.
     #       #   @param input_big [Boolean] the endianness of +input+
-    #       #   @param parent [DataConverter] ignored.
+    #       #   @param parent [Structure] ignored.
     #       #   @param index [Integer] ignored.
     #       #   @param length [Integer] if given the length of the vector. Else
     #       #     the length is considered to be 1.
@@ -247,7 +247,7 @@ module LibBin
     #       #     +length+ is specified.
     #       #   @param output [IO] the stream to dump the field to.
     #       #   @param output_big [Boolean] the endianness of +output+.
-    #       #   @param parent [DataConverter] ignored.
+    #       #   @param parent [Structure] ignored.
     #       #   @param index [Integer] ignored.
     #       #   @param length [Integer] if given the length of the vector. Else
     #       #     the length is considered to be 1.
@@ -260,7 +260,7 @@ module LibBin
     #       #   @param output [IO] the stream to dump the field to.
     #       #   @param input_big [Boolean] the endianness of +input+
     #       #   @param output_big [Boolean] the endianness of +output+.
-    #       #   @param parent [DataConverter] ignored.
+    #       #   @param parent [Structure] ignored.
     #       #   @param index [Integer] ignored.
     #       #   @param length [Integer] if given the length of the vector. Else
     #       #     the length is considered to be 1.
@@ -405,7 +405,7 @@ EOF
       # Load a field of type {Enum} from +input+, and return it.
       # @param input [IO] the stream to load the field from.
       # @param input_big [Boolean] the endianness of +input+
-      # @param parent [DataConverter] ignored.
+      # @param parent [Structure] ignored.
       # @param index [Integer] ignored.
       # @param length [Integer] if given the length of the vector. Else
       #   the length is considered to be 1.
@@ -433,7 +433,7 @@ EOF
       # @param output [IO] the stream to dump the field to.
       # @param input_big [Boolean] the endianness of +input+
       # @param output_big [Boolean] the endianness of +output+.
-      # @param parent [DataConverter] ignored.
+      # @param parent [Structure] ignored.
       # @param index [Integer] ignored.
       # @param length [Integer] if given the length of the vector. Else
       #   the length is considered to be 1.
@@ -461,7 +461,7 @@ EOF
       #   +length+ is specified.
       # @param output [IO] the stream to dump the field to.
       # @param output_big [Boolean] the endianness of +output+.
-      # @param parent [DataConverter] ignored.
+      # @param parent [Structure] ignored.
       # @param index [Integer] ignored.
       # @param length [Integer] if given the length of the vector. Else
       #   the length is considered to be 1.
@@ -629,7 +629,7 @@ EOF
       # Load a {Bitfield} from +input+, and return it.
       # @param input [IO] the stream to load the field from.
       # @param input_big [Boolean] the endianness of +input+
-      # @param parent [DataConverter] ignored.
+      # @param parent [Structure] ignored.
       # @param index [Integer] ignored.
       # @param length [Integer] if given the length of the vector. Else
       #   the length is considered to be 1.
@@ -656,7 +656,7 @@ EOF
       # @param output [IO] the stream to dump the field to.
       # @param input_big [Boolean] the endianness of +input+
       # @param output_big [Boolean] the endianness of +output+.
-      # @param parent [DataConverter] ignored.
+      # @param parent [Structure] ignored.
       # @param index [Integer] ignored.
       # @param length [Integer] if given the length of the vector. Else
       #   the length is considered to be 1.
@@ -683,7 +683,7 @@ EOF
       #   +length+ is specified.
       # @param output [IO] the stream to dump the field to.
       # @param output_big [Boolean] the endianness of +output+.
-      # @param parent [DataConverter] ignored.
+      # @param parent [Structure] ignored.
       # @param index [Integer] ignored.
       # @param length [Integer] if given the length of the vector. Else
       #   the length is considered to be 1.

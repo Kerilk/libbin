@@ -21,7 +21,7 @@ module LibBin
     end
   end
 
-  class DataConverter
+  class Structure
 
     # @!parse
     #   attr_accessor :__parent
@@ -42,7 +42,7 @@ module LibBin
     #
     #   # @method __dump_fields
     #   # Dump fields according to the internal state of +self+
-    #   # @return [DataConverter] self
+    #   # @return [Structure] self
 
     # @!visibility private
     def inspect
@@ -56,7 +56,7 @@ module LibBin
 
     # Returns the size of the structure
     # @param offset [Integer] position in the stream
-    # @param parent [DataConverter] if given, parent structure
+    # @param parent [Structure] if given, parent structure
     # @param index [Integer] index if part of a repeated field inside parent
     # @return [Integer] size of the structure
     def __size(offset = 0, parent = nil, index = nil)
@@ -93,9 +93,9 @@ module LibBin
     end
 
     # Returns the size of a structure
-    # @param value [DataConverter,Array<DataConverter>] field or array of field to get the size of
+    # @param value [Structure,Array<Structure>] field or array of field to get the size of
     # @param offset [Integer] position in the stream
-    # @param parent [DataConverter] if given, parent structure
+    # @param parent [Structure] if given, parent structure
     # @param index [Integer] index if part of a repeated field inside parent
     # @param length [Integer] if given, the length of the vector
     def self.size(value, offset = 0, parent = nil, index = nil, length = nil)

@@ -199,7 +199,7 @@ static VALUE CLASS ## _convert(int argc, VALUE* argv, VALUE self) {             
 
 #define MAKE_CLASS_DEFINE(CLASS_NAME, CLASS)                                  \
 static void define_ ## CLASS() {                                              \
-  CLASS = rb_define_class_under(cDataConverter, #CLASS_NAME, cScalar);        \
+  CLASS = rb_define_class_under(cStructure, #CLASS_NAME, cScalar);        \
   rb_define_singleton_method(CLASS, "align", CLASS ## _align, 0);             \
   rb_define_singleton_method(CLASS, "size", CLASS ## _size, -1);              \
   rb_define_singleton_method(CLASS, "shape", CLASS ## _shape, -1);            \
@@ -454,7 +454,7 @@ static VALUE cStr_convert(int argc, VALUE* argv, VALUE self) {
 }
 
 static void define_cStr() {
-  cStr = rb_define_class_under(cDataConverter, "Str", cScalar);
+  cStr = rb_define_class_under(cStructure, "Str", cScalar);
   /**
    * Returns the alignement of the underlying character type.
    * @return [Integer]
@@ -465,7 +465,7 @@ static void define_cStr() {
    *   Returns the size of a string.
    *   @param value [Object] string to dump.
    *   @param offset [Integer] ignored.
-   *   @param parent [DataConverter] ignored.
+   *   @param parent [Structure] ignored.
    *   @param index [Integer] ignored.
    *   @param length [Integer] if given the length of the vector. Else
    *   the size of the string.
@@ -477,7 +477,7 @@ static void define_cStr() {
    *   Returns the shape of a string field
    *   @param value [Object] ignored.
    *   @param offset [Integer] start of the shape.
-   *   @param parent [DataConverter] ignored.
+   *   @param parent [Structure] ignored.
    *   @param index [Integer] ignored.
    *   @param kind [Class] shape class. Will be instantiated through
    *     new with the +offset+ and <tt>offset + sizeof($3) * length - 1</tt>.
@@ -491,7 +491,7 @@ static void define_cStr() {
    *   Load a string field from +input+, and return it.
    *   @param input [IO] the stream to load the field from.
    *   @param input_big [Boolean] the endianness of +input+
-   *   @param parent [DataConverter] ignored.
+   *   @param parent [Structure] ignored.
    *   @param index [Integer] ignored.
    *   @param length [Integer] if given the length of the string. Else
    *     the string is considered NULL terminated.
@@ -505,7 +505,7 @@ static void define_cStr() {
    *     of the string.
    *   @param output [IO] the stream to dump the field to.
    *   @param output_big [Boolean] the endianness of +output+.
-   *   @param parent [DataConverter] ignored.
+   *   @param parent [Structure] ignored.
    *   @param index [Integer] ignored.
    *   @param length [Integer] if given the length of the string to dump. Else
    *     the length is the size of the string.
@@ -520,7 +520,7 @@ static void define_cStr() {
    *   @param output [IO] the stream to dump the field to.
    *   @param input_big [Boolean] the endianness of +input+
    *   @param output_big [Boolean] the endianness of +output+.
-   *   @param parent [DataConverter] ignored.
+   *   @param parent [Structure] ignored.
    *   @param index [Integer] ignored.
    *   @param length [Integer] if given the length of the string to reqd. Else
    *     the string is considered NULL terminated.
@@ -532,7 +532,7 @@ static void define_cStr() {
 void define_cScalar() {
   id_read = rb_intern("read");
   id_write = rb_intern("write");
-  cScalar = rb_define_class_under(cDataConverter, "Scalar", rb_cObject);
+  cScalar = rb_define_class_under(cStructure, "Scalar", rb_cObject);
   /**
    * Returns false as scalars are not required to be aligned.
    * @return [false] return false.
