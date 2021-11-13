@@ -49,8 +49,8 @@ class MOT2File < LibBin::Structure
     int8 :animation_track
     int8 :format
     int16 :num_keys
-    int16 :padding
-    uint32 :offset
+    # field is aligned on it's size byte boundary
+    uint32 :offset, align: true
     
     # The previous field is also a union. LibBin does not support these for now,
     # but getting around the problem is not particularly difficult:
