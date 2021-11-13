@@ -87,10 +87,113 @@ class MOT2File < LibBin::Structure
   
   # Format 2: quantized values using a 16 bit integer mutiplier
   # value[frame] = p + key[frame] * dp
-  class Interpolation2 < LibBin::Structure
+  class Format2 < LibBin::Structure
     float :p
     float :dp
     uint16 :keys, count: '..\records[__index]\num_keys'
   end
+  
+  # Format 3: quantized values using sepecial half floats.
+  # value[frame] = p + key[frame] * dp
+  class Format3 < LibBin::Structure
+    pghalf :p
+    pghalf :dp
+    uint16 :keys, count: '..\records[__index]\num_keys'
+  end
+  
+  # Format 4: Cubic hermit splines.
+  class Format4 < LibBin::Structure
+    class Key < LibBin::Structure
+      uint16 :index
+      uint16 :padding #Could use align on the next field as well
+      float :p
+      float :m0
+      float :m1
+    end
+    field :keys, Key, count: '..\records[__index]\num_keys'
+  end
+  
+  # Format 5: Cubic hermit splines with quantization
+  class Format5 < LibBin::Structure
+    class Key < LibBin::Structure
+      uint16 :index
+      uint16 :cp
+      uint16 :cm0
+      uint16 :cm1
+    end
+    float :p
+    float :dp
+    float :m0
+    float :dm0
+    float :m1
+    float :dm1
+    field :keys, Key, count: '..\records[__index]\num_keys'
+  end
+  
+  # Format 6: Cubic hermit spline with quantization and
+  # special half floats
+  class Format6 < LibBin::Structure
+    class Key < LibBin::Structure
+      uint8 :index
+      uint8 :cp
+      uint8 :cm0
+      uint8 :cm1
+    end
+    pghalf :p
+    pghalf :dp
+    pghalf :m0
+    pghalf :dm0
+    pghalf :m1
+    pghalf :dm1
+    register_field :keys, Key, count: '..\records[__index]\num_keys'
+  end
+  
+  # Format 7: same as 6 with relative indices
+  # Structure is exactly the same
+  class Format7 < LibBin::Structure
+    class Key < LibBin::Structure
+      uint8 :index
+      uint8 :cp
+      uint8 :cm0
+      uint8 :cm1
+    end
+    pghalf :p
+    pghalf :dp
+    pghalf :m0
+    pghalf :dm0
+    pghalf :m1
+    pghalf :dm1
+    register_field :keys, Key, count: '..\records[__index]\num_keys'
+  end
+  
+  # Format 8: same as 6 but with a bigger index. This index is always store in big endian fashion
+  class Format8 < LibBin::Structure
+    class Key < LibBin::Structure
+      uint16_be :index
+      uint8 :cp
+      uint8 :cm0
+      uint8 :cm1
+    end
+        pghalf :p
+    pghalf :dp
+    pghalf :m0
+    pghalf :dm0
+    pghalf :m1
+    pghalf :dm1
+    register_field :keys, Key, count: '..\records[__index]\num_keys'
+  end
+  
+  FORMATS = [nil, Format1, Format2, Format3, Format4, Format5, Format6, Format7, Format8]
+  def format(i)
+    FORMATS[i]
+  end
+  
+  # register the tracks, they use relative offsets to the record position in the file
+  # note that the type is dynamic and depends on the recod content, so we use the
+  # sequence flag to tell libbin that the type and offset needs to be evaluated for
+  # each repetition
+  field :tracks, lambda { format(records[__iterator].interpolation_type) }, count: 'header\num_records',
+        sequence: true, condition: 'records[__iterator]\interpolation_type != 0 && records[__iterator]\interpolation_type != -1',
+        offset: 'header\offset_records + Record.__size * __iterator + records[__iterator]\offset'
 end
 ```
