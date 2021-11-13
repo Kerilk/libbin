@@ -47,10 +47,21 @@ class MOT2File < LibBin::Structure
   class Record < LibBin::Structure
     int16 :bone_index
     int8 :animation_track
-    int8 :interpolation_type
+    int8 :format
     int16 :num_keys
     # This field is 4 byte aligned
     uint32 :offset, align: true
+    
+    # The previous field is also a union. LibBin does not support these for now,
+    # but getting around the problem is not particularly difficult:
+    def value
+      [offset].pack("L").unpack("F").first
+    end
+    
+    def value=(v)
+      self.offset = [v].pack("F").unpack("L").first
+      v
+    end
   end
   
   # Register the records field.
@@ -58,7 +69,28 @@ class MOT2File < LibBin::Structure
   # Here we showcase two different ways to express those constraints,
   # using a string representing the path, or a proc accessing the
   # class instance members.
-  field :records, Record, count: 'header\num_records', offset: proc { header.offset_records }
+  # There is an additional dummy record at he end of the list.
+  field :records, Record, count: 'header\num_records + 1', offset: proc { header.offset_records }
   
+  # The format defines many way to encode the animations tracks, with
+  # incresing levels of compression, and many use interpolation with
+  # cubic Hermit splines. Unless the animation track is constant
+  # (format 0 (or -1 for dummy) in the record)
+  
+  # Format 1: 1 float value per key
+  # value[frame] = keys[frame]
+  class Format1 < LibBin::Structure
+    # The number of keys is defined in the corresponding record.
+    # Our rank in the repetition gives the index in the record vector.
+    float :keys, count: '..\records[__index]\num_keys'
+  end
+  
+  # Format 2: quantized values using a 16 bit integer mutiplier
+  # value[frame] = p + key[frame] * dp
+  class Interpolation2 < LibBin::Structure
+    float :p
+    float :dp
+    uint16 :keys, count: '..\records[__index]\num_keys'
+  end
 end
 ```
