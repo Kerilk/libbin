@@ -217,6 +217,39 @@ class LibBinTest < Minitest::Test
     }
   end
 
+  def test_expect
+    c = Class::new(LibBin::Structure) do
+      int8 :a, expect: 1
+      int8 :b, expect: lambda { |v| v == 0 }
+      int16 :c, expect: proc { __value == 2 }
+      int32 :d
+      float :e
+    end
+
+    [true, false].each { |big|
+      open_bin("simple_layout_#{SUFFIX[big]}.bin") do |f|
+        s = c::load(f, big)
+        assert_equal(1, s.a)
+        assert_equal(0, s.b)
+        assert_equal(2, s.c)
+        assert_equal(3, s.d)
+        assert_equal(4.0, s.e)
+        str = new_stringio
+        c::dump(s, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
+        open_bin("simple_layout_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
+          f.rewind
+          s = c::convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
+      end
+    }
+  end
+
   def test_array
     c = Class::new(LibBin::Structure) do
       int8 :num

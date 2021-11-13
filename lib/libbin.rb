@@ -36,6 +36,7 @@ module LibBin
     #   attr_accessor :__length
     #   attr_accessor :__count
     #   attr_accessor :__iterator
+    #   attr_accessor :__value
     #
     #   # @method __dump_fields
     #   # Dump fields according to the internal state of +self+
