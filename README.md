@@ -63,7 +63,7 @@ class MOT2File < LibBin::Structure
       v
     end
     
-    # the size of this structure is known (Some tructure's size can only be known
+    # the size of this structure is known (Some structure's size can only be known
     # at runtime.
     def self.size(*args)
       12
