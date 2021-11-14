@@ -88,7 +88,7 @@ class MOT2File < LibBin::Structure
   class Format1 < LibBin::Structure
     # The number of keys is defined in the corresponding record.
     # Our rank in the repetition gives the index in the record vector.
-    float :keys, count: '..\records[__index]\num_keys'
+    float :keys, count: proc { __parent.record[__index].num_keys }
   end
   
   # Format 2: quantized values using a 16 bit integer mutiplier
