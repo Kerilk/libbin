@@ -6,7 +6,7 @@ class MOT2File < LibBin::Structure
   # The file header.
   class Header < LibBin::Structure
     # First field if a 4 character identifier string that is expected to be "mot\x00"
-    string :id, 4, expect: "mot\x00"
+    string :id, 4, expect: "mot\x00".b
     uint32 :version
     uint16 :flags
     uint16 :frame_count
@@ -65,7 +65,7 @@ class MOT2File < LibBin::Structure
   class Format1 < LibBin::Structure
     # The number of keys is defined in the corresponding record.
     # Our rank in the repetition gives the index in the record vector.
-    float :keys, count: '..\records[__index]\num_keys'
+    float :keys, count: proc { __parent.record[__index].num_keys }
   end
   
   # Format 2: quantized values using a 16 bit integer mutiplier
@@ -157,7 +157,7 @@ class MOT2File < LibBin::Structure
       uint8 :cm0
       uint8 :cm1
     end
-        pghalf :p
+    pghalf :p
     pghalf :dp
     pghalf :m0
     pghalf :dm0
