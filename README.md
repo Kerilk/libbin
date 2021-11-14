@@ -198,8 +198,8 @@ class MOT2File < LibBin::Structure
   # note that the type is dynamic and depends on the recod content, so we use the
   # sequence flag to tell libbin that the type and offset needs to be evaluated for
   # each repetition
-  field :tracks, lambda { format(records[__iterator].interpolation_type) }, count: 'header\num_records',
-        sequence: true, condition: 'records[__iterator]\interpolation_type != 0 && records[__iterator]\interpolation_type != -1',
-        offset: 'header\offset_records + Record.__size * __iterator + records[__iterator]\offset'
+  field :tracks, proc { format(records[__iterator].format) }, count: 'header\num_records',
+        sequence: true, condition: proc { records[__iterator].format != 0 && records[__iterator].format != -1 },
+        offset: proc { header.offset_records + Record.size * __iterator + records[__iterator].offset }
 end
 ```
