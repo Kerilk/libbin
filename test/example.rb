@@ -6,7 +6,7 @@ class MOT2File < LibBin::Structure
   # The file header.
   class Header < LibBin::Structure
     # First field if a 4 character identifier string that is expected to be "mot\x00"
-    string :id, 4, expect: "mot\x00"
+    string :id, 4, expect: "mot\x00".b
     uint32 :version
     uint16 :flags
     uint16 :frame_count

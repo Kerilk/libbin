@@ -237,6 +237,7 @@ File.open(File.join("test", "binary", "motion_be.bin"), "rb") do |f|
   header.id = "mot\x00".b
   # etc...
   
-  # The tests contain more examples
+  # The tests contain more examples, or the bayonetta_tools, that
+  # are mainly written using LibBin
 end
 ```
