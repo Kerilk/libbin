@@ -2,6 +2,7 @@
 require 'minitest/autorun'
 require 'libbin'
 require 'stringio'
+require_relative './example'
 
 def bin_path(filename)
   File.join(__dir__, "binary", filename)
@@ -12,7 +13,7 @@ def open_bin(filename, &block)
 end
 
 def new_stringio()
-  StringIO::new("", "r+b")
+  StringIO::new.binmode
 end
 
 class LibBinTest < Minitest::Test
@@ -950,6 +951,26 @@ class LibBinTest < Minitest::Test
       assert_equal(g.read, str.read)
       f.rewind
       g.rewind
+    }
+  end
+
+  def test_example
+    [true, false].each { |big|
+      open_bin("motion_#{SUFFIX[big]}.bin") do |f|
+        mot = MOT2File.load(f, big)
+        str = new_stringio
+        MOT2File.dump(mot, str, big)
+        f.rewind
+        str.rewind
+        assert_equal(f.read, str.read)
+        open_bin("motion_#{SUFFIX[!big]}.bin") do |g|
+          str = new_stringio
+          f.rewind
+          mot = MOT2File.convert(f, str, big, !big)
+          str.rewind
+          assert_equal(g.read, str.read)
+        end
+      end
     }
   end
 
