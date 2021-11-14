@@ -157,7 +157,7 @@ class MOT2File < LibBin::Structure
       uint8 :cm0
       uint8 :cm1
     end
-        pghalf :p
+    pghalf :p
     pghalf :dp
     pghalf :m0
     pghalf :dm0
