@@ -64,7 +64,7 @@
 <p>Detailed documentation can be found here:
 <a href="https://kerilk.github.io/libbin/">https://kerilk.github.io/libbin/</a></p>
 
-<h2 id="philosophy">Philosophy</h2>
+<h2 id="guiding-principles">Guiding Principles</h2>
 
 <p>The goal of libbin is to provide a declarative way to describe binary files
 formats. But, as this declarative approach is not always feasible or efficient,
@@ -88,7 +88,7 @@ Bayonnetta2, ...). The format description can be found here:
   <span class='comment'># The file header.
 </span>  <span class='kw'>class</span> <span class='const'>Header</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="LibBin.html" title="LibBin (module)">LibBin</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="LibBin/Structure.html" title="LibBin::Structure (class)">Structure</a></span></span>
     <span class='comment'># First field if a 4 character identifier string that is expected to be &quot;mot\x00&quot;
-</span>    <span class='id identifier rubyid_string'>string</span> <span class='symbol'>:id</span><span class='comma'>,</span> <span class='int'>4</span><span class='comma'>,</span> <span class='label'>expect:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>mot\x00</span><span class='tstring_end'>&quot;</span></span>
+</span>    <span class='id identifier rubyid_string'>string</span> <span class='symbol'>:id</span><span class='comma'>,</span> <span class='int'>4</span><span class='comma'>,</span> <span class='label'>expect:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>mot\x00</span><span class='tstring_end'>&quot;</span></span><span class='period'>.</span><span class='id identifier rubyid_b'>b</span>
     <span class='id identifier rubyid_uint32'>uint32</span> <span class='symbol'>:version</span>
     <span class='id identifier rubyid_uint16'>uint16</span> <span class='symbol'>:flags</span>
     <span class='id identifier rubyid_uint16'>uint16</span> <span class='symbol'>:frame_count</span>
@@ -133,7 +133,8 @@ Bayonnetta2, ...). The format description can be found here:
 </span>  <span class='comment'># The required count and offset are contained in the header.
 </span>  <span class='comment'># Here we showcase two different ways to express those constraints,
 </span>  <span class='comment'># using a string representing the path, or a proc accessing the
-</span>  <span class='comment'># class instance members.
+</span>  <span class='comment'># class instance members. Accessing and setting members is done
+</span>  <span class='comment'># through accessors with the same name as the field.
 </span>  <span class='comment'># There is an additional dummy record at he end of the list.
 </span>  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:records</span><span class='comma'>,</span> <span class='const'>Record</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>header\num_records + 1</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='label'>offset:</span> <span class='id identifier rubyid_proc'>proc</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_header'>header</span><span class='period'>.</span><span class='id identifier rubyid_offset_records'>offset_records</span> <span class='rbrace'>}</span>
 
@@ -147,7 +148,7 @@ Bayonnetta2, ...). The format description can be found here:
 </span>  <span class='kw'>class</span> <span class='const'>Format1</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="LibBin.html" title="LibBin (module)">LibBin</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="LibBin/Structure.html" title="LibBin::Structure (class)">Structure</a></span></span>
     <span class='comment'># The number of keys is defined in the corresponding record.
 </span>    <span class='comment'># Our rank in the repetition gives the index in the record vector.
-</span>    <span class='id identifier rubyid_float'>float</span> <span class='symbol'>:keys</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>..\records[__index]\num_keys</span><span class='tstring_end'>&#39;</span></span>
+</span>    <span class='id identifier rubyid_float'>float</span> <span class='symbol'>:keys</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='id identifier rubyid_proc'>proc</span> <span class='lbrace'>{</span> <span class='id identifier rubyid___parent'>__parent</span><span class='period'>.</span><span class='id identifier rubyid_record'>record</span><span class='lbracket'>[</span><span class='id identifier rubyid___index'>__index</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_num_keys'>num_keys</span> <span class='rbrace'>}</span>
   <span class='kw'>end</span>
 
   <span class='comment'># Format 2: quantized values using a 16 bit integer mutiplier
@@ -239,7 +240,7 @@ Bayonnetta2, ...). The format description can be found here:
       <span class='id identifier rubyid_uint8'>uint8</span> <span class='symbol'>:cm0</span>
       <span class='id identifier rubyid_uint8'>uint8</span> <span class='symbol'>:cm1</span>
     <span class='kw'>end</span>
-        <span class='id identifier rubyid_pghalf'>pghalf</span> <span class='symbol'>:p</span>
+    <span class='id identifier rubyid_pghalf'>pghalf</span> <span class='symbol'>:p</span>
     <span class='id identifier rubyid_pghalf'>pghalf</span> <span class='symbol'>:dp</span>
     <span class='id identifier rubyid_pghalf'>pghalf</span> <span class='symbol'>:m0</span>
     <span class='id identifier rubyid_pghalf'>pghalf</span> <span class='symbol'>:dm0</span>
@@ -262,10 +263,47 @@ Bayonnetta2, ...). The format description can be found here:
         <span class='label'>offset:</span> <span class='id identifier rubyid_proc'>proc</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_header'>header</span><span class='period'>.</span><span class='id identifier rubyid_offset_records'>offset_records</span> <span class='op'>+</span> <span class='const'>Record</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>*</span> <span class='id identifier rubyid___iterator'>__iterator</span> <span class='op'>+</span> <span class='id identifier rubyid_records'>records</span><span class='lbracket'>[</span><span class='id identifier rubyid___iterator'>__iterator</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_offset'>offset</span> <span class='rbrace'>}</span>
 <span class='kw'>end</span>
 </code></pre>
+
+<h2 id="loading-dumping-and-converting">Loading, Dumping, and Converting</h2>
+
+<p>Once a structure is defined, loading it is quite straight forward:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stringio</span><span class='tstring_end'>&#39;</span></span>
+
+<span class='comment'># open a file in binary mode
+</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>test</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>binary</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>motion_be.bin</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>rb</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span>
+  <span class='comment'># Load a big endian motion file.
+</span>  <span class='id identifier rubyid_mot'>mot</span> <span class='op'>=</span> <span class='const'>MOT2File</span><span class='period'>.</span><span class='id identifier rubyid_load'>load</span><span class='lparen'>(</span><span class='id identifier rubyid_f'>f</span><span class='comma'>,</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='comment'># print the total number of keys in tracks:
+</span>  <span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_mot'>mot</span><span class='period'>.</span><span class='id identifier rubyid_records'>records</span><span class='period'>.</span><span class='id identifier rubyid_collect'>collect</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:num_keys</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='symbol'>:+</span><span class='rparen'>)</span>
+  <span class='comment'># write the file in little endian format
+</span>  <span class='id identifier rubyid_str'>str</span> <span class='op'>=</span> <span class='const'>StringIO</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_binmode'>binmode</span>
+  <span class='id identifier rubyid_mot'>mot</span> <span class='op'>=</span> <span class='const'>MOT2File</span><span class='period'>.</span><span class='id identifier rubyid_dump'>dump</span><span class='lparen'>(</span><span class='id identifier rubyid_mot'>mot</span><span class='comma'>,</span> <span class='id identifier rubyid_str'>str</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span> <span class='comment'># or mot.__dump(str, false)
+</span>  <span class='comment'># compare the output to the reference file
+</span>  <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>test</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>binary</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>motion_le.bin</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>rb</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_g'>g</span><span class='op'>|</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Error!</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span> <span class='op'>==</span> <span class='id identifier rubyid_g'>g</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span>
+  <span class='kw'>end</span>
+  <span class='comment'># modifiying values is easy...
+</span>  <span class='id identifier rubyid_mot'>mot</span><span class='period'>.</span><span class='id identifier rubyid_header'>header</span><span class='period'>.</span><span class='id identifier rubyid_num_records'>num_records</span> <span class='op'>=</span> <span class='int'>1</span>
+  <span class='comment'># ...but coherency must be maintained,
+</span>  <span class='comment'># so usually you will need some helper function in you classes
+</span>  <span class='comment'># to recompute the offsets and counts.
+</span>
+  <span class='comment'># You can also create new instances of those classes and
+</span>  <span class='comment'># Initialize the members yourself (or create an initialize
+</span>  <span class='comment'># method to do that for you)
+</span>  <span class='id identifier rubyid_header'>header</span> <span class='op'>=</span> <span class='const'>MOT2File</span><span class='op'>::</span><span class='const'>Header</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='id identifier rubyid_header'>header</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>mot\x00</span><span class='tstring_end'>&quot;</span></span><span class='period'>.</span><span class='id identifier rubyid_b'>b</span>
+  <span class='comment'># etc...
+</span>
+  <span class='comment'># The tests contain more examples, or the bayonetta_tools, that
+</span>  <span class='comment'># are mainly written using LibBin
+</span><span class='kw'>end</span>
+</code></pre>
 </div></div>
 
       <div id="footer">
-  Generated on Sat Nov 13 18:40:34 2021 by
+  Generated on Sat Nov 13 22:48:32 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-2.7.0).
 </div>
