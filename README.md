@@ -4,7 +4,7 @@ Read, write and convert Binary data in Ruby.
 Detailed documentation can be found here:
 https://kerilk.github.io/libbin/
 
-## Philosophy
+## Guiding Principles
 
 The goal of libbin is to provide a declarative way to describe binary files
 formats. But, as this declarative approach is not always feasible or efficient,
@@ -29,7 +29,7 @@ class MOT2File < LibBin::Structure
   # The file header.
   class Header < LibBin::Structure
     # First field if a 4 character identifier string that is expected to be "mot\x00"
-    string :id, 4, expect: "mot\x00"
+    string :id, 4, expect: "mot\x00".b
     uint32 :version
     uint16 :flags
     uint16 :frame_count
@@ -74,7 +74,8 @@ class MOT2File < LibBin::Structure
   # The required count and offset are contained in the header.
   # Here we showcase two different ways to express those constraints,
   # using a string representing the path, or a proc accessing the
-  # class instance members.
+  # class instance members. Accessing and setting members is done
+  # through accessors with the same name as the field.
   # There is an additional dummy record at he end of the list.
   field :records, Record, count: 'header\num_records + 1', offset: proc { header.offset_records }
   
@@ -201,5 +202,41 @@ class MOT2File < LibBin::Structure
   field :tracks, proc { format(records[__iterator].format) }, count: 'header\num_records',
         sequence: true, condition: proc { records[__iterator].format != 0 && records[__iterator].format != -1 },
         offset: proc { header.offset_records + Record.size * __iterator + records[__iterator].offset }
+end
+```
+
+## Loading, Dumping, and Converting
+
+Once a structure is defined, loading it is quite straight forward:
+```ruby
+require 'stringio'
+
+# open a file in binary mode
+File.open(File.join("test", "binary", "motion_be.bin"), "rb") do |f|
+  # Load a big endian motion file.
+  mot = MOT2File.load(f, true)
+  # print the total number of keys in tracks:
+  puts mot.records.collect(&:num_keys).reduce(:+)
+  # write the file in little endian format
+  str = StringIO.new.binmode
+  mot = MOT2File.dump(mot, str, false) # or mot.__dump(str, false)
+  # compare the output to the reference file
+  File.open(File.join("test", "binary", "motion_le.bin"), "rb") do |g|
+    raise "Error!" unless str.string == g.read
+  end
+  # modifiying values is easy...
+  mot.header.num_records = 1
+  # ...but coherency must be maintained,
+  # so usually you will need some helper function in you classes
+  # to recompute the offsets and counts.
+  
+  # You can also create new instances of those classes and
+  # Initialize the members yourself (or create an initialize
+  # method to do that for you)
+  header = MOT2File::Header.new
+  header.id = "mot\x00".b
+  # etc...
+  
+  # The tests contain more examples
 end
 ```
