@@ -219,7 +219,7 @@ File.open(File.join("test", "binary", "motion_be.bin"), "rb") do |f|
   puts mot.records.collect(&:num_keys).reduce(:+)
   # write the file in little endian format
   str = StringIO.new.binmode
-  mot = MOT2File.dump(mot, str, false) # or mot.__dump(str, false)
+  MOT2File.dump(mot, str, false) # or mot.__dump(str, false)
   # compare the output to the reference file
   File.open(File.join("test", "binary", "motion_le.bin"), "rb") do |g|
     raise "Error!" unless str.string == g.read
