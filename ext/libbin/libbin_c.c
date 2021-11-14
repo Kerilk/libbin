@@ -20,6 +20,7 @@ struct cField_data {
   VALUE condition;
   VALUE relative_offset;
   VALUE align;
+  VALUE expect;
   ID getter;
   ID setter;
 };
@@ -74,10 +75,16 @@ static VALUE cField_initialize(
     VALUE sequence,
     VALUE condition,
     VALUE relative_offset,
-    VALUE align) {
+    VALUE align,
+    VALUE expect) {
   VALUE tmp;
   struct cField_data *data;
   TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
+  if (RTEST(align)) {
+    size_t a = NUM2LL(align);
+    if (a & (a-1))
+      rb_raise(rb_eRuntimeError, "alignment is not a power of 2: %zu", a);
+  }
   data->name = name;
   tmp = rb_str_dup(rb_obj_as_string(name));
   data->getter = rb_intern_str(tmp);
@@ -90,62 +97,35 @@ static VALUE cField_initialize(
   data->condition = cField_preprocess_expression(self, condition);
   data->relative_offset = relative_offset;
   data->align = align;
+  data->expect = expect;
   return self;
 }
 
-static VALUE cField_name(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->name;
+#define FIELD_STATE_GETTER(propname) cField_get_ ## propname
+
+#define CREATE_FIELD_STATE_GETTER(propname)                           \
+static VALUE FIELD_STATE_GETTER(propname) (VALUE self) {              \
+  struct cField_data *data;                                           \
+  TypedData_Get_Struct(self, struct cField_data, &cField_type, data); \
+  return data->propname ;                                             \
 }
 
-static VALUE cField_get_type(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->type;
-}
+#define DEFINE_FIELD_STATE_GETTER(propname) \
+  rb_define_method(cField, #propname, FIELD_STATE_GETTER(propname), 0)
 
-static VALUE cField_length(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->length;
-}
+#define DEFINE_FIELD_STATE_GETTER_BOOL(propname) \
+  rb_define_method(cField, #propname "?", FIELD_STATE_GETTER(propname), 0)
 
-static VALUE cField_count(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->count;
-}
-
-static VALUE cField_offset(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->offset;
-}
-
-static VALUE cField_sequence(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->sequence;
-}
-
-static VALUE cField_condition(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->condition;
-}
-
-static VALUE cField_relative_offset(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->relative_offset;
-}
-
-static VALUE cField_align(VALUE self) {
-  struct cField_data *data;
-  TypedData_Get_Struct(self, struct cField_data, &cField_type, data);
-  return data->align;
-}
+CREATE_FIELD_STATE_GETTER(name)
+CREATE_FIELD_STATE_GETTER(type)
+CREATE_FIELD_STATE_GETTER(length)
+CREATE_FIELD_STATE_GETTER(count)
+CREATE_FIELD_STATE_GETTER(offset)
+CREATE_FIELD_STATE_GETTER(sequence)
+CREATE_FIELD_STATE_GETTER(condition)
+CREATE_FIELD_STATE_GETTER(relative_offset)
+CREATE_FIELD_STATE_GETTER(align)
+CREATE_FIELD_STATE_GETTER(expect)
 
 struct cStructure_data {
   VALUE __input;
@@ -163,6 +143,7 @@ struct cStructure_data {
   VALUE __length;
   VALUE __count;
   VALUE __iterator;
+  VALUE __value;
 };
 
 static void cStructure_mark(void* data) {
@@ -217,19 +198,19 @@ static VALUE cStructure_initialize(VALUE self) {
 #define STRUCT_STATE_SETTER(propname) cStructure_set_ ## propname
 
 #define CREATE_STRUCT_STATE_ACCESSORS(propname)                                       \
-static VALUE STRUCT_STATE_GETTER(propname) (VALUE self) {                             \
-  struct cStructure_data *data;                                                   \
+static VALUE STRUCT_STATE_GETTER(propname) (VALUE self) {                     \
+  struct cStructure_data *data;                                               \
   TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data); \
-  return data->__ ## propname ;                                                       \
-}                                                                                     \
-static VALUE STRUCT_STATE_SETTER(propname) (VALUE self, VALUE propname) {             \
-  struct cStructure_data *data;                                                   \
+  return data->__ ## propname ;                                               \
+}                                                                             \
+static VALUE STRUCT_STATE_SETTER(propname) (VALUE self, VALUE propname) {     \
+  struct cStructure_data *data;                                               \
   TypedData_Get_Struct(self, struct cStructure_data, &cStructure_type, data); \
-  return data->__ ## propname = propname;                                             \
+  return data->__ ## propname = propname;                                     \
 }
 
-#define DEFINE_STRUCT_STATE_ACCESSORS(propname)                                           \
-do {                                                                                      \
+#define DEFINE_STRUCT_STATE_ACCESSORS(propname)                                       \
+do {                                                                                  \
   rb_define_method(cStructure, "__" #propname, STRUCT_STATE_GETTER(propname), 0);     \
   rb_define_method(cStructure, "__" #propname "=", STRUCT_STATE_SETTER(propname), 1); \
 } while(0)
@@ -249,6 +230,7 @@ CREATE_STRUCT_STATE_ACCESSORS(type)
 CREATE_STRUCT_STATE_ACCESSORS(length)
 CREATE_STRUCT_STATE_ACCESSORS(count)
 CREATE_STRUCT_STATE_ACCESSORS(iterator)
+CREATE_STRUCT_STATE_ACCESSORS(value)
 
 static ID id_tell;
 
@@ -398,6 +380,18 @@ static inline VALUE cStructure_decode_expression(VALUE self, VALUE expression) {
     return expression;
 }
 
+static inline VALUE cStructure_decode_expect(VALUE self, VALUE expect, VALUE val) {
+  if (NIL_P(expect))
+    return val;
+  if (rb_obj_is_proc(expect)) {
+    if (!RTEST(rb_funcall_with_block(self, id_instance_exec, 1, &val, expect)))
+      rb_raise(rb_eRuntimeError, "could not validate field value: %"PRIsVALUE, val);
+  } else
+    if (!RTEST(rb_equal(expect, val)))
+      rb_raise(rb_eRuntimeError, "could not validate field value: %"PRIsVALUE" expected: %"PRIsVALUE, val, expect);
+  return val;
+}
+
 ID id_seek;
 
 static inline VALUE cStructure_decode_seek_offset(VALUE self, VALUE offset, VALUE relative_offset, VALUE align) {
@@ -514,6 +508,7 @@ static inline VALUE cStructure_restore_context(VALUE self) {
   data->__count = Qnil;
   data->__offset = Qnil;
   data->__condition = Qnil;
+  data->__value = Qnil;
   return Qnil;
 }
 
@@ -535,22 +530,24 @@ static inline VALUE cStructure_convert_field(VALUE self, VALUE field) {
 
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
-      if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
-        rb_ary_store(res, i, rb_funcall(data->__type, id_convert, 7,
-          data->__input,
-          data->__output,
-          data->__input_big,
-          data->__output_big,
-          self,
-          data->__iterator,
-          data->__length));
-      else
+      if (RTEST(cStructure_decode_dynamic_conditions(self, field))) {
+        data->__value = rb_funcall(data->__type, id_convert, 7,
+            data->__input,
+            data->__output,
+            data->__input_big,
+            data->__output_big,
+            self,
+            data->__iterator,
+            data->__length);
+        rb_ary_store(res, i,
+          cStructure_decode_expect(self, field_data->expect, data->__value));
+      } else
         rb_ary_store(res, i, Qnil);
     }
   } else {
     data->__iterator = INT2FIX(0);
-    if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
-      res = rb_funcall(data->__type, id_convert, 7,
+    if (RTEST(cStructure_decode_dynamic_conditions(self, field))) {
+      data->__value = rb_funcall(data->__type, id_convert, 7,
         data->__input,
         data->__output,
         data->__input_big,
@@ -558,7 +555,8 @@ static inline VALUE cStructure_convert_field(VALUE self, VALUE field) {
         self,
         data->__iterator,
         data->__length);
-    else
+      res = cStructure_decode_expect(self, field_data->expect, data->__value);
+    } else
       res = Qnil;
   }
 
@@ -584,26 +582,29 @@ static inline VALUE cStructure_load_field(VALUE self, VALUE field) {
 
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
-      if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
-        rb_ary_store(res, i, rb_funcall(data->__type, id_load, 5,
+      if (RTEST(cStructure_decode_dynamic_conditions(self, field))) {
+        data->__value = rb_funcall(data->__type, id_load, 5,
           data->__input,
           data->__input_big,
           self,
           data->__iterator,
-          data->__length));
-      else
+          data->__length);
+        rb_ary_store(res, i,
+          cStructure_decode_expect(self, field_data->expect, data->__value));
+      } else
         rb_ary_store(res, i, Qnil);
     }
   } else {
     data->__iterator = INT2FIX(0);
-    if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
-      res = rb_funcall(data->__type, id_load, 5,
+    if (RTEST(cStructure_decode_dynamic_conditions(self, field))) {
+      data->__value = rb_funcall(data->__type, id_load, 5,
         data->__input,
         data->__input_big,
         self,
         data->__iterator,
         data->__length);
-    else
+      res = cStructure_decode_expect(self, field_data->expect, data->__value);
+    } else
       res = Qnil;
   }
   cStructure_restore_context(self);
@@ -626,25 +627,31 @@ static inline VALUE cStructure_dump_field(VALUE self, VALUE values, VALUE field)
 
     for (long i = 0; i < count; i++) {
       data->__iterator = LONG2NUM(i);
-      if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
+      if (RTEST(cStructure_decode_dynamic_conditions(self, field))) {
+        data->__value = rb_ary_entry(values, i);
+        cStructure_decode_expect(self, field_data->expect, data->__value);
         rb_funcall(data->__type, id_dump, 6,
-          rb_ary_entry(values, i),
+          data->__value,
           data->__output,
           data->__output_big,
           self,
           data->__iterator,
           data->__length);
+      }
     }
   } else {
     data->__iterator = INT2FIX(0);
-    if (RTEST(cStructure_decode_dynamic_conditions(self, field)))
+    if (RTEST(cStructure_decode_dynamic_conditions(self, field))) {
+      data->__value = values;
+      cStructure_decode_expect(self, field_data->expect, data->__value);
       rb_funcall(data->__type, id_dump, 6,
-        values,
+        data->__value,
         data->__output,
         data->__output_big,
         self,
         data->__iterator,
         data->__length);
+    }
   }
   cStructure_restore_context(self);
   return Qnil;
@@ -1061,6 +1068,7 @@ static void define_cStructure() {
   DEFINE_STRUCT_STATE_ACCESSORS(length);
   DEFINE_STRUCT_STATE_ACCESSORS(iterator);
   DEFINE_STRUCT_STATE_ACCESSORS(count);
+  DEFINE_STRUCT_STATE_ACCESSORS(value);
 
   /**
    * @overload __set_convert_state(input, output, input_big, output_big, parent, index)
@@ -1221,6 +1229,27 @@ static void define_cStructure() {
    *     end
    */
   rb_define_method(cStructure, "__decode_expression", cStructure_decode_expression, 1);
+  /**
+   * @overload __decode_expect(expect, value)
+   *   Decode the given expect expression, given the field value.
+   *   @param expect [Proc,Object,nil] the expression to decode
+   *   @param value [Object] the field value to validate
+   *   @return [Object] returns +value+ if validated. If expect is a Proc, the proc will be passed +value+
+   *     as an argument and be evaluated. If expect is a scalar, +expect+ and +value+ will be tested for equality.
+   *     If the result of the evaluation or the test is truthy, value is validate. Else an exception is raised.
+   *   @example
+   *     # Original Ruby implementation
+   *     def __decode_expect(expect, value)
+   *       return value if expect.nil?
+   *       if expect.is_a?(Proc)
+   *         raise "could not validate field value: #{value}" unless instance_exec(value, &expect)
+   *       else
+   *         raise "could not validate field value: #{value} expected: #{expect}" unless expect == value
+   *       end
+   *       return value
+   *     end
+   */
+  rb_define_method(cStructure, "__decode_expect", cStructure_decode_expect, 2);
   /**
    * @overload __decode_seek_offset(offset, relative_offset, align)
    *   Decode the offset and seek to this position in the active streams.
@@ -1383,6 +1412,7 @@ static void define_cStructure() {
    *     __count = nil
    *     __offset = nil
    *     __condition = nil
+   *     __value = nil
    *   end
    */
   rb_define_method(cStructure, "__restore_context", cStructure_restore_context, 0);
@@ -1399,7 +1429,8 @@ static void define_cStructure() {
    *       vs = __count.times.collect do |it|
    *         __iterator = it
    *         if __decode_dynamic_conditions(field)
-   *           __type::convert(__input, __output, __input_big, __output_big, self, it, __length)
+   *           __value = __type::convert(__input, __output, __input_big, __output_big, self, it, __length)
+   *           __decode_expect(field.expect, __value)
    *         else
    *           nil
    *         end
@@ -1422,7 +1453,8 @@ static void define_cStructure() {
    *       vs = __count.times.collect do |it|
    *         __iterator = it
    *         if __decode_dynamic_conditions(field)
-   *           __type::load(__input, __input_big, self, it, __length)
+   *           __value = __type::load(__input, __input_big, self, it, __length)
+   *           __decode_expect(field.expect, __value)
    *         else
    *           nil
    *         end
@@ -1447,7 +1479,9 @@ static void define_cStructure() {
    *       __count.times do |it|
    *         __iterator = it
    *         if __decode_dynamic_conditions(field)
-   *           __type::dump(vs[it], __output, __output_big, self, it, __length)
+   *           __value = vs[it]
+   *           __decode_expect(field.expect, __value)
+   *           __type::dump(__value, __output, __output_big, self, it, __length)
    *         end
    *       end
    *       __restore_context
@@ -1790,31 +1824,66 @@ static VALUE half_to_string_p(VALUE self, VALUE number, VALUE pack_str) {
 }
 
 static void define_cField() {
-  VALUE ary = rb_ary_new_capa(4);
   id_gsub = rb_intern("gsub");
 
-  rb_str_dot_dot = rb_str_new_cstr("..");
-  rb_ary_store(ary, 0, rb_str_dot_dot);
-  rb_str___parent = rb_str_new_cstr("__parent");
-  rb_ary_store(ary, 1, rb_str___parent);
-  rb_str_backslash = rb_str_new_cstr("\\");
-  rb_ary_store(ary, 2, rb_str_backslash);
-  rb_str_dot = rb_str_new_cstr(".");
-  rb_ary_store(ary, 3, rb_str_dot);
+  rb_str_dot_dot = rb_obj_freeze(rb_str_new_cstr(".."));
+  rb_gc_register_mark_object(rb_str_dot_dot);
+  rb_str___parent = rb_obj_freeze(rb_str_new_cstr("__parent"));
+  rb_gc_register_mark_object(rb_str___parent);
+  rb_str_backslash = rb_obj_freeze(rb_str_new_cstr("\\"));
+  rb_gc_register_mark_object(rb_str_backslash);
+  rb_str_dot = rb_obj_freeze(rb_str_new_cstr("."));
+  rb_gc_register_mark_object(rb_str_dot);
 
   cField = rb_define_class_under(cStructure, "Field", rb_cObject);
   rb_define_alloc_func(cField, cField_alloc);
-  rb_const_set(cField, rb_intern("STRINGS"), ary);
-  rb_define_method(cField, "initialize", cField_initialize, 9);
-  rb_define_method(cField, "name", cField_name, 0);
-  rb_define_method(cField, "type", cField_get_type, 0);
-  rb_define_method(cField, "length", cField_length, 0);
-  rb_define_method(cField, "count", cField_count, 0);
-  rb_define_method(cField, "offset", cField_offset, 0);
-  rb_define_method(cField, "sequence?", cField_sequence, 0);
-  rb_define_method(cField, "condition", cField_condition, 0);
-  rb_define_method(cField, "relative_offset?", cField_relative_offset, 0);
-  rb_define_method(cField, "align", cField_align, 0);
+  /**
+   * @overload initialize(name, type, length, count, offset, sequence, condition, relative_offset, align, expect)
+   *   @param name [Symbol, String] the name of the field.
+   *   @param type [Class, String, Proc] the type of the field, as a Class, or
+   *     as a String or Proc that will be evaluated in the context of the
+   *     {Structure} instance.
+   *   @param length [nil, Integer, String, Proc] if given, consider the field a
+   *     vector of the type. The length is either a constant Integer of a
+   *     String or Proc that will be evaluated in the context of the
+   *     {Structure} instance.
+   *   @param count [nil, Integer, String, Proc] if given, consider the field is
+   *     repeated count times. The count is either a constant Integer of a
+   *     String or Proc that will be evaluated in the context of the
+   *     {Structure} instance.
+   *   @param offset [nil, integer, String, Proc] if given, the absolute offset in
+   *     the file, or the offset from the parent position, where the field can
+   *     be found. See relative offset. The offset is either a constant
+   *     Integer of a String or Proc that will be evaluated in the context
+   *     of the {Structure} instance.
+   *   @param sequence [Boolean] if true, +type+, +length+, +offset+, and
+   *     +condition+ are evaluated for each repetition.
+   *   @param condition [nil, String, Proc] if given, the field, or repetition of the
+   *     field can be conditionally present. The condition will be evaluated in
+   *     the context of the {Structure} instance.
+   *   @param relative_offset [Boolean] consider the +offset+ relative to
+   *     the field +parent+.
+   *   @param align [nil, Integer] if given, align the field. If given as an
+   *     Integer it must be a power of 2. Else the field is aligned to the
+   *     field's type preferred alignment
+   *   @param expect [nil, Proc, Object] if given as a Proc the proc must
+   *     evaluate to a truthy value or an exception will be raised. Else, the
+   *     object will be tested for equality, and an exception will be raised if
+   *     objects were not equal. Proc is evaluated in the context of the {Structure}
+   *     instance and #__value will be set. Each repetition is validated.
+   *   @return [Field] new Field
+   */
+  rb_define_method(cField, "initialize", cField_initialize, 10);
+  DEFINE_FIELD_STATE_GETTER(name);
+  DEFINE_FIELD_STATE_GETTER(type);
+  DEFINE_FIELD_STATE_GETTER(length);
+  DEFINE_FIELD_STATE_GETTER(count);
+  DEFINE_FIELD_STATE_GETTER(offset);
+  DEFINE_FIELD_STATE_GETTER_BOOL(sequence);
+  DEFINE_FIELD_STATE_GETTER(condition);
+  DEFINE_FIELD_STATE_GETTER_BOOL(relative_offset);
+  DEFINE_FIELD_STATE_GETTER(align);
+  DEFINE_FIELD_STATE_GETTER(expect);
 }
 
 void Init_libbin_c() {

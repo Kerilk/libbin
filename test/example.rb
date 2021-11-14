@@ -1,26 +1,3 @@
-# libbin
-Read, write and convert Binary data in Ruby.
-
-Detailed documentation can be found here:
-https://kerilk.github.io/libbin/
-
-## Philosophy
-
-The goal of libbin is to provide a declarative way to describe binary files
-formats. But, as this declarative approach is not always feasible or efficient,
-it also provides more procedural approaches through a series of hooks that can
-be used to override the behavior of the library.
-
-## Example
-
-In order to showcase usages of the library, a real life example is taken. This
-examples reads motion files from recent PlatinumGames games (Nier Automata,
-Bayonnetta2, ...). The format description can be found here:
-https://github.com/Kerilk/bayonetta_tools/wiki/Motion-Formats-(mot-files)#nier-automata-and-transformers-devastation
-
-```ruby
-require 'libbin'
-
 # The file is seen as big structure. Sub structures will be declared inside.
 # contrary to what is done in the real implementation, the order of the
 # declarations will be shown in the order they are the most interesting.
@@ -202,4 +179,3 @@ class MOT2File < LibBin::Structure
         sequence: true, condition: proc { records[__iterator].format != 0 && records[__iterator].format != -1 },
         offset: proc { header.offset_records + Record.size * __iterator + records[__iterator].offset }
 end
-```

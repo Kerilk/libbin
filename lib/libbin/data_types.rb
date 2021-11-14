@@ -108,36 +108,7 @@ module LibBin
     #     attr_reader :offset
     #     attr_reader :condition
     #     attr_reader :align
-    #
-    #     # @method initialize(name, type, length, count, offset, sequence, condition, relative_offset, align)
-    #     # @param name [Symbol, String] the name of the field.
-    #     # @param type [Class, String, Proc] the type of the field, as a Class, or
-    #     #   as a String or Proc that will be evaluated in the context of the
-    #     #   {Structure} instance.
-    #     # @param length [Integer, String, Proc] if given, consider the field a
-    #     #   vector of the type. The length is either a constant Integer of a
-    #     #   String or Proc that will be evaluated in the context of the
-    #     #   {Structure} instance.
-    #     # @param count [Integer, String, Proc] if given, consider the field is
-    #     #   repeated count times. The count is either a constant Integer of a
-    #     #   String or Proc that will be evaluated in the context of the
-    #     #   {Structure} instance.
-    #     # @param offset [integer, String, Proc] if given, the absolute offset in
-    #     #   the file, or the offset from the parent position, where the field can
-    #     #   be found. See relative offset. The offset is either a constant
-    #     #   Integer of a String or Proc that will be evaluated in the context
-    #     #   of the {Structure} instance.
-    #     # @param sequence [Boolean] if true, +type+, +length+, +offset+, and
-    #     #   +condition+ are evaluated for each repetition.
-    #     # @param condition [String, Proc] if given, the field, or repetition of the
-    #     #   field can be conditionally present. The condition will be evaluated in
-    #     #   the context of the {Structure} instance.
-    #     # @param relative_offset [Boolean] consider the +offset+ relative to
-    #     #   the field +parent+.
-    #     # @param align [Integer] if given, align the field. If given as an
-    #     #   Integer it must be a power of 2. Else the field is aligned to the
-    #     #   field's type preferred alignment
-    #     # @return [Field] new Field
+    #     attr_reader :expect
     #
     #     # @method relative_offset?
     #     # Returns +true+ if the field offset should be relative to its parent.
@@ -176,10 +147,13 @@ module LibBin
     # @param align [Boolean,Integer] if given, align the field. If given as an
     #   Integer it must be a power of 2. Else the field is aligned to the
     #   field's type preferred alignment.
+    # @param expect [Proc, Object] if given, the field value must validate or
+    #   an eexception is raised. If a proc the proc resulted must be truthy. If
+    #   not, the object will be tested for equality.
     # @return self
     def self.field(name, type, length: nil, count: nil, offset: nil,
                    sequence: false, condition: nil, relative_offset: false,
-                   align: false)
+                   align: false, expect: nil)
       if type.respond_to?(:always_align) && type.always_align
         al = type.align
         if align.kind_of?(Integer)
@@ -199,7 +173,7 @@ module LibBin
         raise "alignement must be a power of 2" if align && (align - 1) & align != 0
       end
       @fields.push(Field::new(name, type, length, count, offset, sequence,
-                              condition, relative_offset, align))
+                              condition, relative_offset, align, expect))
       attr_accessor name
       self
     end
@@ -291,13 +265,13 @@ module LibBin
     #
     def self.define_scalar_constructor(klassname, name, mapped_type, description)
       eval <<EOF
-    def self.#{name}(name, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
+    def self.#{name}(name, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)
       if align == true
         align = #{klassname}.align
       else
         raise "alignement must be a power of 2" if align && (align - 1) & align != 0
       end
-      @fields.push(Field::new(name, #{klassname}, length, count, offset, sequence, condition, relative_offset, align))
+      @fields.push(Field::new(name, #{klassname}, length, count, offset, sequence, condition, relative_offset, align, expect))
       attr_accessor name
       self
     end
@@ -346,13 +320,13 @@ EOF
 
     # Create a new field of type {Str} and name +name+. See {field} for options.
     # @return self
-    def self.string(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
+    def self.string(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)
       if align == true
         align = Str.align
       else
         raise "alignement must be a power of 2" if align && (align - 1) & align != 0
       end
-      @fields.push(Field::new(field, Str, length, count, offset, sequence, condition, relative_offset, align))
+      @fields.push(Field::new(field, Str, length, count, offset, sequence, condition, relative_offset, align, expect))
       attr_accessor field
       self
     end
@@ -499,7 +473,7 @@ EOF
     # @param map [Hash{Symbol => Integer}] enum values.
     # @param size [Integer] size in bits of the underlying integer
     # @return self
-    def self.enum(name, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
+    def self.enum(name, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)
       klass = Class.new(Enum) do |c|
         c.type_size = size
         c.map = map
@@ -517,7 +491,7 @@ EOF
       else
         raise "alignement must be a power of 2" if align && (align - 1) & align != 0
       end
-      @fields.push(Field::new(name, klass, length, count, offset, sequence, condition, relative_offset, align))
+      @fields.push(Field::new(name, klass, length, count, offset, sequence, condition, relative_offset, align, expect))
       attr_accessor name
       self
     end
@@ -720,7 +694,7 @@ EOF
     # @param size [Integer] size in bits of the underlying integer
     # @param signed [Boolean] signedness of the underlying type
     # @return self
-    def self.bitfield(name, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)
+    def self.bitfield(name, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)
       klass = Class.new(Bitfield) do |c|
         c.set_type_size(size, signed)
         c.set_map(map)
@@ -738,7 +712,7 @@ EOF
       else
         raise "alignement must be a power of 2" if align && (align - 1) & align != 0
       end
-      @fields.push(Field::new(name, klass, length, count, offset, sequence, condition, relative_offset, align))
+      @fields.push(Field::new(name, klass, length, count, offset, sequence, condition, relative_offset, align, expect))
       attr_accessor name
       self
     end
