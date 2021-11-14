@@ -574,6 +574,33 @@
 </li>
 
     
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#__value-instance_method" title="#__value (instance method)">#<strong>__value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute __value.</p>
+</div></span>
+  
+</li>
+
+    
   </ul>
 
 
@@ -590,7 +617,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#bitfield-class_method" title="bitfield (class method)">.<strong>bitfield</strong>(name, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)  &#x21d2; Object </a>
+      <a href="#bitfield-class_method" title="bitfield (class method)">.<strong>bitfield</strong>(name, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)  &#x21d2; Object </a>
     
 
     
@@ -686,7 +713,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#enum-class_method" title="enum (class method)">.<strong>enum</strong>(name, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)  &#x21d2; Object </a>
+      <a href="#enum-class_method" title="enum (class method)">.<strong>enum</strong>(name, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)  &#x21d2; Object </a>
     
 
     
@@ -1166,7 +1193,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#string-class_method" title="string (class method)">.<strong>string</strong>(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)  &#x21d2; Object </a>
+      <a href="#string-class_method" title="string (class method)">.<strong>string</strong>(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)  &#x21d2; Object </a>
     
 
     
@@ -1511,7 +1538,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#field-class_method" title="field (class method)">.<strong>field</strong>(name, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)  &#x21d2; Object </a>
+      <a href="#field-class_method" title="field (class method)">.<strong>field</strong>(name, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)  &#x21d2; Object </a>
     
 
     
@@ -1780,6 +1807,30 @@
   
     <span class="summary_desc"><div class='inline'>
 <p>Sets field repetition specific context.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#__decode_expect-instance_method" title="#__decode_expect (instance method)">#<strong>__decode_expect</strong>(expect, value)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Decode the given expect expression, given the field value.</p>
 </div></span>
   
 </li>
@@ -2443,28 +2494,28 @@
       <pre class="lines">
 
 
-196
-197
-198
-199
-200
-201
-202
-203
-204
-205
-206
-207
-208
-209
-210
-211
-212
-213
-214</pre>
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 196</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 177</span>
 
 static VALUE cStructure_initialize(VALUE self) {
   struct cStructure_data *data;
@@ -2523,12 +2574,12 @@ static VALUE cStructure_initialize(VALUE self) {
       <pre class="lines">
 
 
-88
 89
-90</pre>
+90
+91</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 88</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 89</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_always_align'>always_align</span>
   <span class='ivar'>@always_align</span>
@@ -2566,12 +2617,12 @@ static VALUE cStructure_initialize(VALUE self) {
       <pre class="lines">
 
 
-89
 90
-91</pre>
+91
+92</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 89</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 90</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fields'>fields</span>
   <span class='ivar'>@fields</span>
@@ -3188,6 +3239,49 @@ static VALUE cStructure_initialize(VALUE self) {
 </table>
 </div>
     
+      
+      <span id="__value=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="__value-instance_method">
+  
+    #<strong>__value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute __value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+16
+17
+18</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 16</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid___value'>__value</span>
+  <span class='ivar'>@__value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
   </div>
 
 
@@ -3239,15 +3333,15 @@ static VALUE cStructure_initialize(VALUE self) {
       <pre class="lines">
 
 
-65
 66
 67
 68
 69
-70</pre>
+70
+71</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 65</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 66</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_align'>align</span>
   <span class='kw'>return</span> <span class='ivar'>@always_align</span> <span class='kw'>if</span> <span class='ivar'>@always_align</span>
@@ -3263,7 +3357,7 @@ static VALUE cStructure_initialize(VALUE self) {
       <div class="method_details ">
   <h3 class="signature " id="bitfield-class_method">
   
-    .<strong>bitfield</strong>(name, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)  &#x21d2; <tt>Object</tt> 
+    .<strong>bitfield</strong>(name, map, size: 32, signed: false, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)  &#x21d2; <tt>Object</tt> 
   
 
   
@@ -3376,33 +3470,33 @@ static VALUE cStructure_initialize(VALUE self) {
       <pre class="lines">
 
 
-723
-724
-725
-726
-727
-728
-729
-730
-731
-732
-733
-734
-735
-736
-737
-738
-739
-740
-741
-742
-743
-744</pre>
+697
+698
+699
+700
+701
+702
+703
+704
+705
+706
+707
+708
+709
+710
+711
+712
+713
+714
+715
+716
+717
+718</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 723</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 697</span>
 
-<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_bitfield'>bitfield</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_map'>map</span><span class='comma'>,</span> <span class='label'>size:</span> <span class='int'>32</span><span class='comma'>,</span> <span class='label'>signed:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>length:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>offset:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>sequence:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>condition:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>relative_offset:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>align:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_bitfield'>bitfield</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_map'>map</span><span class='comma'>,</span> <span class='label'>size:</span> <span class='int'>32</span><span class='comma'>,</span> <span class='label'>signed:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>length:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>offset:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>sequence:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>condition:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>relative_offset:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>align:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>expect:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_klass'>klass</span> <span class='op'>=</span> <span class='const'>Class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Bitfield.html" title="LibBin::Structure::Bitfield (class)">Bitfield</a></span></span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_c'>c</span><span class='op'>|</span>
     <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_set_type_size'>set_type_size</span><span class='lparen'>(</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='id identifier rubyid_signed'>signed</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_set_map'>set_map</span><span class='lparen'>(</span><span class='id identifier rubyid_map'>map</span><span class='rparen'>)</span>
@@ -3420,7 +3514,7 @@ static VALUE cStructure_initialize(VALUE self) {
   <span class='kw'>else</span>
     <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>alignement must be a power of 2</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>&amp;&amp;</span> <span class='lparen'>(</span><span class='id identifier rubyid_align'>align</span> <span class='op'>-</span> <span class='int'>1</span><span class='rparen'>)</span> <span class='op'>&amp;</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>!=</span> <span class='int'>0</span>
   <span class='kw'>end</span>
-  <span class='ivar'>@fields</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Field.html" title="LibBin::Structure::Field (class)">Field</a></span></span><span class='op'>::</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Structure/Field.html#initialize-instance_method" title="LibBin::Structure::Field#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_klass'>klass</span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='id identifier rubyid_offset'>offset</span><span class='comma'>,</span> <span class='id identifier rubyid_sequence'>sequence</span><span class='comma'>,</span> <span class='id identifier rubyid_condition'>condition</span><span class='comma'>,</span> <span class='id identifier rubyid_relative_offset'>relative_offset</span><span class='comma'>,</span> <span class='id identifier rubyid_align'>align</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='ivar'>@fields</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Field.html" title="LibBin::Structure::Field (class)">Field</a></span></span><span class='op'>::</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Structure/Field.html#initialize-instance_method" title="LibBin::Structure::Field#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_klass'>klass</span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='id identifier rubyid_offset'>offset</span><span class='comma'>,</span> <span class='id identifier rubyid_sequence'>sequence</span><span class='comma'>,</span> <span class='id identifier rubyid_condition'>condition</span><span class='comma'>,</span> <span class='id identifier rubyid_relative_offset'>relative_offset</span><span class='comma'>,</span> <span class='id identifier rubyid_align'>align</span><span class='comma'>,</span> <span class='id identifier rubyid_expect'>expect</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_attr_accessor'>attr_accessor</span> <span class='id identifier rubyid_name'>name</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
@@ -3627,13 +3721,6 @@ static VALUE cStructure_initialize(VALUE self) {
       <pre class="lines">
 
 
-954
-955
-956
-957
-958
-959
-960
 961
 962
 963
@@ -3654,10 +3741,17 @@ static VALUE cStructure_initialize(VALUE self) {
 978
 979
 980
-981</pre>
+981
+982
+983
+984
+985
+986
+987
+988</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 954</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 961</span>
 
 static VALUE cStructure_singl_convert(int argc, VALUE *argv, VALUE self) {
   VALUE input;
@@ -3736,10 +3830,10 @@ static VALUE cStructure_singl_convert(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-332</pre>
+306</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 332</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 306</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Double</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:double</span><span class='comma'>,</span> <span class='symbol'>:double</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A double precision floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -3791,10 +3885,10 @@ static VALUE cStructure_singl_convert(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-334</pre>
+308</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 334</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 308</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Double_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:double_be</span><span class='comma'>,</span> <span class='symbol'>:double</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A double precision big endian floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -3846,10 +3940,10 @@ static VALUE cStructure_singl_convert(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-333</pre>
+307</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 333</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 307</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Double_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:double_le</span><span class='comma'>,</span> <span class='symbol'>:double</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A double precision little endian floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4038,13 +4132,6 @@ static VALUE cStructure_singl_convert(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-935
-936
-937
-938
-939
-940
-941
 942
 943
 944
@@ -4055,10 +4142,17 @@ static VALUE cStructure_singl_convert(int argc, VALUE *argv, VALUE self) {
 949
 950
 951
-952</pre>
+952
+953
+954
+955
+956
+957
+958
+959</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 935</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 942</span>
 
 static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
   VALUE value;
@@ -4086,7 +4180,7 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <div class="method_details ">
   <h3 class="signature " id="enum-class_method">
   
-    .<strong>enum</strong>(name, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)  &#x21d2; <tt>Object</tt> 
+    .<strong>enum</strong>(name, map, size: 32, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)  &#x21d2; <tt>Object</tt> 
   
 
   
@@ -4181,33 +4275,33 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-502
-503
-504
-505
-506
-507
-508
-509
-510
-511
-512
-513
-514
-515
-516
-517
-518
-519
-520
-521
-522
-523</pre>
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 502</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 476</span>
 
-<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_enum'>enum</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_map'>map</span><span class='comma'>,</span> <span class='label'>size:</span> <span class='int'>32</span><span class='comma'>,</span> <span class='label'>length:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>offset:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>sequence:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>condition:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>relative_offset:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>align:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_enum'>enum</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_map'>map</span><span class='comma'>,</span> <span class='label'>size:</span> <span class='int'>32</span><span class='comma'>,</span> <span class='label'>length:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>offset:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>sequence:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>condition:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>relative_offset:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>align:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>expect:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_klass'>klass</span> <span class='op'>=</span> <span class='const'>Class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Enum.html" title="LibBin::Structure::Enum (class)">Enum</a></span></span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_c'>c</span><span class='op'>|</span>
     <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_type_size'>type_size</span> <span class='op'>=</span> <span class='id identifier rubyid_size'>size</span>
     <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='op'>=</span> <span class='id identifier rubyid_map'>map</span>
@@ -4225,7 +4319,7 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
   <span class='kw'>else</span>
     <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>alignement must be a power of 2</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>&amp;&amp;</span> <span class='lparen'>(</span><span class='id identifier rubyid_align'>align</span> <span class='op'>-</span> <span class='int'>1</span><span class='rparen'>)</span> <span class='op'>&amp;</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>!=</span> <span class='int'>0</span>
   <span class='kw'>end</span>
-  <span class='ivar'>@fields</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Field.html" title="LibBin::Structure::Field (class)">Field</a></span></span><span class='op'>::</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Structure/Field.html#initialize-instance_method" title="LibBin::Structure::Field#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_klass'>klass</span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='id identifier rubyid_offset'>offset</span><span class='comma'>,</span> <span class='id identifier rubyid_sequence'>sequence</span><span class='comma'>,</span> <span class='id identifier rubyid_condition'>condition</span><span class='comma'>,</span> <span class='id identifier rubyid_relative_offset'>relative_offset</span><span class='comma'>,</span> <span class='id identifier rubyid_align'>align</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='ivar'>@fields</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Field.html" title="LibBin::Structure::Field (class)">Field</a></span></span><span class='op'>::</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Structure/Field.html#initialize-instance_method" title="LibBin::Structure::Field#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_klass'>klass</span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='id identifier rubyid_offset'>offset</span><span class='comma'>,</span> <span class='id identifier rubyid_sequence'>sequence</span><span class='comma'>,</span> <span class='id identifier rubyid_condition'>condition</span><span class='comma'>,</span> <span class='id identifier rubyid_relative_offset'>relative_offset</span><span class='comma'>,</span> <span class='id identifier rubyid_align'>align</span><span class='comma'>,</span> <span class='id identifier rubyid_expect'>expect</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_attr_accessor'>attr_accessor</span> <span class='id identifier rubyid_name'>name</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
@@ -4237,7 +4331,7 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <div class="method_details ">
   <h3 class="signature " id="field-class_method">
   
-    .<strong>field</strong>(name, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)  &#x21d2; <tt>Object</tt> 
+    .<strong>field</strong>(name, type, length: nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)  &#x21d2; <tt>Object</tt> 
   
 
   
@@ -4417,6 +4511,24 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       
     </li>
   
+    <li>
+      
+        <span class='name'>expect</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>, <tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if given, the field value must validate or an eexception is raised. If a proc the proc resulted must be truthy. If not, the object will be tested for equality.</p>
+</div>
+      
+    </li>
+  
 </ul>
 
 <p class="tag_title">Returns:</p>
@@ -4444,39 +4556,39 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-180
-181
-182
-183
-184
-185
-186
-187
-188
-189
-190
-191
-192
-193
-194
-195
-196
-197
-198
-199
-200
-201
-202
-203
-204
-205</pre>
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 180</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 154</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_field'>field</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='label'>length:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>offset:</span> <span class='kw'>nil</span><span class='comma'>,</span>
                <span class='label'>sequence:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>condition:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>relative_offset:</span> <span class='kw'>false</span><span class='comma'>,</span>
-               <span class='label'>align:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+               <span class='label'>align:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>expect:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:always_align</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_always_align'>always_align</span>
     <span class='id identifier rubyid_al'>al</span> <span class='op'>=</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_align'>align</span>
     <span class='kw'>if</span> <span class='id identifier rubyid_align'>align</span><span class='period'>.</span><span class='id identifier rubyid_kind_of?'>kind_of?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span>
@@ -4496,7 +4608,7 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
     <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>alignement must be a power of 2</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>&amp;&amp;</span> <span class='lparen'>(</span><span class='id identifier rubyid_align'>align</span> <span class='op'>-</span> <span class='int'>1</span><span class='rparen'>)</span> <span class='op'>&amp;</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>!=</span> <span class='int'>0</span>
   <span class='kw'>end</span>
   <span class='ivar'>@fields</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Field.html" title="LibBin::Structure::Field (class)">Field</a></span></span><span class='op'>::</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Structure/Field.html#initialize-instance_method" title="LibBin::Structure::Field#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='id identifier rubyid_offset'>offset</span><span class='comma'>,</span> <span class='id identifier rubyid_sequence'>sequence</span><span class='comma'>,</span>
-                          <span class='id identifier rubyid_condition'>condition</span><span class='comma'>,</span> <span class='id identifier rubyid_relative_offset'>relative_offset</span><span class='comma'>,</span> <span class='id identifier rubyid_align'>align</span><span class='rparen'>)</span><span class='rparen'>)</span>
+                          <span class='id identifier rubyid_condition'>condition</span><span class='comma'>,</span> <span class='id identifier rubyid_relative_offset'>relative_offset</span><span class='comma'>,</span> <span class='id identifier rubyid_align'>align</span><span class='comma'>,</span> <span class='id identifier rubyid_expect'>expect</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_attr_accessor'>attr_accessor</span> <span class='id identifier rubyid_name'>name</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
@@ -4549,10 +4661,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-329</pre>
+303</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 329</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 303</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Flt</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:float</span><span class='comma'>,</span> <span class='symbol'>:float</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A single precision floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4604,10 +4716,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-331</pre>
+305</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 331</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 305</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Flt_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:float_be</span><span class='comma'>,</span> <span class='symbol'>:float</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A single precision big endian floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4659,10 +4771,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-330</pre>
+304</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 330</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 304</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Flt_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:float_le</span><span class='comma'>,</span> <span class='symbol'>:float</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A single precision little endian floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4714,10 +4826,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-335</pre>
+309</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 335</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 309</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Half</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:half</span><span class='comma'>,</span> <span class='symbol'>:half</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A half precision floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4769,10 +4881,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-337</pre>
+311</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 337</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 311</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Half_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:half_be</span><span class='comma'>,</span> <span class='symbol'>:half</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A half precision big endian floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4824,10 +4936,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-336</pre>
+310</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 336</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 310</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Half_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:half_le</span><span class='comma'>,</span> <span class='symbol'>:half</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A half precision little endian floating point scalar</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4879,10 +4991,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-311</pre>
+285</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 311</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 285</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int16</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int16</span><span class='comma'>,</span> <span class='symbol'>:int16_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed 16 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4934,10 +5046,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-313</pre>
+287</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 313</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 287</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int16_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int16_be</span><span class='comma'>,</span> <span class='symbol'>:int16_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed big endian 16 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -4989,10 +5101,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-312</pre>
+286</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 312</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 286</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int16_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int16_le</span><span class='comma'>,</span> <span class='symbol'>:int16_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed little endian 16 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5044,10 +5156,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-317</pre>
+291</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 317</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 291</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int32</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int32</span><span class='comma'>,</span> <span class='symbol'>:int32_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed little endian 32 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5099,10 +5211,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-319</pre>
+293</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 319</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 293</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int32_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int32_be</span><span class='comma'>,</span> <span class='symbol'>:int32_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed big endian 32 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5154,10 +5266,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-318</pre>
+292</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 318</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 292</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int32_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int32_le</span><span class='comma'>,</span> <span class='symbol'>:int32_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed little endian 32 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5209,10 +5321,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-323</pre>
+297</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 323</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 297</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int64</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int64</span><span class='comma'>,</span> <span class='symbol'>:int64_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed little endian 64 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5264,10 +5376,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-325</pre>
+299</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 325</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 299</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int64_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int64_be</span><span class='comma'>,</span> <span class='symbol'>:int64_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed big endian 64 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5319,10 +5431,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-324</pre>
+298</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 324</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 298</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int64_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int64_le</span><span class='comma'>,</span> <span class='symbol'>:int64_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed little endian 64 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5374,10 +5486,10 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-309</pre>
+283</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 309</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 283</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Int8</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:int8</span><span class='comma'>,</span> <span class='symbol'>:int8_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A signed 8 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5549,13 +5661,6 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-909
-910
-911
-912
-913
-914
-915
 916
 917
 918
@@ -5573,10 +5678,17 @@ static VALUE cStructure_singl_dump(int argc, VALUE *argv, VALUE self) {
 930
 931
 932
-933</pre>
+933
+934
+935
+936
+937
+938
+939
+940</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 909</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 916</span>
 
 static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
   VALUE input;
@@ -5652,10 +5764,10 @@ static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-338</pre>
+312</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 338</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 312</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>PGHalf</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:pghalf</span><span class='comma'>,</span> <span class='symbol'>:pghalf</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A half precision floating point scalar as used by PlatinumGames in certain formats</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5707,10 +5819,10 @@ static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-340</pre>
+314</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 340</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 314</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>PGHalf_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:pghalf_be</span><span class='comma'>,</span> <span class='symbol'>:pghalf</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A half precision big endian floating point scalar as used by PlatinumGames in certain formats</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5762,10 +5874,10 @@ static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-339</pre>
+313</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 339</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 313</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>PGHalf_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:pghalf_le</span><span class='comma'>,</span> <span class='symbol'>:pghalf</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A half precision little endian floating point scalar as used by PlatinumGames in certain formats</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -5841,7 +5953,6 @@ static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-75
 76
 77
 78
@@ -5850,10 +5961,11 @@ static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
 81
 82
 83
-84</pre>
+84
+85</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 76</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_set_always_align'>set_always_align</span><span class='lparen'>(</span><span class='id identifier rubyid_align'>align</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>==</span> <span class='kw'>true</span>
@@ -6052,13 +6164,6 @@ static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-983
-984
-985
-986
-987
-988
-989
 990
 991
 992
@@ -6074,10 +6179,17 @@ static VALUE cStructure_singl_load(int argc, VALUE *argv, VALUE self) {
 1002
 1003
 1004
-1005</pre>
+1005
+1006
+1007
+1008
+1009
+1010
+1011
+1012</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 983</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 990</span>
 
 static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
   VALUE value;
@@ -6225,16 +6337,16 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-98
 99
 100
 101
 102
 103
-104</pre>
+104
+105</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 98</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 99</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_offset'>offset</span> <span class='op'>=</span> <span class='int'>0</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_length'>length</span>
@@ -6251,7 +6363,7 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <div class="method_details ">
   <h3 class="signature " id="string-class_method">
   
-    .<strong>string</strong>(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false)  &#x21d2; <tt>Object</tt> 
+    .<strong>string</strong>(field, length = nil, count: nil, offset: nil, sequence: false, condition: nil, relative_offset: false, align: false, expect: nil)  &#x21d2; <tt>Object</tt> 
   
 
   
@@ -6292,27 +6404,27 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-349
-350
-351
-352
-353
-354
-355
-356
-357
-358</pre>
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 349</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 323</span>
 
-<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>offset:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>sequence:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>condition:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>relative_offset:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>align:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>count:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>offset:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>sequence:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>condition:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>relative_offset:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>align:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>expect:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>==</span> <span class='kw'>true</span>
     <span class='id identifier rubyid_align'>align</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Structure/Str.html" title="LibBin::Structure::Str (class)">Str</a></span></span><span class='period'>.</span><span class='id identifier rubyid_align'><span class='object_link'><a href="Structure/Str.html#align-class_method" title="LibBin::Structure::Str.align (method)">align</a></span></span>
   <span class='kw'>else</span>
     <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>alignement must be a power of 2</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>&amp;&amp;</span> <span class='lparen'>(</span><span class='id identifier rubyid_align'>align</span> <span class='op'>-</span> <span class='int'>1</span><span class='rparen'>)</span> <span class='op'>&amp;</span> <span class='id identifier rubyid_align'>align</span> <span class='op'>!=</span> <span class='int'>0</span>
   <span class='kw'>end</span>
-  <span class='ivar'>@fields</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Field.html" title="LibBin::Structure::Field (class)">Field</a></span></span><span class='op'>::</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Structure/Field.html#initialize-instance_method" title="LibBin::Structure::Field#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="Structure/Str.html" title="LibBin::Structure::Str (class)">Str</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='id identifier rubyid_offset'>offset</span><span class='comma'>,</span> <span class='id identifier rubyid_sequence'>sequence</span><span class='comma'>,</span> <span class='id identifier rubyid_condition'>condition</span><span class='comma'>,</span> <span class='id identifier rubyid_relative_offset'>relative_offset</span><span class='comma'>,</span> <span class='id identifier rubyid_align'>align</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='ivar'>@fields</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Structure/Field.html" title="LibBin::Structure::Field (class)">Field</a></span></span><span class='op'>::</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Structure/Field.html#initialize-instance_method" title="LibBin::Structure::Field#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="Structure/Str.html" title="LibBin::Structure::Str (class)">Str</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_length'>length</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='id identifier rubyid_offset'>offset</span><span class='comma'>,</span> <span class='id identifier rubyid_sequence'>sequence</span><span class='comma'>,</span> <span class='id identifier rubyid_condition'>condition</span><span class='comma'>,</span> <span class='id identifier rubyid_relative_offset'>relative_offset</span><span class='comma'>,</span> <span class='id identifier rubyid_align'>align</span><span class='comma'>,</span> <span class='id identifier rubyid_expect'>expect</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_attr_accessor'>attr_accessor</span> <span class='id identifier rubyid_field'>field</span>
   <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
@@ -6365,10 +6477,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-314</pre>
+288</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 314</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 288</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt16</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint16</span><span class='comma'>,</span> <span class='symbol'>:uint16_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned 16 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6420,10 +6532,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-316</pre>
+290</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 316</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 290</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt16_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint16_be</span><span class='comma'>,</span> <span class='symbol'>:uint16_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned big endian 16 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6475,10 +6587,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-315</pre>
+289</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 315</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 289</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt16_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint16_le</span><span class='comma'>,</span> <span class='symbol'>:uint16_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned little endian 16 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6530,10 +6642,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-320</pre>
+294</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 320</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 294</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt32</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint32</span><span class='comma'>,</span> <span class='symbol'>:uint32_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned 32 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6585,10 +6697,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-322</pre>
+296</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 322</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 296</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt32_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint32_be</span><span class='comma'>,</span> <span class='symbol'>:uint32_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned big endian 32 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6640,10 +6752,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-321</pre>
+295</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 321</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 295</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt32_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint32_le</span><span class='comma'>,</span> <span class='symbol'>:uint32_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned little endian 32 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6695,10 +6807,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-326</pre>
+300</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 326</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 300</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt64</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint64</span><span class='comma'>,</span> <span class='symbol'>:uint64_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned 64 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6750,10 +6862,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-328</pre>
+302</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 328</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 302</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt64_BE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint64_be</span><span class='comma'>,</span> <span class='symbol'>:uint64_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned big endian 64 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6805,10 +6917,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-327</pre>
+301</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 327</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 301</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt64_LE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint64_le</span><span class='comma'>,</span> <span class='symbol'>:uint64_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned little endian 64 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -6860,10 +6972,10 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-310</pre>
+284</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 310</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 284</span>
 
 <span class='id identifier rubyid_define_scalar_constructor'>define_scalar_constructor</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UInt8</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:uint8</span><span class='comma'>,</span> <span class='symbol'>:uint8_t</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An unsigned 8 bit integer</span><span class='tstring_end'>&quot;</span></span></pre>
     </td>
@@ -7050,22 +7162,22 @@ static VALUE cStructure_singl_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-875
-876
-877
-878
-879
-880
-881
 882
 883
 884
 885
 886
-887</pre>
+887
+888
+889
+890
+891
+892
+893
+894</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 875</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 882</span>
 
 static VALUE cStructure_convert(int argc, VALUE *argv, VALUE self) {
   VALUE input;
@@ -7122,7 +7234,8 @@ static VALUE cStructure_convert(int argc, VALUE *argv, VALUE self) {
   <span class='id identifier rubyid_vs'>vs</span> <span class='op'>=</span> <span class='id identifier rubyid___count'>__count</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_collect'>collect</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_it'>it</span><span class='op'>|</span>
     <span class='id identifier rubyid___iterator'>__iterator</span> <span class='op'>=</span> <span class='id identifier rubyid_it'>it</span>
     <span class='kw'>if</span> <span class='id identifier rubyid___decode_dynamic_conditions'>__decode_dynamic_conditions</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='rparen'>)</span>
-      <span class='id identifier rubyid___type'>__type</span><span class='op'>::</span><span class='id identifier rubyid_convert'>convert</span><span class='lparen'>(</span><span class='id identifier rubyid___input'>__input</span><span class='comma'>,</span> <span class='id identifier rubyid___output'>__output</span><span class='comma'>,</span> <span class='id identifier rubyid___input_big'>__input_big</span><span class='comma'>,</span> <span class='id identifier rubyid___output_big'>__output_big</span><span class='comma'>,</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_it'>it</span><span class='comma'>,</span> <span class='id identifier rubyid___length'>__length</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid___value'>__value</span> <span class='op'>=</span> <span class='id identifier rubyid___type'>__type</span><span class='op'>::</span><span class='id identifier rubyid_convert'>convert</span><span class='lparen'>(</span><span class='id identifier rubyid___input'>__input</span><span class='comma'>,</span> <span class='id identifier rubyid___output'>__output</span><span class='comma'>,</span> <span class='id identifier rubyid___input_big'>__input_big</span><span class='comma'>,</span> <span class='id identifier rubyid___output_big'>__output_big</span><span class='comma'>,</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_it'>it</span><span class='comma'>,</span> <span class='id identifier rubyid___length'>__length</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid___decode_expect'>__decode_expect</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_expect'>expect</span><span class='comma'>,</span> <span class='id identifier rubyid___value'>__value</span><span class='rparen'>)</span>
     <span class='kw'>else</span>
       <span class='kw'>nil</span>
     <span class='kw'>end</span>
@@ -7243,15 +7356,15 @@ static VALUE cStructure_convert(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-809
-810
-811
-812
-813
-814</pre>
+816
+817
+818
+819
+820
+821</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 809</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 816</span>
 
 static VALUE cStructure_convert_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
@@ -7538,6 +7651,111 @@ static VALUE cStructure_convert_fields(VALUE self) {
         &mdash;
         <div class='inline'>
 <p>field repetition is active</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="__decode_expect-instance_method">
+  
+    #<strong>__decode_expect</strong>(expect, value)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
+  <div class="discussion">
+    
+<p>Decode the given expect expression, given the field value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='comment'># Original Ruby implementation
+</span><span class='kw'>def</span> <span class='id identifier rubyid___decode_expect'>__decode_expect</span><span class='lparen'>(</span><span class='id identifier rubyid_expect'>expect</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_value'>value</span> <span class='kw'>if</span> <span class='id identifier rubyid_expect'>expect</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_expect'>expect</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Proc</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>could not validate field value: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_instance_exec'>instance_exec</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_expect'>expect</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>could not validate field value: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_content'> expected: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expect'>expect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_expect'>expect</span> <span class='op'>==</span> <span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>end</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>expect</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>, <tt>Object</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the expression to decode</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the field value to validate</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>returns <code>value</code> if validated. If expect is a Proc, the proc will be passed <code>value</code> as an argument and be evaluated. If expect is a scalar, <code>expect</code> and <code>value</code> will be tested for equality. If the result of the evaluation or the test is truthy, value is validate. Else an exception is raised.</p>
 </div>
       
     </li>
@@ -8253,7 +8471,9 @@ static VALUE cStructure_convert_fields(VALUE self) {
   <span class='id identifier rubyid___count'>__count</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_it'>it</span><span class='op'>|</span>
     <span class='id identifier rubyid___iterator'>__iterator</span> <span class='op'>=</span> <span class='id identifier rubyid_it'>it</span>
     <span class='kw'>if</span> <span class='id identifier rubyid___decode_dynamic_conditions'>__decode_dynamic_conditions</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='rparen'>)</span>
-      <span class='id identifier rubyid___type'>__type</span><span class='op'>::</span><span class='id identifier rubyid_dump'>dump</span><span class='lparen'>(</span><span class='id identifier rubyid_vs'>vs</span><span class='lbracket'>[</span><span class='id identifier rubyid_it'>it</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid___output'>__output</span><span class='comma'>,</span> <span class='id identifier rubyid___output_big'>__output_big</span><span class='comma'>,</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_it'>it</span><span class='comma'>,</span> <span class='id identifier rubyid___length'>__length</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid___value'>__value</span> <span class='op'>=</span> <span class='id identifier rubyid_vs'>vs</span><span class='lbracket'>[</span><span class='id identifier rubyid_it'>it</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid___decode_expect'>__decode_expect</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_expect'>expect</span><span class='comma'>,</span> <span class='id identifier rubyid___value'>__value</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid___type'>__type</span><span class='op'>::</span><span class='id identifier rubyid_dump'>dump</span><span class='lparen'>(</span><span class='id identifier rubyid___value'>__value</span><span class='comma'>,</span> <span class='id identifier rubyid___output'>__output</span><span class='comma'>,</span> <span class='id identifier rubyid___output_big'>__output_big</span><span class='comma'>,</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_it'>it</span><span class='comma'>,</span> <span class='id identifier rubyid___length'>__length</span><span class='rparen'>)</span>
     <span class='kw'>end</span>
   <span class='kw'>end</span>
   <span class='id identifier rubyid___restore_context'>__restore_context</span>
@@ -8389,7 +8609,7 @@ static VALUE cStructure_convert_fields(VALUE self) {
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 17</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 18</span>
 
 </pre>
     </td>
@@ -8436,12 +8656,12 @@ static VALUE cStructure_convert_fields(VALUE self) {
       <pre class="lines">
 
 
-108
 109
-110</pre>
+110
+111</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 108</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 109</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid___fields'>__fields</span>
   <span class='kw'>return</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span>
@@ -8626,7 +8846,8 @@ static VALUE cStructure_convert_fields(VALUE self) {
   <span class='id identifier rubyid_vs'>vs</span> <span class='op'>=</span> <span class='id identifier rubyid___count'>__count</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_collect'>collect</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_it'>it</span><span class='op'>|</span>
     <span class='id identifier rubyid___iterator'>__iterator</span> <span class='op'>=</span> <span class='id identifier rubyid_it'>it</span>
     <span class='kw'>if</span> <span class='id identifier rubyid___decode_dynamic_conditions'>__decode_dynamic_conditions</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='rparen'>)</span>
-      <span class='id identifier rubyid___type'>__type</span><span class='op'>::</span><span class='id identifier rubyid_load'>load</span><span class='lparen'>(</span><span class='id identifier rubyid___input'>__input</span><span class='comma'>,</span> <span class='id identifier rubyid___input_big'>__input_big</span><span class='comma'>,</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_it'>it</span><span class='comma'>,</span> <span class='id identifier rubyid___length'>__length</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid___value'>__value</span> <span class='op'>=</span> <span class='id identifier rubyid___type'>__type</span><span class='op'>::</span><span class='id identifier rubyid_load'>load</span><span class='lparen'>(</span><span class='id identifier rubyid___input'>__input</span><span class='comma'>,</span> <span class='id identifier rubyid___input_big'>__input_big</span><span class='comma'>,</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_it'>it</span><span class='comma'>,</span> <span class='id identifier rubyid___length'>__length</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid___decode_expect'>__decode_expect</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_expect'>expect</span><span class='comma'>,</span> <span class='id identifier rubyid___value'>__value</span><span class='rparen'>)</span>
     <span class='kw'>else</span>
       <span class='kw'>nil</span>
     <span class='kw'>end</span>
@@ -8747,15 +8968,15 @@ static VALUE cStructure_convert_fields(VALUE self) {
       <pre class="lines">
 
 
-767
-768
-769
-770
-771
-772</pre>
+774
+775
+776
+777
+778
+779</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 767</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 774</span>
 
 static VALUE cStructure_load_fields(VALUE self) {
   struct fields_state state = {self, Qnil, Qnil};
@@ -8799,6 +9020,7 @@ static VALUE cStructure_load_fields(VALUE self) {
   <span class='id identifier rubyid___count'>__count</span> <span class='op'>=</span> <span class='kw'>nil</span>
   <span class='id identifier rubyid___offset'>__offset</span> <span class='op'>=</span> <span class='kw'>nil</span>
   <span class='id identifier rubyid___condition'>__condition</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid___value'>__value</span> <span class='op'>=</span> <span class='kw'>nil</span>
 <span class='kw'>end</span></code></pre>
     
   </div>
@@ -8993,30 +9215,30 @@ static VALUE cStructure_load_fields(VALUE self) {
       <pre class="lines">
 
 
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
 257
 258
-259
-260
-261
-262
-263
-264
-265
-266
-267
-268
-269
-270
-271
-272
-273
-274
-275
-276
-277</pre>
+259</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 257</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 239</span>
 
 static VALUE cStructure_set_convert_state(
     VALUE self,
@@ -9178,26 +9400,26 @@ static VALUE cStructure_set_convert_state(
       <pre class="lines">
 
 
-360
-361
-362
-363
-364
-365
-366
-367
-368
-369
-370
-371
-372
-373
-374
-375
-376</pre>
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 360</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 342</span>
 
 static VALUE cStructure_set_dump_state(
     VALUE self,
@@ -9355,26 +9577,26 @@ static VALUE cStructure_set_dump_state(
       <pre class="lines">
 
 
-326
-327
-328
-329
-330
-331
-332
-333
-334
-335
-336
-337
-338
-339
-340
-341
-342</pre>
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 326</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 308</span>
 
 static VALUE cStructure_set_load_state(
     VALUE self,
@@ -9514,23 +9736,23 @@ static VALUE cStructure_set_load_state(
       <pre class="lines">
 
 
-297
-298
-299
-300
-301
-302
-303
-304
-305
-306
-307
-308
-309
-310</pre>
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 297</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 279</span>
 
 static VALUE cStructure_set_size_state(
     VALUE self,
@@ -9697,13 +9919,6 @@ static VALUE cStructure_set_size_state(
       <pre class="lines">
 
 
-891
-892
-893
-894
-895
-896
-897
 898
 899
 900
@@ -9713,10 +9928,17 @@ static VALUE cStructure_set_size_state(
 904
 905
 906
-907</pre>
+907
+908
+909
+910
+911
+912
+913
+914</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 891</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 898</span>
 
 static VALUE cStructure_shape(int argc, VALUE *argv, VALUE self) {
   VALUE previous_offset;
@@ -9963,14 +10185,14 @@ static VALUE cStructure_shape(int argc, VALUE *argv, VALUE self) {
       <pre class="lines">
 
 
-839
-840
-841
-842
-843</pre>
+846
+847
+848
+849
+850</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 839</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 846</span>
 
 static VALUE cStructure_shape_fields(VALUE self, VALUE kind) {
   struct shape_fields_state state = {self, Qnil, Qnil, kind};
@@ -10084,12 +10306,12 @@ static VALUE cStructure_shape_fields(VALUE self, VALUE kind) {
       <pre class="lines">
 
 
-59
 60
-61</pre>
+61
+62</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 59</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin.rb', line 60</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid___size'>__size</span><span class='lparen'>(</span><span class='id identifier rubyid_offset'>offset</span> <span class='op'>=</span> <span class='int'>0</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid___shape'>__shape</span><span class='lparen'>(</span><span class='id identifier rubyid_offset'>offset</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="DataRange.html" title="LibBin::DataRange (class)">DataRange</a></span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span>
@@ -10156,22 +10378,22 @@ static VALUE cStructure_shape_fields(VALUE self, VALUE kind) {
       <pre class="lines">
 
 
-281
-282
-283
-284
-285
-286
-287
-288
-289
-290
-291
-292
-293</pre>
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 281</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 263</span>
 
 static VALUE cStructure_unset_convert_state(VALUE self) {
   struct cStructure_data *data;
@@ -10246,20 +10468,20 @@ static VALUE cStructure_unset_convert_state(VALUE self) {
       <pre class="lines">
 
 
-380
-381
-382
-383
-384
-385
-386
-387
-388
-389
-390</pre>
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 380</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 362</span>
 
 static VALUE cStructure_unset_dump_state(VALUE self) {
   struct cStructure_data *data;
@@ -10332,20 +10554,20 @@ static VALUE cStructure_unset_dump_state(VALUE self) {
       <pre class="lines">
 
 
-346
-347
-348
-349
-350
-351
-352
-353
-354
-355
-356</pre>
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 346</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 328</span>
 
 static VALUE cStructure_unset_load_state(VALUE self) {
   struct cStructure_data *data;
@@ -10416,18 +10638,18 @@ static VALUE cStructure_unset_load_state(VALUE self) {
       <pre class="lines">
 
 
-314
-315
-316
-317
-318
-319
-320
-321
-322</pre>
+296
+297
+298
+299
+300
+301
+302
+303
+304</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 314</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 296</span>
 
 static VALUE cStructure_unset_size_state(VALUE self) {
   struct cStructure_data *data;
@@ -10448,7 +10670,7 @@ static VALUE cStructure_unset_size_state(VALUE self) {
 </div>
 
       <div id="footer">
-  Generated on Tue Nov  9 22:50:54 2021 by
+  Generated on Sat Nov 13 18:40:35 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-2.7.0).
 </div>

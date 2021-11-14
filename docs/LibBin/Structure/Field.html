@@ -209,6 +209,35 @@
       <li class="public ">
   <span class="summary_signature">
     
+      <a href="#expect-instance_method" title="#expect (instance method)">#<strong>expect</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute expect.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#length-instance_method" title="#length (instance method)">#<strong>length</strong>  &#x21d2; Object </a>
     
 
@@ -338,7 +367,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(name, type, length, count, offset, sequence, condition, relative_offset, align)  &#x21d2; Field </a>
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(name, type, length, count, offset, sequence, condition, relative_offset, align, expect)  &#x21d2; Field </a>
     
 
     
@@ -354,9 +383,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
-<p>New Field.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'></div></span>
   
 </li>
 
@@ -418,13 +445,21 @@
     <div class="method_details first">
   <h3 class="signature first" id="initialize-instance_method">
   
-    #<strong>initialize</strong>(name, type, length, count, offset, sequence, condition, relative_offset, align)  &#x21d2; <tt><span class='object_link'><a href="" title="LibBin::Structure::Field (class)">Field</a></span></tt> 
+    #<strong>initialize</strong>(name, type, length, count, offset, sequence, condition, relative_offset, align, expect)  &#x21d2; <tt><span class='object_link'><a href="" title="LibBin::Structure::Field (class)">Field</a></span></tt> 
   
 
   
 
   
 </h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
   <div class="discussion">
     
 <p>Returns new Field.</p>
@@ -473,7 +508,7 @@
         <span class='name'>length</span>
       
       
-        <span class='type'>(<tt>Integer</tt>, <tt>String</tt>, <tt>Proc</tt>)</span>
+        <span class='type'>(<tt>nil</tt>, <tt>Integer</tt>, <tt>String</tt>, <tt>Proc</tt>)</span>
       
       
       
@@ -489,7 +524,7 @@
         <span class='name'>count</span>
       
       
-        <span class='type'>(<tt>Integer</tt>, <tt>String</tt>, <tt>Proc</tt>)</span>
+        <span class='type'>(<tt>nil</tt>, <tt>Integer</tt>, <tt>String</tt>, <tt>Proc</tt>)</span>
       
       
       
@@ -505,7 +540,7 @@
         <span class='name'>offset</span>
       
       
-        <span class='type'>(<tt>integer</tt>, <tt>String</tt>, <tt>Proc</tt>)</span>
+        <span class='type'>(<tt>nil</tt>, <tt>integer</tt>, <tt>String</tt>, <tt>Proc</tt>)</span>
       
       
       
@@ -537,7 +572,7 @@
         <span class='name'>condition</span>
       
       
-        <span class='type'>(<tt>String</tt>, <tt>Proc</tt>)</span>
+        <span class='type'>(<tt>nil</tt>, <tt>String</tt>, <tt>Proc</tt>)</span>
       
       
       
@@ -569,7 +604,7 @@
         <span class='name'>align</span>
       
       
-        <span class='type'>(<tt>Integer</tt>)</span>
+        <span class='type'>(<tt>nil</tt>, <tt>Integer</tt>)</span>
       
       
       
@@ -580,7 +615,26 @@
       
     </li>
   
+    <li>
+      
+        <span class='name'>expect</span>
+      
+      
+        <span class='type'>(<tt>nil</tt>, <tt>Proc</tt>, <tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if given as a Proc the proc must evaluate to a truthy value or an exception will be raised. Else, the object will be tested for equality, and an exception will be raised if objects were not equal. Proc is evaluated in the context of the <span class='object_link'><a href="../Structure.html" title="LibBin::Structure (class)">LibBin::Structure</a></span> instance and #__value will be set. Each repetition is validated.</p>
+</div>
+      
+    </li>
+  
 </ul>
+
+
+</div>
 
 
 </div><table class="source_code">
@@ -589,12 +643,80 @@
       <pre class="lines">
 
 
-</pre>
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 12</span>
+      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 68</span>
 
-</pre>
+static VALUE cField_initialize(
+    VALUE self,
+    VALUE name,
+    VALUE type,
+    VALUE length,
+    VALUE count,
+    VALUE offset,
+    VALUE sequence,
+    VALUE condition,
+    VALUE relative_offset,
+    VALUE align,
+    VALUE expect) {
+  VALUE tmp;
+  struct cField_data *data;
+  TypedData_Get_Struct(self, struct cField_data, &amp;cField_type, data);
+  if (RTEST(align)) {
+    size_t a = NUM2LL(align);
+    if (a &amp; (a-1))
+      rb_raise(rb_eRuntimeError, &quot;alignment is not a power of 2: %zu&quot;, a);
+  }
+  data-&gt;name = name;
+  tmp = rb_str_dup(rb_obj_as_string(name));
+  data-&gt;getter = rb_intern_str(tmp);
+  data-&gt;setter = rb_intern_str(rb_str_cat(tmp, &quot;=&quot;, 1));
+  data-&gt;type = cField_preprocess_expression(self, type);
+  data-&gt;length = cField_preprocess_expression(self, length);
+  data-&gt;count = cField_preprocess_expression(self, count);
+  data-&gt;offset = cField_preprocess_expression(self, offset);
+  data-&gt;sequence = sequence;
+  data-&gt;condition = cField_preprocess_expression(self, condition);
+  data-&gt;relative_offset = relative_offset;
+  data-&gt;align = align;
+  data-&gt;expect = expect;
+  return self;
+}</pre>
     </td>
   </tr>
 </table>
@@ -633,12 +755,12 @@
       <pre class="lines">
 
 
-144
-145
-146</pre>
+10
+11
+12</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 144</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 10</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_align'>align</span>
   <span class='ivar'>@align</span>
@@ -676,12 +798,12 @@
       <pre class="lines">
 
 
-132
-133
-134</pre>
+9
+10
+11</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 132</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 9</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_condition'>condition</span>
   <span class='ivar'>@condition</span>
@@ -719,15 +841,58 @@
       <pre class="lines">
 
 
-114
-115
-116</pre>
+7
+8
+9</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 114</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 7</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_count'>count</span>
   <span class='ivar'>@count</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="expect-instance_method">
+  
+    #<strong>expect</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute expect.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+11
+12
+13</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 11</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_expect'>expect</span>
+  <span class='ivar'>@expect</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -762,12 +927,12 @@
       <pre class="lines">
 
 
-108
-109
-110</pre>
+6
+7
+8</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 108</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 6</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_length'>length</span>
   <span class='ivar'>@length</span>
@@ -805,12 +970,12 @@
       <pre class="lines">
 
 
-96
-97
-98</pre>
+4
+5
+6</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 96</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 4</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
   <span class='ivar'>@name</span>
@@ -848,12 +1013,12 @@
       <pre class="lines">
 
 
-120
-121
-122</pre>
+8
+9
+10</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 120</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 8</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_offset'>offset</span>
   <span class='ivar'>@offset</span>
@@ -891,12 +1056,12 @@
       <pre class="lines">
 
 
-102
-103
-104</pre>
+5
+6
+7</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'ext/libbin/libbin_c.c', line 102</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 5</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_type'>type</span>
   <span class='ivar'>@type</span>
@@ -960,7 +1125,7 @@
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 42</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 13</span>
 
 </pre>
     </td>
@@ -1015,7 +1180,7 @@
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 46</span>
+      <pre class="code"><span class="info file"># File 'lib/libbin/data_types.rb', line 17</span>
 
 </pre>
     </td>
@@ -1028,7 +1193,7 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Nov  9 22:50:54 2021 by
+  Generated on Sat Nov 13 18:40:35 2021 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.26 (ruby-2.7.0).
 </div>
